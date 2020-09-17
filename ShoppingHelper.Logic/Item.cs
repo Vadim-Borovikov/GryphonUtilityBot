@@ -11,6 +11,10 @@ namespace ShoppingHelper.Logic
         public int DailyNeed { get; set; }
         [JsonProperty]
         public int PackSize { get; set; }
+        [JsonProperty]
+        public int AskOrder { get; set; }
+        [JsonProperty]
+        public int ResultOrder { get; set; }
 
         public int GetRefillingAmount(int stocked, int days)
         {

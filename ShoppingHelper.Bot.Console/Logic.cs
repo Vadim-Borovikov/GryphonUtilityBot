@@ -76,7 +76,7 @@ namespace ShoppingHelper.Bot.Console
 
         private void Reset()
         {
-            _items = new Queue<Item>(_allItems);
+            _items = new Queue<Item>(_allItems.OrderBy(i => i.AskOrder));
             _itemAmounts = new Dictionary<Item, int>();
             _currentItem = null;
             _currentAmountIsPacks = false;
@@ -125,7 +125,7 @@ namespace ShoppingHelper.Bot.Console
             var sb = new StringBuilder();
             sb.AppendLine($"На {days} дней нужно докупить:");
             sb.AppendLine();
-            foreach (Item item in _itemAmounts.Keys)
+            foreach (Item item in _itemAmounts.Keys.OrderBy(i => i.ResultOrder))
             {
                 int need = item.GetRefillingAmount(_itemAmounts[item], days);
                 string packsPart = item.PackSize > 1 ? ", пачки" : "";
