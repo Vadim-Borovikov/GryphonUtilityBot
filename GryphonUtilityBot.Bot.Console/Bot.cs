@@ -19,9 +19,16 @@ namespace GryphonUtilityBot.Bot.Console
         {
             Client = new TelegramBotClient(config.Token);
 
+            var saveManager = new BotSaveManager(config.SavePath);
+
             _shopCommand = new ShopCommand(config.Items);
 
-            _commands = new List<Command> { _shopCommand };
+            _commands = new List<Command>
+            {
+                _shopCommand,
+                new ArticlesCommand(config.Articles, config.ArticlesChannelChatId, config.ArticlesFirstMessageId,
+                saveManager, config.Delay)
+            };
 
             Client.OnMessage += OnMessageRecieved;
 
