@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.28307.1259
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GryphonUtilityBot.Logic", "GryphonUtilityBot.Logic\GryphonUtilityBot.Logic.csproj", "{860C6754-D278-4760-80C4-889F32AF2DA8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GryphonUtilityBot.Bot.Console", "GryphonUtilityBot.Bot.Console\GryphonUtilityBot.Bot.Console.csproj", "{DF402098-8920-4A4A-B874-6CBA84859BE4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GryphonUtilityBot.Bot.Console", "GryphonUtilityBot.Bot.Console\GryphonUtilityBot.Bot.Console.csproj", "{DF402098-8920-4A4A-B874-6CBA84859BE4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
