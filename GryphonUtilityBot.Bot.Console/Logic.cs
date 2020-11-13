@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MoreLinq;
-using ShoppingHelper.Logic;
+using GryphonUtilityBot.Logic;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace ShoppingHelper.Bot.Console
+namespace GryphonUtilityBot.Bot.Console
 {
     internal sealed class Logic
     {

@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ShoppingHelper.Logic\ShoppingHelper.Logic.csproj" />
+    <ProjectReference Include="..\GryphonUtilityBot.Logic\GryphonUtilityBot.Logic.csproj" />
   </ItemGroup>
 
   <ItemGroup>

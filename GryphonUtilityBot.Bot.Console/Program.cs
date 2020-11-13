@@ -3,7 +3,7 @@ using System.IO;
 using Microsoft.Extensions.Configuration;
 using Telegram.Bot.Types;
 
-namespace ShoppingHelper.Bot.Console
+namespace GryphonUtilityBot.Bot.Console
 {
     internal static class Program
     {

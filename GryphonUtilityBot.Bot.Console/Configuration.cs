@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
-using ShoppingHelper.Logic;
+using GryphonUtilityBot.Logic;
 
-namespace ShoppingHelper.Bot.Console
+namespace GryphonUtilityBot.Bot.Console
 {
     internal sealed class Configuration
     {

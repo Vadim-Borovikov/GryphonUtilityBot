@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace ShoppingHelper.Logic
+namespace GryphonUtilityBot.Logic
 {
     public sealed class Item
     {
