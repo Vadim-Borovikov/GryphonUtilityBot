@@ -12,15 +12,15 @@ namespace GryphonUtilityBot.Bot.Console
 
             Configuration config = GetConfig();
 
-            var logic = new Logic(config);
+            var bot = new Bot(config);
 
-            User me = logic.Bot.GetMeAsync().Result;
+            User me = bot.Client.GetMeAsync().Result;
             System.Console.Title = me.Username;
 
-            logic.Bot.StartReceiving();
+            bot.Client.StartReceiving();
             System.Console.WriteLine($"Start listening for @{me.Username}");
             System.Console.ReadLine();
-            logic.Bot.StopReceiving();
+            bot.Client.StopReceiving();
         }
 
         private static Configuration GetConfig()
