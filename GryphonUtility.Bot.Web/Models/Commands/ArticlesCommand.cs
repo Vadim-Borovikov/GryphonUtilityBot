@@ -63,10 +63,7 @@ namespace GryphonUtility.Bot.Web.Models.Commands
                 ParseMode.Markdown);
         }
 
-        private static string GetArticleMessageText(Article article)
-        {
-            return $"{article.Date:d MMMM yyyy}{Environment.NewLine}[{article.Name}]({article.Uri})";
-        }
+        private static string GetArticleMessageText(Article article) => $"[{article.Date:d MMMM yyyy}]({article.Uri})";
 
         private readonly IList<Article> _articles;
         private readonly ChatId _channelChatId;
