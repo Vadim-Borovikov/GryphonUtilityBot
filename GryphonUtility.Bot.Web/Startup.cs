@@ -1,4 +1,5 @@
-﻿using GryphonUtility.Bot.Web.Models;
+﻿using System.Globalization;
+using GryphonUtility.Bot.Web.Models;
 using GryphonUtility.Bot.Web.Models.Config;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -36,6 +37,8 @@ namespace GryphonUtility.Bot.Web
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("ru-RU");
 
             app.UseMvc(routes => routes.MapRoute("update", $"{_config["Token"]}/{{controller=Update}}/{{action=post}}"));
         }
