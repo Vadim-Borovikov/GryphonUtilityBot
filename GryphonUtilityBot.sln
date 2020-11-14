@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.1259
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GryphonUtility.Bot.Console", "GryphonUtility.Bot.Console\GryphonUtility.Bot.Console.csproj", "{DF402098-8920-4A4A-B874-6CBA84859BE4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GryphonUtility.Bot.Web", "GryphonUtility.Bot.Web\GryphonUtility.Bot.Web.csproj", "{654F51AB-6432-4298-8B58-DC3CFF5BA658}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DF402098-8920-4A4A-B874-6CBA84859BE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DF402098-8920-4A4A-B874-6CBA84859BE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DF402098-8920-4A4A-B874-6CBA84859BE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DF402098-8920-4A4A-B874-6CBA84859BE4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{654F51AB-6432-4298-8B58-DC3CFF5BA658}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{654F51AB-6432-4298-8B58-DC3CFF5BA658}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{654F51AB-6432-4298-8B58-DC3CFF5BA658}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{654F51AB-6432-4298-8B58-DC3CFF5BA658}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

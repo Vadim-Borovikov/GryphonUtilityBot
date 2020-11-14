@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace GryphonUtility.Bot.Console
+namespace GryphonUtility.Bot.Web.Models.Save
 {
-    internal sealed class BotSave
+    internal sealed class Data
     {
         [JsonProperty]
         public int LastMassageId { get; set; }

@@ -1,13 +1,13 @@
 ﻿using System.IO;
 using Newtonsoft.Json;
 
-namespace GryphonUtility.Bot.Console
+namespace GryphonUtility.Bot.Web.Models.Save
 {
-    internal sealed class BotSaveManager
+    internal sealed class Manager
     {
-        public BotSave Data { get; private set; }
+        public Data Data { get; private set; }
 
-        public BotSaveManager(string path)
+        public Manager(string path)
         {
             _path = path;
             _locker = new object();
@@ -29,13 +29,13 @@ namespace GryphonUtility.Bot.Console
                 if (File.Exists(_path))
                 {
                     string json = File.ReadAllText(_path);
-                    Data = JsonConvert.DeserializeObject<BotSave>(json);
+                    Data = JsonConvert.DeserializeObject<Data>(json);
                 }
             }
 
             if (Data == null)
             {
-                Data = new BotSave();
+                Data = new Data();
             }
         }
 

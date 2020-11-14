@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace GryphonUtility.Bot.Console
+namespace GryphonUtility.Bot.Web.Models.Config
 {
-    internal sealed class Configuration
+    public sealed class Config
     {
         [JsonProperty]
         public string Token { get; set; }
@@ -22,7 +22,12 @@ namespace GryphonUtility.Bot.Console
         public string SavePath { get; set; }
         [JsonProperty]
         public int DelaySeconds { get; set; }
+        [JsonProperty]
+        public string Host { get; set; }
+        [JsonProperty]
+        public int Port { get; set; }
 
-        public TimeSpan Delay => TimeSpan.FromSeconds(DelaySeconds);
+        internal TimeSpan Delay => TimeSpan.FromSeconds(DelaySeconds);
+        internal string Url => $"{Host}:{Port}/{Token}";
     }
 }

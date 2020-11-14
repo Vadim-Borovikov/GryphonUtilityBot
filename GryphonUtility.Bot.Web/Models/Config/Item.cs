@@ -1,9 +1,9 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace GryphonUtility.Bot.Console
+namespace GryphonUtility.Bot.Web.Models.Config
 {
-    internal sealed class Item
+    public sealed class Item
     {
         [JsonProperty]
         public string Name { get; set; }
@@ -16,7 +16,7 @@ namespace GryphonUtility.Bot.Console
         [JsonProperty]
         public int ResultOrder { get; set; }
 
-        public int GetRefillingAmount(int stocked, int days)
+        internal int GetRefillingAmount(int stocked, int days)
         {
             int needed = days * DailyNeed;
             int refillItems = Math.Max(needed - stocked, 0);

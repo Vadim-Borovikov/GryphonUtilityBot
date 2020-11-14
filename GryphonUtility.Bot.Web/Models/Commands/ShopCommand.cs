@@ -3,24 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MoreLinq;
+using GryphonUtility.Bot.Web.Models.Config;
+using MoreLinq.Extensions;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace GryphonUtility.Bot.Console.Commands
+namespace GryphonUtility.Bot.Web.Models.Commands
 {
-    internal sealed class ShopCommand : Command
+    public sealed class ShopCommand : Command
     {
         protected override string Name => "shop";
 
-        public ShopCommand(IReadOnlyList<Item> allItems)
+        internal ShopCommand(IReadOnlyList<Item> allItems)
         {
             _allItems = allItems;
             _keyboard = GetKeyboard();
         }
 
-        public async Task ProcessNumberAsync(long chatId, ITelegramBotClient client, int number)
+        internal async Task ProcessNumberAsync(ChatId chatId, ITelegramBotClient client, int number)
         {
             if (_currentItem == null)
             {
@@ -33,13 +34,13 @@ namespace GryphonUtility.Bot.Console.Commands
             await InvokeNextActionAsync(chatId, client);
         }
 
-        internal override async Task ExecuteAsync(ChatId chatId, ITelegramBotClient client)
+        internal override async Task ExecuteAsync(Message message, ITelegramBotClient client)
         {
             Reset();
 
-            await client.SendTextMessageAsync(chatId, "Сейчас есть:");
+            await client.SendTextMessageAsync(message.Chat, "Сейчас есть:");
 
-            await InvokeNextActionAsync(chatId, client);
+            await InvokeNextActionAsync(message.Chat, client);
         }
 
         private static ReplyKeyboardMarkup GetKeyboard()

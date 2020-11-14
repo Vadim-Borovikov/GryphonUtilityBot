@@ -2,18 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GryphonUtility.Bot.Web.Models.Config;
+using GryphonUtility.Bot.Web.Models.Save;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace GryphonUtility.Bot.Console.Commands
+namespace GryphonUtility.Bot.Web.Models.Commands
 {
     internal sealed class ArticlesCommand : Command
     {
         protected override string Name => "articles";
 
         public ArticlesCommand(IEnumerable<Article> articles, ChatId channelChatId, int firstMessageId,
-            BotSaveManager saveManager, TimeSpan delay)
+            Manager saveManager, TimeSpan delay)
         {
             _articles = articles.OrderBy(a => a.Date).ToList();
             _channelChatId = channelChatId;
@@ -22,12 +24,12 @@ namespace GryphonUtility.Bot.Console.Commands
             _delay = delay;
         }
 
-        internal override async Task ExecuteAsync(ChatId chatId, ITelegramBotClient client)
+        internal override async Task ExecuteAsync(Message message, ITelegramBotClient client)
         {
             _saveManager.Load();
 
             Message statusMessage =
-                await client.SendTextMessageAsync(chatId, "_Обновляю канал…_", ParseMode.Markdown);
+                await client.SendTextMessageAsync(message.Chat, "_Обновляю канал…_", ParseMode.Markdown);
 
             int updateMessages = _saveManager.Data.LastMassageId - _firstMessageId + 1;
 
@@ -57,7 +59,7 @@ namespace GryphonUtility.Bot.Console.Commands
 
             _saveManager.Save();
 
-            await client.EditMessageTextAsync(chatId, statusMessage.MessageId, $"_{statusMessage.Text}_ Готово.",
+            await client.EditMessageTextAsync(message.Chat, statusMessage.MessageId, $"_{statusMessage.Text}_ Готово.",
                 ParseMode.Markdown);
         }
 
@@ -69,7 +71,7 @@ namespace GryphonUtility.Bot.Console.Commands
         private readonly IList<Article> _articles;
         private readonly ChatId _channelChatId;
         private readonly int _firstMessageId;
-        private readonly BotSaveManager _saveManager;
+        private readonly Manager _saveManager;
         private readonly TimeSpan _delay;
     }
 }

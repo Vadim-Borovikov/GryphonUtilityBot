@@ -3,14 +3,14 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace GryphonUtility.Bot.Console.Commands
+namespace GryphonUtility.Bot.Web.Models.Commands
 {
-    internal abstract class Command
+    public abstract class Command
     {
         protected abstract string Name { get; }
 
         internal bool Contains(Message message) => (message.Type == MessageType.Text) && message.Text.Contains(Name);
 
-        internal abstract Task ExecuteAsync(ChatId chatId, ITelegramBotClient client);
+        internal abstract Task ExecuteAsync(Message message, ITelegramBotClient client);
     }
 }
