@@ -17,7 +17,7 @@ namespace GryphonUtility.Bot.Web.Models.Save
         {
             lock (_locker)
             {
-                string json = JsonConvert.SerializeObject(Data);
+                string json = JsonConvert.SerializeObject(Data, Formatting.Indented);
                 File.WriteAllText(_path, json);
             }
         }
