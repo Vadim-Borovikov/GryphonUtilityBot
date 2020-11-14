@@ -51,8 +51,9 @@ namespace GryphonUtility.Bot.Web.Models.Commands
 
             foreach (string text in _articles.Skip(updateMessages).Select(GetArticleMessageText))
             {
-                await client.SendTextMessageAsync(_channelChatId, text, ParseMode.Markdown);
+                Message newMessage = await client.SendTextMessageAsync(_channelChatId, text, ParseMode.Markdown);
                 await Delay();
+                _saveManager.Data.Messages[newMessage.MessageId] = text;
             }
 
             _saveManager.Data.LastMassageId += _articles.Count - updateMessages;
