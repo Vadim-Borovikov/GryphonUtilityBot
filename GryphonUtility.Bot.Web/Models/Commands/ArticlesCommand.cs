@@ -44,15 +44,15 @@ namespace GryphonUtility.Bot.Web.Models.Commands
                     continue;
                 }
 
-                await client.EditMessageTextAsync(_channelChatId, messageId, text, ParseMode.Markdown);
                 await Delay();
+                await client.EditMessageTextAsync(_channelChatId, messageId, text, ParseMode.Markdown);
                 _saveManager.Data.Messages[messageId] = text;
             }
 
             foreach (string text in _articles.Skip(updateMessages).Select(GetArticleMessageText))
             {
-                Message newMessage = await client.SendTextMessageAsync(_channelChatId, text, ParseMode.Markdown);
                 await Delay();
+                Message newMessage = await client.SendTextMessageAsync(_channelChatId, text, ParseMode.Markdown);
                 _saveManager.Data.Messages[newMessage.MessageId] = text;
             }
 
@@ -66,16 +66,15 @@ namespace GryphonUtility.Bot.Web.Models.Commands
 
         private async Task Delay()
         {
-            TimeSpan delay = _delay;
             if (_delayedAt.HasValue)
             {
-                delay -= DateTime.Now - _delayedAt.Value;
+                TimeSpan delay = _delay - (DateTime.Now - _delayedAt.Value);
+                if (delay.TotalMilliseconds > 0)
+                {
+                    await Task.Delay(delay);
+                }
             }
-            if (delay.TotalMilliseconds > 0)
-            {
-                await Task.Delay(delay);
-                _delayedAt = DateTime.Now;
-            }
+            _delayedAt = DateTime.Now;
         }
 
         private static string GetArticleMessageText(Article article) => $"[{article.Date:d MMMM yyyy}]({article.Uri})";
