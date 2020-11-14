@@ -10,6 +10,7 @@ namespace GryphonUtility.Bot.Web.Models
         public TelegramBotClient Client { get; }
         public IEnumerable<Command> Commands { get; }
         public ShopCommand ShopCommand { get; }
+        public ArticlesManager ArticlesManager { get; }
 
         public Config.Config Config { get; }
 
@@ -23,11 +24,11 @@ namespace GryphonUtility.Bot.Web.Models
 
             var saveManager = new Save.Manager(Config.SavePath);
 
+            ArticlesManager = new ArticlesManager(Config.MasterId, saveManager, Config.Delay);
+
             Commands = new List<Command>
             {
                 ShopCommand,
-                new ArticlesCommand(Config.Articles, Config.ArticlesChannelChatId, Config.ArticlesFirstMessageId,
-                saveManager, Config.Delay)
             };
         }
     }

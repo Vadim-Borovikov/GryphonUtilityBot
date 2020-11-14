@@ -9,6 +9,7 @@ namespace GryphonUtility.Bot.Web.Models
         TelegramBotClient Client { get; }
         IEnumerable<Command> Commands { get; }
         ShopCommand ShopCommand { get; }
+        ArticlesManager ArticlesManager { get; }
         Config.Config Config { get; }
     }
 }

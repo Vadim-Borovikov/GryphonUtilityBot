@@ -6,8 +6,8 @@ namespace GryphonUtility.Bot.Web.Models.Save
     internal sealed class Data
     {
         [JsonProperty]
-        public int LastMassageId { get; set; }
+        public List<Article> Articles { get; set; } = new List<Article>();
         [JsonProperty]
-        public Dictionary<int, string> Messages { get; set; } = new Dictionary<int, string>();
+        public SortedDictionary<int, string> Messages { get; set; } = new SortedDictionary<int, string>();
     }
 }

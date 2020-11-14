@@ -13,12 +13,6 @@ namespace GryphonUtility.Bot.Web.Models.Config
         [JsonProperty]
         public List<Item> Items { get; set; }
         [JsonProperty]
-        public List<Article> Articles { get; set; }
-        [JsonProperty]
-        public long ArticlesChannelChatId { get; set; }
-        [JsonProperty]
-        public int ArticlesFirstMessageId { get; set; }
-        [JsonProperty]
         public string SavePath { get; set; }
         [JsonProperty]
         public int DelaySeconds { get; set; }

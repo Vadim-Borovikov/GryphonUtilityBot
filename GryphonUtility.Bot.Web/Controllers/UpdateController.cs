@@ -15,22 +15,33 @@ namespace GryphonUtility.Bot.Web.Controllers
         [HttpPost]
         public async Task<OkResult> Post([FromBody]Update update)
         {
-            if (update?.Message.From.Id == _bot.Config.MasterId)
+            if (update != null)
             {
+                Message message;
                 switch (update.Type)
                 {
                     case UpdateType.Message:
-                        Message message = update.Message;
-
-                        Command command = _bot.Commands.FirstOrDefault(c => c.Contains(message));
-                        if (command != null)
+                        message = update.Message;
+                        if (message.From.Id == _bot.Config.MasterId)
                         {
-                            await command.ExecuteAsync(message, _bot.Client);
+                            Command command = _bot.Commands.FirstOrDefault(c => c.Contains(message));
+                            if (command != null)
+                            {
+                                await command.ExecuteAsync(message, _bot.Client);
+                            }
+                            else if (int.TryParse(message.Text, out int number))
+                            {
+                                await _bot.ShopCommand.ProcessNumberAsync(message.Chat, _bot.Client, number);
+                            }
+                            else
+                            {
+                                await _bot.Client.SendTextMessageAsync(message.Chat, "Unknown command!");
+                            }
                         }
-                        else if (int.TryParse(message.Text, out int number))
-                        {
-                            await _bot.ShopCommand.ProcessNumberAsync(message.Chat, _bot.Client, number);
-                        }
+                        break;
+                    case UpdateType.ChannelPost:
+                        message = update.ChannelPost;
+                        await _bot.ArticlesManager.ProcessChannelMessageAsync(message, _bot.Client);
                         break;
                 }
             }
