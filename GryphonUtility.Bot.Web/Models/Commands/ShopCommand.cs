@@ -81,6 +81,7 @@ namespace GryphonUtility.Bot.Web.Models.Commands
                 return client.SendTextMessageAsync(chatId, question, replyMarkup: _keyboard);
             }
 
+            _currentItem = null;
             string result = PrepareResult();
             return client.SendTextMessageAsync(chatId, result, replyMarkup: NoKeyboard);
         }
