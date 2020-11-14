@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using GryphonUtilityBot.Logic;
 
 namespace GryphonUtilityBot.Bot.Console
 {

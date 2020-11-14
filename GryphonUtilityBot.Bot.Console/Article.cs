@@ -1,9 +1,9 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace GryphonUtilityBot.Logic
+namespace GryphonUtilityBot.Bot.Console
 {
-    public sealed class Article
+    internal sealed class Article
     {
         [JsonProperty]
         public Uri Uri { get; set; }
