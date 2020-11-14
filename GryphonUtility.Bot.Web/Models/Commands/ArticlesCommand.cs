@@ -17,7 +17,7 @@ namespace GryphonUtility.Bot.Web.Models.Commands
         public ArticlesCommand(IEnumerable<Article> articles, ChatId channelChatId, int firstMessageId,
             Manager saveManager, TimeSpan delay)
         {
-            _articles = articles.OrderBy(a => a.Date).ToList();
+            _articles = articles.OrderByDescending(a => a.Date).ToList();
             _channelChatId = channelChatId;
             _firstMessageId = firstMessageId;
             _saveManager = saveManager;
