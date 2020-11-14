@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace GryphonUtilityBot.Bot.Console
+namespace GryphonUtility.Bot.Console
 {
     internal sealed class Item
     {

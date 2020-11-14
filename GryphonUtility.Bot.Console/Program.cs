@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Telegram.Bot.Types;
 
-namespace GryphonUtilityBot.Bot.Console
+namespace GryphonUtility.Bot.Console
 {
     internal static class Program
     {

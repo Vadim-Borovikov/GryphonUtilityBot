@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace GryphonUtilityBot.Bot.Console
+namespace GryphonUtility.Bot.Console
 {
     internal sealed class Configuration
     {

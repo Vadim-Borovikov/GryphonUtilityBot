@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using Newtonsoft.Json;
 
-namespace GryphonUtilityBot.Bot.Console
+namespace GryphonUtility.Bot.Console
 {
     internal sealed class BotSaveManager
     {

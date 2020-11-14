@@ -8,7 +8,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace GryphonUtilityBot.Bot.Console.Commands
+namespace GryphonUtility.Bot.Console.Commands
 {
     internal sealed class ShopCommand : Command
     {

@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using GryphonUtilityBot.Bot.Console.Commands;
+using GryphonUtility.Bot.Console.Commands;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 
-namespace GryphonUtilityBot.Bot.Console
+namespace GryphonUtility.Bot.Console
 {
     internal sealed class Bot
     {
