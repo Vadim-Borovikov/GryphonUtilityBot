@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using GryphonUtility.Bot.Web.Models.Commands;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
@@ -18,6 +19,8 @@ namespace GryphonUtility.Bot.Web.Models
         {
             Config = options.Value;
 
+            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(Config.CultureInfoName);
+
             Client = new TelegramBotClient(Config.Token);
 
             ShopCommand = new ShopCommand(Config.Items);
@@ -28,7 +31,7 @@ namespace GryphonUtility.Bot.Web.Models
 
             Commands = new List<Command>
             {
-                ShopCommand,
+                ShopCommand
             };
         }
     }

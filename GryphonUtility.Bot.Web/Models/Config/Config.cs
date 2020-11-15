@@ -20,6 +20,8 @@ namespace GryphonUtility.Bot.Web.Models.Config
         public string Host { get; set; }
         [JsonProperty]
         public int Port { get; set; }
+        [JsonProperty]
+        public string CultureInfoName { get; set; }
 
         internal TimeSpan Delay => TimeSpan.FromSeconds(DelaySeconds);
         internal string Url => $"{Host}:{Port}/{Token}";
