@@ -83,12 +83,12 @@ namespace GryphonUtility.Bot.Web.Models
                     }
 
                     await Delay();
-                    await client.EditMessageTextAsync(chat, messageId, text, ParseMode.Markdown);
+                    await client.EditMessageTextAsync(chat, messageId, text);
                 }
                 else
                 {
                     await Delay();
-                    Message message = await client.SendTextMessageAsync(chat, text, ParseMode.Markdown);
+                    Message message = await client.SendTextMessageAsync(chat, text);
                     messageId = message.MessageId;
                 }
 
@@ -137,7 +137,10 @@ namespace GryphonUtility.Bot.Web.Models
             return true;
         }
 
-        private static string GetArticleMessageText(Article article) => $"[{article.Date:d MMMM yyyy}]({article.Uri})";
+        private static string GetArticleMessageText(Article article)
+        {
+            return $"{article.Date:d MMMM yyyy}{Environment.NewLine}{article.Uri}";
+        }
 
         private readonly long _masterChatId;
         private readonly Manager _saveManager;
