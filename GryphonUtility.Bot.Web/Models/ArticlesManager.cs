@@ -54,7 +54,6 @@ namespace GryphonUtility.Bot.Web.Models
             }
 
             _saveManager.Data.Articles.Remove(article);
-            _saveManager.Data.Messages.Remove(message.MessageId);
             _saveManager.Save();
             return client.DeleteMessageAsync(message.Chat, message.MessageId);
         }
@@ -63,36 +62,28 @@ namespace GryphonUtility.Bot.Web.Models
         {
             _adding = true;
 
-            _saveManager.Data.Articles.Add(newArticle);
+            List<Article> toUpdate = _saveManager.Data.Articles
+                .Where(a => a.Date < newArticle.Date)
+                .ToList();
 
-            var messageIds = new Queue<int>(_saveManager.Data.Messages.Keys);
-            foreach (Article article in _saveManager.Data.Articles.OrderByDescending(a => a.Date))
+            foreach (Article article in toUpdate)
             {
-                int messageId;
-                string text = GetArticleMessageText(article);
+                Article oldArticle = article.Copy();
 
-                if (messageIds.Count > 0)
-                {
-                    messageId = messageIds.Dequeue();
+                article.Text = newArticle.Text;
+                article.Date = newArticle.Date;
 
-                    if (_saveManager.Data.Messages[messageId] == text)
-                    {
-                        continue;
-                    }
+                await Delay();
+                await client.EditMessageTextAsync(chat, article.MessageId, article.Text);
 
-                    await Delay();
-                    await client.EditMessageTextAsync(chat, messageId, text);
-                }
-                else
-                {
-                    await Delay();
-                    Message message = await client.SendTextMessageAsync(chat, text);
-                    messageId = message.MessageId;
-                }
-
-                article.MessageId = messageId;
-                _saveManager.Data.Messages[messageId] = text;
+                newArticle = oldArticle;
             }
+
+            await Delay();
+            Message message = await client.SendTextMessageAsync(chat, newArticle.Text);
+            newArticle.MessageId = message.MessageId;
+
+            _saveManager.Data.Articles.Add(newArticle);
 
             _saveManager.Save();
 
@@ -131,13 +122,8 @@ namespace GryphonUtility.Bot.Web.Models
                 return false;
             }
 
-            article = new Article(date, uri);
+            article = new Article(date, $"{date:d MMMM yyyy}{Environment.NewLine}{uri}");
             return true;
-        }
-
-        private static string GetArticleMessageText(Article article)
-        {
-            return $"{article.Date:d MMMM yyyy}{Environment.NewLine}{article.Uri}";
         }
 
         private readonly long _masterChatId;

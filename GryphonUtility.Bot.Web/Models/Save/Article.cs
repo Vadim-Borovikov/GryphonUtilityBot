@@ -6,16 +6,18 @@ namespace GryphonUtility.Bot.Web.Models.Save
     internal sealed class Article
     {
         [JsonProperty]
-        public Uri Uri { get; set; }
+        public string Text { get; set; }
         [JsonProperty]
         public DateTime Date { get; set; }
         [JsonProperty]
-        public int? MessageId { get; set; }
+        public int MessageId { get; set; }
 
-        public Article(DateTime date, Uri uri)
+        public Article(DateTime date, string text)
         {
             Date = date;
-            Uri = uri;
+            Text = text;
         }
+
+        public Article Copy() => new Article(Date, Text) { MessageId = MessageId };
     }
 }
