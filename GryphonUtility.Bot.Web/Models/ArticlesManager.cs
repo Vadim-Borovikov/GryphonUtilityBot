@@ -16,13 +16,13 @@ namespace GryphonUtility.Bot.Web.Models
             _masterChatId = masterChatId;
             _saveManager = saveManager;
             _delay = delay;
-            _updating = false;
+            _adding = false;
             _saveManager.Load();
         }
 
         internal async Task ProcessChannelMessageAsync(Message message, ITelegramBotClient client)
         {
-            if (_updating)
+            if (_adding)
             {
                 await client.SendTextMessageAsync(_masterChatId,
                     $"declined channel update:{Environment.NewLine}`{message.Text}`", ParseMode.Markdown);
@@ -32,7 +32,6 @@ namespace GryphonUtility.Bot.Web.Models
             if (message.ReplyToMessage != null)
             {
                 await DeleteArticle(message.ReplyToMessage, client);
-                await client.DeleteMessageAsync(message.Chat, message.MessageId);
             }
             else
             {
@@ -41,13 +40,9 @@ namespace GryphonUtility.Bot.Web.Models
                     return;
                 }
 
-                _saveManager.Data.Articles.Add(article);
-
-                await client.DeleteMessageAsync(message.Chat, message.MessageId);
-                UpdateArticles(message.Chat, client);
+                AddArticle(article, message.Chat, client);
             }
-
-            _saveManager.Save();
+            await client.DeleteMessageAsync(message.Chat, message.MessageId);
         }
 
         private Task DeleteArticle(Message message, ITelegramBotClient client)
@@ -60,12 +55,15 @@ namespace GryphonUtility.Bot.Web.Models
 
             _saveManager.Data.Articles.Remove(article);
             _saveManager.Data.Messages.Remove(message.MessageId);
+            _saveManager.Save();
             return client.DeleteMessageAsync(message.Chat, message.MessageId);
         }
 
-        private async void UpdateArticles(Chat chat, ITelegramBotClient client)
+        private async void AddArticle(Article newArticle, Chat chat, ITelegramBotClient client)
         {
-            _updating = true;
+            _adding = true;
+
+            _saveManager.Data.Articles.Add(newArticle);
 
             var messageIds = new Queue<int>(_saveManager.Data.Messages.Keys);
             foreach (Article article in _saveManager.Data.Articles.OrderByDescending(a => a.Date))
@@ -98,7 +96,7 @@ namespace GryphonUtility.Bot.Web.Models
 
             _saveManager.Save();
 
-            _updating = false;
+            _adding = false;
         }
 
         private async Task Delay()
@@ -146,7 +144,7 @@ namespace GryphonUtility.Bot.Web.Models
         private readonly Manager _saveManager;
         private readonly TimeSpan _delay;
 
-        private bool _updating;
+        private bool _adding;
         private DateTime? _delayedAt;
     }
 }
