@@ -58,7 +58,7 @@ namespace GryphonUtility.Bot.Web.Models
             return client.DeleteMessageAsync(message.Chat, message.MessageId);
         }
 
-        private async void AddArticle(Article newArticle, Chat chat, ITelegramBotClient client)
+        private async void AddArticle(Article newArticle, ChatId chatId, ITelegramBotClient client)
         {
             _adding = true;
 
@@ -74,13 +74,13 @@ namespace GryphonUtility.Bot.Web.Models
                 article.Date = newArticle.Date;
 
                 await Delay();
-                await client.EditMessageTextAsync(chat, article.MessageId, article.Text);
+                await client.EditMessageTextAsync(chatId, article.MessageId, article.Text);
 
                 newArticle = oldArticle;
             }
 
             await Delay();
-            Message message = await client.SendTextMessageAsync(chat, newArticle.Text);
+            Message message = await client.SendTextMessageAsync(chatId, newArticle.Text);
             newArticle.MessageId = message.MessageId;
 
             _saveManager.Data.Articles.Add(newArticle);
