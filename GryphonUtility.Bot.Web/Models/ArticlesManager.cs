@@ -65,7 +65,7 @@ namespace GryphonUtility.Bot.Web.Models
                 return false;
             }
 
-            article = new Article(date, $"{date:d MMMM yyyy}{Environment.NewLine}{uri}");
+            article = new Article(date, uri);
             return true;
         }
 
@@ -83,15 +83,15 @@ namespace GryphonUtility.Bot.Web.Models
             {
                 Article oldArticle = article.Copy();
 
-                article.Text = newArticle.Text;
                 article.Date = newArticle.Date;
+                article.Uri = newArticle.Uri;
 
-                await SendOrEditAsync(delayNeeded, client, article.Text, chatId, article.MessageId);
+                await SendOrEditAsync(delayNeeded, client, article, chatId, article.MessageId);
 
                 newArticle = oldArticle;
             }
 
-            Message message = await SendOrEditAsync(delayNeeded, client, newArticle.Text, chatId);
+            Message message = await SendOrEditAsync(delayNeeded, client, newArticle, chatId);
             newArticle.MessageId = message.MessageId;
 
             _saveManager.Data.Articles.Add(newArticle);
@@ -114,13 +114,15 @@ namespace GryphonUtility.Bot.Web.Models
             return client.DeleteMessageAsync(message.Chat, message.MessageId);
         }
 
-        private async Task<Message> SendOrEditAsync(bool delayNeeded, ITelegramBotClient client, string text,
+        private async Task<Message> SendOrEditAsync(bool delayNeeded, ITelegramBotClient client, Article article,
             ChatId chatId, int? messageId = null)
         {
             if (delayNeeded)
             {
                 await Delay();
             }
+
+            string text = GetArticleMessageText(article);
 
             if (messageId.HasValue)
             {
@@ -142,6 +144,11 @@ namespace GryphonUtility.Bot.Web.Models
                 }
             }
             _delayedAt = DateTime.Now;
+        }
+
+        private static string GetArticleMessageText(Article article)
+        {
+            return $"{article.Date:d MMMM yyyy}{Environment.NewLine}{article.Uri}";
         }
 
         private readonly long _masterChatId;
