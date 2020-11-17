@@ -29,11 +29,7 @@ namespace GryphonUtility.Bot.Web.Models
                 return;
             }
 
-            if (message.ReplyToMessage != null)
-            {
-                await DeleteArticle(message.ReplyToMessage, client);
-            }
-            else
+            if (message.ReplyToMessage == null)
             {
                 if (!TryParseArticle(message.Text, out Article article))
                 {
@@ -42,20 +38,35 @@ namespace GryphonUtility.Bot.Web.Models
 
                 AddArticle(article, message.Chat, client);
             }
+            else
+            {
+                await DeleteArticle(message.ReplyToMessage, client);
+            }
+
             await client.DeleteMessageAsync(message.Chat, message.MessageId);
         }
 
-        private Task DeleteArticle(Message message, ITelegramBotClient client)
+        private static bool TryParseArticle(string text, out Article article)
         {
-            Article article = _saveManager.Data.Articles.FirstOrDefault(a => a.MessageId == message.MessageId);
-            if (article == null)
+            article = null;
+            string[] parts = text.Split(' ');
+            if (parts.Length != 2)
             {
-                return Task.CompletedTask;
+                return false;
             }
 
-            _saveManager.Data.Articles.Remove(article);
-            _saveManager.Save();
-            return client.DeleteMessageAsync(message.Chat, message.MessageId);
+            if (!DateTime.TryParse(parts[0], out DateTime date))
+            {
+                return false;
+            }
+
+            if (!Uri.TryCreate(parts[1], UriKind.Absolute, out Uri uri))
+            {
+                return false;
+            }
+
+            article = new Article(date, $"{date:d MMMM yyyy}{Environment.NewLine}{uri}");
+            return true;
         }
 
         private async void AddArticle(Article newArticle, ChatId chatId, ITelegramBotClient client)
@@ -90,6 +101,19 @@ namespace GryphonUtility.Bot.Web.Models
             _adding = false;
         }
 
+        private Task DeleteArticle(Message message, ITelegramBotClient client)
+        {
+            Article article = _saveManager.Data.Articles.FirstOrDefault(a => a.MessageId == message.MessageId);
+            if (article == null)
+            {
+                return Task.CompletedTask;
+            }
+
+            _saveManager.Data.Articles.Remove(article);
+            _saveManager.Save();
+            return client.DeleteMessageAsync(message.Chat, message.MessageId);
+        }
+
         private async Task<Message> SendOrEditAsync(bool delayNeeded, ITelegramBotClient client, string text,
             ChatId chatId, int? messageId = null)
         {
@@ -118,29 +142,6 @@ namespace GryphonUtility.Bot.Web.Models
                 }
             }
             _delayedAt = DateTime.Now;
-        }
-
-        private static bool TryParseArticle(string text, out Article article)
-        {
-            article = null;
-            string[] parts = text.Split(' ');
-            if (parts.Length != 2)
-            {
-                return false;
-            }
-
-            if (!DateTime.TryParse(parts[0], out DateTime date))
-            {
-                return false;
-            }
-
-            if (!Uri.TryCreate(parts[1], UriKind.Absolute, out Uri uri))
-            {
-                return false;
-            }
-
-            article = new Article(date, $"{date:d MMMM yyyy}{Environment.NewLine}{uri}");
-            return true;
         }
 
         private readonly long _masterChatId;
