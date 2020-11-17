@@ -11,11 +11,11 @@ namespace GryphonUtility.Bot.Web.Models
 {
     public sealed class ArticlesManager
     {
-        internal ArticlesManager(long masterChatId, Manager saveManager, TimeSpan delay)
+        internal ArticlesManager(long masterChatId, Manager saveManager, int messagesPerMinuteLimit)
         {
             _masterChatId = masterChatId;
             _saveManager = saveManager;
-            _delay = delay;
+            _messagesPerMinuteLimit = messagesPerMinuteLimit;
             _adding = false;
             _saveManager.Load();
         }
@@ -66,6 +66,8 @@ namespace GryphonUtility.Bot.Web.Models
                 .Where(a => a.Date < newArticle.Date)
                 .ToList();
 
+            bool delayNeeded = (toUpdate.Count + 1) >= _messagesPerMinuteLimit;
+
             foreach (Article article in toUpdate)
             {
                 Article oldArticle = article.Copy();
@@ -73,14 +75,12 @@ namespace GryphonUtility.Bot.Web.Models
                 article.Text = newArticle.Text;
                 article.Date = newArticle.Date;
 
-                await Delay();
-                await client.EditMessageTextAsync(chatId, article.MessageId, article.Text);
+                await SendOrEditAsync(delayNeeded, client, article.Text, chatId, article.MessageId);
 
                 newArticle = oldArticle;
             }
 
-            await Delay();
-            Message message = await client.SendTextMessageAsync(chatId, newArticle.Text);
+            Message message = await SendOrEditAsync(delayNeeded, client, newArticle.Text, chatId);
             newArticle.MessageId = message.MessageId;
 
             _saveManager.Data.Articles.Add(newArticle);
@@ -90,11 +90,28 @@ namespace GryphonUtility.Bot.Web.Models
             _adding = false;
         }
 
+        private async Task<Message> SendOrEditAsync(bool delayNeeded, ITelegramBotClient client, string text,
+            ChatId chatId, int? messageId = null)
+        {
+            if (delayNeeded)
+            {
+                await Delay();
+            }
+
+            if (messageId.HasValue)
+            {
+                return await client.EditMessageTextAsync(chatId, messageId.Value, text);
+            }
+
+            return await client.SendTextMessageAsync(chatId, text);
+        }
+
         private async Task Delay()
         {
             if (_delayedAt.HasValue)
             {
-                TimeSpan delay = _delay - (DateTime.Now - _delayedAt.Value);
+                TimeSpan delay =
+                    TimeSpan.FromMinutes(1.0 / _messagesPerMinuteLimit) - (DateTime.Now - _delayedAt.Value);
                 if (delay.TotalMilliseconds > 0)
                 {
                     await Task.Delay(delay);
@@ -128,7 +145,7 @@ namespace GryphonUtility.Bot.Web.Models
 
         private readonly long _masterChatId;
         private readonly Manager _saveManager;
-        private readonly TimeSpan _delay;
+        private readonly int _messagesPerMinuteLimit;
 
         private bool _adding;
         private DateTime? _delayedAt;

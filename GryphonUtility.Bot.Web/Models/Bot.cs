@@ -27,7 +27,7 @@ namespace GryphonUtility.Bot.Web.Models
 
             var saveManager = new Save.Manager(Config.SavePath);
 
-            ArticlesManager = new ArticlesManager(Config.MasterId, saveManager, Config.Delay);
+            ArticlesManager = new ArticlesManager(Config.MasterId, saveManager, Config.MessagesPerMinuteLimit);
 
             Commands = new List<Command>
             {

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace GryphonUtility.Bot.Web.Models.Config
@@ -15,7 +14,7 @@ namespace GryphonUtility.Bot.Web.Models.Config
         [JsonProperty]
         public string SavePath { get; set; }
         [JsonProperty]
-        public int DelaySeconds { get; set; }
+        public int MessagesPerMinuteLimit { get; set; }
         [JsonProperty]
         public string Host { get; set; }
         [JsonProperty]
@@ -23,7 +22,6 @@ namespace GryphonUtility.Bot.Web.Models.Config
         [JsonProperty]
         public string CultureInfoName { get; set; }
 
-        internal TimeSpan Delay => TimeSpan.FromSeconds(DelaySeconds);
         internal string Url => $"{Host}:{Port}/{Token}";
     }
 }
