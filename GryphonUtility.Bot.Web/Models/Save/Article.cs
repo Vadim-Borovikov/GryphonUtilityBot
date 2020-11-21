@@ -9,15 +9,11 @@ namespace GryphonUtility.Bot.Web.Models.Save
         public Uri Uri { get; set; }
         [JsonProperty]
         public DateTime Date { get; set; }
-        [JsonProperty]
-        public int MessageId { get; set; }
 
         public Article(DateTime date, Uri uri)
         {
             Date = date;
             Uri = uri;
         }
-
-        public Article Copy() => new Article(Date, Uri) { MessageId = MessageId };
     }
 }

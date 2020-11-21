@@ -14,8 +14,6 @@ namespace GryphonUtility.Bot.Web.Models.Config
         [JsonProperty]
         public string SavePath { get; set; }
         [JsonProperty]
-        public int MessagesPerMinuteLimit { get; set; }
-        [JsonProperty]
         public string Host { get; set; }
         [JsonProperty]
         public int Port { get; set; }

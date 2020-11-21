@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using GryphonUtility.Bot.Web.Models;
 using GryphonUtility.Bot.Web.Models.Commands;
+using GryphonUtility.Bot.Web.Models.Save;
 using Microsoft.AspNetCore.Mvc;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -15,34 +16,28 @@ namespace GryphonUtility.Bot.Web.Controllers
         [HttpPost]
         public async Task<OkResult> Post([FromBody]Update update)
         {
-            if (update != null)
+            if ((update != null) && (update.Type == UpdateType.Message))
             {
-                Message message;
-                switch (update.Type)
+                Message message = update.Message;
+                if (message.From.Id == _bot.Config.MasterId)
                 {
-                    case UpdateType.Message:
-                        message = update.Message;
-                        if (message.From.Id == _bot.Config.MasterId)
-                        {
-                            Command command = _bot.Commands.FirstOrDefault(c => c.Contains(message));
-                            if (command != null)
-                            {
-                                await command.ExecuteAsync(message, _bot.Client);
-                            }
-                            else if (int.TryParse(message.Text, out int number))
-                            {
-                                await _bot.ShopCommand.ProcessNumberAsync(message.Chat, _bot.Client, number);
-                            }
-                            else
-                            {
-                                await _bot.Client.SendTextMessageAsync(message.Chat, "Unknown command!");
-                            }
-                        }
-                        break;
-                    case UpdateType.ChannelPost:
-                        message = update.ChannelPost;
-                        await _bot.ArticlesManager.ProcessChannelMessageAsync(message, _bot.Client);
-                        break;
+                    Command command = _bot.Commands.FirstOrDefault(c => c.Contains(message));
+                    if (command != null)
+                    {
+                        await command.ExecuteAsync(message, _bot.Client);
+                    }
+                    else if (int.TryParse(message.Text, out int number))
+                    {
+                        await _bot.ShopCommand.ProcessNumberAsync(message.Chat, _bot.Client, number);
+                    }
+                    else if (ArticlesManager.TryParseArticle(message.Text, out Article article))
+                    {
+                        await _bot.ArticlesManager.AddArticleAsync(article, message.Chat, _bot.Client);
+                    }
+                    else
+                    {
+                        await _bot.Client.SendTextMessageAsync(message.Chat, "Unknown command!");
+                    }
                 }
             }
 

@@ -27,11 +27,13 @@ namespace GryphonUtility.Bot.Web.Models
 
             var saveManager = new Save.Manager(Config.SavePath);
 
-            ArticlesManager = new ArticlesManager(Config.MasterId, saveManager, Config.MessagesPerMinuteLimit);
+            ArticlesManager = new ArticlesManager(saveManager);
 
             Commands = new List<Command>
             {
-                ShopCommand
+                ShopCommand,
+                new OldestCommand(ArticlesManager),
+                new MarkCommand(ArticlesManager)
             };
         }
     }
