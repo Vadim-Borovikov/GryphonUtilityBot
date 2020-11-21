@@ -32,7 +32,7 @@ namespace GryphonUtility.Bot.Web.Controllers
                     }
                     else if (ArticlesManager.TryParseArticle(message.Text, out Article article))
                     {
-                        await _bot.ArticlesManager.AddArticleAsync(article, message.Chat, _bot.Client);
+                        await _bot.ArticlesManager.ProcessNewArticleAsync(article, message, _bot.Client);
                     }
                     else
                     {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using GryphonUtility.Bot.Web.Models.Save;
 using Telegram.Bot;
@@ -35,18 +36,18 @@ namespace GryphonUtility.Bot.Web.Models
             return true;
         }
 
-        internal async Task AddArticleAsync(Article article, ChatId chatId, ITelegramBotClient client)
+        internal async Task ProcessNewArticleAsync(Article article, Message message, ITelegramBotClient client)
         {
-            _saveManager.Load();
+            AddArticle(article);
 
-            _saveManager.Data.Articles.Add(article);
+            string currentArticleText = GetArticleMessageText(article);
+            string oldestArticleText = GetArticleMessageText(_saveManager.Data.Articles.First());
 
-            _saveManager.Save();
+            var sb = new StringBuilder();
+            sb.AppendLine($"Added `{currentArticleText}`.");
+            sb.AppendLine($"Oldest article: {oldestArticleText}");
 
-            string text = GetArticleMessageText(article);
-            await client.SendTextMessageAsync(chatId, $"Added `{text}`", ParseMode.Markdown);
-
-            await SendOldestArticleAsync(chatId, client);
+            await client.SendTextMessageAsync(message.Chat, sb.ToString(), ParseMode.Markdown);
         }
 
         internal Task SendOldestArticleAsync(ChatId chatId, ITelegramBotClient client)
@@ -63,6 +64,15 @@ namespace GryphonUtility.Bot.Web.Models
 
             Article first = _saveManager.Data.Articles.First();
             _saveManager.Data.Articles.Remove(first);
+
+            _saveManager.Save();
+        }
+
+        private void AddArticle(Article article)
+        {
+            _saveManager.Load();
+
+            _saveManager.Data.Articles.Add(article);
 
             _saveManager.Save();
         }
