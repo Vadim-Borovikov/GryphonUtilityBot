@@ -45,6 +45,7 @@ namespace GryphonUtility.Bot.Web.Models
 
             var sb = new StringBuilder();
             sb.AppendLine($"Добавлено: `{articleText}`.");
+            sb.AppendLine();
             sb.AppendLine($"Первая статья: {firstArticleText}");
 
             await client.SendTextMessageAsync(message.Chat, sb.ToString(), ParseMode.Markdown);
