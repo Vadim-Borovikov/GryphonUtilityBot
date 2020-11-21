@@ -32,7 +32,7 @@ namespace GryphonUtility.Bot.Web.Models
             Commands = new List<Command>
             {
                 ShopCommand,
-                new OldestCommand(ArticlesManager),
+                new FirstCommand(ArticlesManager),
                 new MarkCommand(ArticlesManager)
             };
         }

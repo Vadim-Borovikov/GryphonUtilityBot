@@ -40,17 +40,17 @@ namespace GryphonUtility.Bot.Web.Models
         {
             AddArticle(article);
 
-            string currentArticleText = GetArticleMessageText(article);
-            string oldestArticleText = GetArticleMessageText(_saveManager.Data.Articles.First());
+            string articleText = GetArticleMessageText(article);
+            string firstArticleText = GetArticleMessageText(_saveManager.Data.Articles.First());
 
             var sb = new StringBuilder();
-            sb.AppendLine($"Added `{currentArticleText}`.");
-            sb.AppendLine($"Oldest article: {oldestArticleText}");
+            sb.AppendLine($"Added `{articleText}`.");
+            sb.AppendLine($"First article: {firstArticleText}");
 
             await client.SendTextMessageAsync(message.Chat, sb.ToString(), ParseMode.Markdown);
         }
 
-        internal Task SendOldestArticleAsync(ChatId chatId, ITelegramBotClient client)
+        internal Task SendFirstArticleAsync(ChatId chatId, ITelegramBotClient client)
         {
             _saveManager.Load();
 
@@ -58,7 +58,7 @@ namespace GryphonUtility.Bot.Web.Models
             return client.SendTextMessageAsync(chatId, text);
         }
 
-        internal void DeleteOldestArticle()
+        internal void DeleteFirstArticle()
         {
             _saveManager.Load();
 
