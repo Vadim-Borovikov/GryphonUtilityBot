@@ -36,7 +36,7 @@ namespace GryphonUtility.Bot.Web.Controllers
                     }
                     else
                     {
-                        await _bot.Client.SendTextMessageAsync(message.Chat, "Unknown command!");
+                        await _bot.Client.SendTextMessageAsync(message.Chat, "Неизместная команда!");
                     }
                 }
             }

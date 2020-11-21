@@ -44,8 +44,8 @@ namespace GryphonUtility.Bot.Web.Models
             string firstArticleText = GetArticleMessageText(_saveManager.Data.Articles.First());
 
             var sb = new StringBuilder();
-            sb.AppendLine($"Added `{articleText}`.");
-            sb.AppendLine($"First article: {firstArticleText}");
+            sb.AppendLine($"Добавлено: `{articleText}`.");
+            sb.AppendLine($"Первая статья: {firstArticleText}");
 
             await client.SendTextMessageAsync(message.Chat, sb.ToString(), ParseMode.Markdown);
         }
