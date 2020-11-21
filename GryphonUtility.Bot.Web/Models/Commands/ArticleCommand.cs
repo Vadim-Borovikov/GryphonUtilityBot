@@ -4,11 +4,11 @@ using Telegram.Bot.Types;
 
 namespace GryphonUtility.Bot.Web.Models.Commands
 {
-    internal sealed class FirstCommand : Command
+    internal sealed class ArticleCommand : Command
     {
-        protected override string Name => "first";
+        protected override string Name => "article";
 
-        public FirstCommand(ArticlesManager articlesManager) { _articlesManager = articlesManager; }
+        public ArticleCommand(ArticlesManager articlesManager) { _articlesManager = articlesManager; }
 
         internal override Task ExecuteAsync(Message message, ITelegramBotClient client)
         {
