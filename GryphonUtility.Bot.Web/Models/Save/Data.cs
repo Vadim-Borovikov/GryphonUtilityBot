@@ -6,6 +6,6 @@ namespace GryphonUtility.Bot.Web.Models.Save
     internal sealed class Data
     {
         [JsonProperty]
-        public List<Article> Articles { get; set; } = new List<Article>();
+        public SortedSet<Article> Articles { get; set; } = new SortedSet<Article>(new ArticleComparer());
     }
 }

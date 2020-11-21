@@ -41,10 +41,6 @@ namespace GryphonUtility.Bot.Web.Models
 
             _saveManager.Data.Articles.Add(article);
 
-            _saveManager.Data.Articles = _saveManager.Data.Articles
-                .OrderBy(a => a.Date)
-                .ThenBy(a => a.Uri.AbsoluteUri)
-                .ToList();
             _saveManager.Save();
 
             string text = GetArticleMessageText(article);
@@ -57,7 +53,7 @@ namespace GryphonUtility.Bot.Web.Models
         {
             _saveManager.Load();
 
-            string text = GetArticleMessageText(_saveManager.Data.Articles[0]);
+            string text = GetArticleMessageText(_saveManager.Data.Articles.First());
             return client.SendTextMessageAsync(chatId, text);
         }
 
@@ -65,7 +61,8 @@ namespace GryphonUtility.Bot.Web.Models
         {
             _saveManager.Load();
 
-            _saveManager.Data.Articles.RemoveAt(0);
+            Article first = _saveManager.Data.Articles.First();
+            _saveManager.Data.Articles.Remove(first);
 
             _saveManager.Save();
         }
