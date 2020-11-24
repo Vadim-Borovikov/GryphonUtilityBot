@@ -12,8 +12,7 @@ namespace GryphonUtility.Bot.Web.Models.Commands
 
         internal override Task ExecuteAsync(Message message, ITelegramBotClient client)
         {
-            _articlesManager.DeleteFirstArticle();
-            return _articlesManager.SendFirstArticleAsync(message.Chat, client);
+            return _articlesManager.DeleteFirstArticleAsync(message, client);
         }
 
         private readonly ArticlesManager _articlesManager;
