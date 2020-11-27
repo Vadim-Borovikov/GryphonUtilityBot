@@ -33,7 +33,7 @@ namespace GryphonUtility.Bot.Web.Models
             {
                 ShopCommand,
                 new ArticleCommand(ArticlesManager),
-                new ReadedCommand(ArticlesManager)
+                new ReadCommand(ArticlesManager)
             };
         }
     }
