@@ -10,6 +10,8 @@ namespace GryphonUtility.Bot.Web.Models.Config
         [JsonProperty]
         public int MasterId { get; set; }
         [JsonProperty]
+        public int MistressId { get; set; }
+        [JsonProperty]
         public List<Item> Items { get; set; }
         [JsonProperty]
         public string SavePath { get; set; }

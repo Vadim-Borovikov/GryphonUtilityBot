@@ -19,7 +19,15 @@ namespace GryphonUtility.Bot.Web.Controllers
             if ((update != null) && (update.Type == UpdateType.Message))
             {
                 Message message = update.Message;
-                if (message.From.Id == _bot.Config.MasterId)
+
+                bool fromMaster = message.From.Id == _bot.Config.MasterId;
+                bool fromMistress = message.From.Id == _bot.Config.MistressId;
+
+                if ((message.ForwardFrom != null) && (fromMaster || fromMistress))
+                {
+                    _bot.RecordsManager.SaveRecord(message);
+                }
+                else if (fromMaster)
                 {
                     Command command = _bot.Commands.FirstOrDefault(c => c.Contains(message));
                     if (command != null)

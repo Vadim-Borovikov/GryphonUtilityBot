@@ -10,6 +10,7 @@ namespace GryphonUtility.Bot.Web.Models
         IEnumerable<Command> Commands { get; }
         ShopCommand ShopCommand { get; }
         ArticlesManager ArticlesManager { get; }
+        RecordsManager RecordsManager { get; }
         Config.Config Config { get; }
     }
 }

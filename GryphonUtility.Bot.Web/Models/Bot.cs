@@ -12,6 +12,7 @@ namespace GryphonUtility.Bot.Web.Models
         public IEnumerable<Command> Commands { get; }
         public ShopCommand ShopCommand { get; }
         public ArticlesManager ArticlesManager { get; }
+        public RecordsManager RecordsManager { get; }
 
         public Config.Config Config { get; }
 
@@ -28,6 +29,7 @@ namespace GryphonUtility.Bot.Web.Models
             var saveManager = new Save.Manager(Config.SavePath);
 
             ArticlesManager = new ArticlesManager(saveManager);
+            RecordsManager = new RecordsManager(saveManager);
 
             Commands = new List<Command>
             {

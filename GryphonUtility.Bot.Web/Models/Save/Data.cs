@@ -7,5 +7,8 @@ namespace GryphonUtility.Bot.Web.Models.Save
     {
         [JsonProperty]
         public SortedSet<Article> Articles { get; set; } = new SortedSet<Article>(new ArticleComparer());
+
+        [JsonProperty]
+        public List<Record> Records { get; set; } = new List<Record>();
     }
 }
