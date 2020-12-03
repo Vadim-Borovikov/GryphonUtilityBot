@@ -33,6 +33,10 @@ namespace GryphonUtility.Bot.Web.Models
             {
                 records = records.Where(r => r.DateTime <= query.To.Value);
             }
+            if (query.Tags.Any())
+            {
+                records = records.Where(r => r.Tags.Any(t => query.Tags.Contains(t)));
+            }
 
             foreach (Record record in records)
             {

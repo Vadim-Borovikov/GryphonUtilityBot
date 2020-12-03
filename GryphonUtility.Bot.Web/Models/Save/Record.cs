@@ -14,5 +14,8 @@ namespace GryphonUtility.Bot.Web.Models.Save
 
         [JsonProperty]
         public DateTime DateTime { get; set; }
+
+        [JsonProperty]
+        public List<string> Tags { get; set; } = new List<string>();
     }
 }
