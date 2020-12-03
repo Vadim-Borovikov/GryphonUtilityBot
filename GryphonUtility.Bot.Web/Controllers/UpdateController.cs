@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using GryphonUtility.Bot.Web.Models;
 using GryphonUtility.Bot.Web.Models.Commands;
 using GryphonUtility.Bot.Web.Models.Save;
@@ -23,28 +22,34 @@ namespace GryphonUtility.Bot.Web.Controllers
                 bool fromMaster = message.From.Id == _bot.Config.MasterId;
                 bool fromMistress = message.From.Id == _bot.Config.MistressId;
 
-                if ((message.ForwardFrom != null) && (fromMaster || fromMistress))
+                if (fromMaster || fromMistress)
                 {
-                    _bot.RecordsManager.SaveRecord(message);
-                }
-                else if (fromMaster)
-                {
-                    Command command = _bot.Commands.FirstOrDefault(c => c.Contains(message));
-                    if (command != null)
+                    if (message.ForwardFrom != null)
                     {
-                        await command.ExecuteAsync(message, _bot.Client);
-                    }
-                    else if (int.TryParse(message.Text, out int number))
-                    {
-                        await _bot.ShopCommand.ProcessNumberAsync(message.Chat, _bot.Client, number);
-                    }
-                    else if (ArticlesManager.TryParseArticle(message.Text, out Article article))
-                    {
-                        await _bot.ArticlesManager.ProcessNewArticleAsync(article, message, _bot.Client);
+                        _bot.RecordsManager.SaveRecord(message);
                     }
                     else
                     {
-                        await _bot.Client.SendTextMessageAsync(message.Chat, "Неизвестная команда!");
+                        if (fromMaster && _bot.TryParseCommand(message, out Command command))
+                        {
+                            await command.ExecuteAsync(message, _bot.Client);
+                        }
+                        else if (fromMaster && int.TryParse(message.Text, out int number))
+                        {
+                            await _bot.ShopCommand.ProcessNumberAsync(message.Chat, _bot.Client, number);
+                        }
+                        else if (fromMaster && ArticlesManager.TryParseArticle(message.Text, out Article article))
+                        {
+                            await _bot.ArticlesManager.ProcessNewArticleAsync(article, message, _bot.Client);
+                        }
+                        else if (RecordsQuery.TryParseQuery(message.Text, out RecordsQuery query))
+                        {
+                            await _bot.RecordsManager.ProcessQuery(query, message.Chat, _bot.Client);
+                        }
+                        else
+                        {
+                            await _bot.Client.SendTextMessageAsync(message.Chat, "Неизвестная команда!");
+                        }
                     }
                 }
             }

@@ -1,20 +1,27 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using GryphonUtility.Bot.Web.Models.Commands;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 
 namespace GryphonUtility.Bot.Web.Models
 {
     internal sealed class Bot : IBot
     {
         public TelegramBotClient Client { get; }
-        public IEnumerable<Command> Commands { get; }
         public ShopCommand ShopCommand { get; }
         public ArticlesManager ArticlesManager { get; }
         public RecordsManager RecordsManager { get; }
 
         public Config.Config Config { get; }
+
+        public bool TryParseCommand(Message message, out Command command)
+        {
+            command = _commands.FirstOrDefault(c => c.Contains(message));
+            return command != null;
+        }
 
         public Bot(IOptions<Config.Config> options)
         {
@@ -31,12 +38,14 @@ namespace GryphonUtility.Bot.Web.Models
             ArticlesManager = new ArticlesManager(saveManager);
             RecordsManager = new RecordsManager(saveManager);
 
-            Commands = new List<Command>
+            _commands = new List<Command>
             {
                 ShopCommand,
                 new ArticleCommand(ArticlesManager),
                 new ReadCommand(ArticlesManager)
             };
         }
+
+        private readonly IEnumerable<Command> _commands;
     }
 }

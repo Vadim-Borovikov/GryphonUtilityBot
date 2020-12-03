@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
-using Telegram.Bot.Types.Enums;
 
 namespace GryphonUtility.Bot.Web.Models.Save
 {
@@ -10,12 +10,9 @@ namespace GryphonUtility.Bot.Web.Models.Save
         public int MessageId { get; set; }
 
         [JsonProperty]
+        public long ChatId { get; set; }
+
+        [JsonProperty]
         public DateTime DateTime { get; set; }
-
-        [JsonProperty]
-        public MessageType Type { get; set; }
-
-        [JsonProperty]
-        public int AuthorId { get; set; }
     }
 }
