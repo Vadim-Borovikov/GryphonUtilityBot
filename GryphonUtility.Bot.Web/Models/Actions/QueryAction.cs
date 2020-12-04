@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using GryphonUtility.Bot.Web.Models.Actions;
 using Telegram.Bot.Types;
 
 namespace GryphonUtility.Bot.Web.Models.Actions
