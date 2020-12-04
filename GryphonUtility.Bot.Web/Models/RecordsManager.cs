@@ -11,11 +11,11 @@ namespace GryphonUtility.Bot.Web.Models
     {
         internal RecordsManager(Manager saveManager) { _saveManager = saveManager; }
 
-        internal void SaveRecord(Message message)
+        internal void SaveRecord(Message message, HashSet<string> tags)
         {
             _saveManager.Load();
 
-            Record record = GetRecord(message);
+            Record record = GetRecord(message, tags);
             if (record != null)
             {
                 _saveManager.Data.Records.Add(record);
@@ -51,18 +51,24 @@ namespace GryphonUtility.Bot.Web.Models
             }
         }
 
-        private static Record GetRecord(Message message)
+        private static Record GetRecord(Message message, HashSet<string> tags)
         {
             if (!message.ForwardDate.HasValue)
             {
                 return null;
             }
 
+            if (tags == null)
+            {
+                tags = new HashSet<string>();
+            }
+
             return new Record
             {
                 MessageId = message.MessageId,
                 ChatId = message.Chat.Id,
-                DateTime = message.ForwardDate.Value
+                DateTime = message.ForwardDate.Value,
+                Tags = tags
             };
         }
 

@@ -19,7 +19,11 @@ namespace GryphonUtility.Bot.Web.Models
             {
                 return false;
             }
-            query = new RecordsQuery { From = from };
+            query = new RecordsQuery
+            {
+                From = from,
+                To = from
+            };
 
             if (parts.Length > 1)
             {
@@ -31,10 +35,6 @@ namespace GryphonUtility.Bot.Web.Models
                 }
 
                 query.Tags = parts.Skip(datesAmount).ToList();
-            }
-            else
-            {
-                query.To = query.From;
             }
 
             return true;

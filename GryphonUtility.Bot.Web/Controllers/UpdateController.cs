@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using GryphonUtility.Bot.Web.Models;
 using GryphonUtility.Bot.Web.Models.Actions;
 using GryphonUtility.Bot.Web.Models.Commands;
@@ -21,9 +23,14 @@ namespace GryphonUtility.Bot.Web.Controllers
                 Message message = update.Message;
 
                 SupportedAction action = null;
+                bool tagsJustSetted = false;
                 if (message.ForwardFrom != null)
                 {
-                    action = new ForwardAction(_bot, message);
+                    if ((_currentTags != null) && (message.Date > _currentTagsTime))
+                    {
+                        _currentTags = null;
+                    }
+                    action = new ForwardAction(_bot, message, _currentTags);
                 }
                 else if (_bot.TryParseCommand(message, out Command command))
                 {
@@ -41,12 +48,17 @@ namespace GryphonUtility.Bot.Web.Controllers
                 {
                     action = new QueryAction(_bot, message, query);
                 }
+                else if (TryParseTags(message.Text, out _currentTags))
+                {
+                    _currentTagsTime = message.Date;
+                    tagsJustSetted = true;
+                }
 
                 if (action != null)
                 {
                     await action.ExecuteWrapperAsync();
                 }
-                else
+                else if (!tagsJustSetted)
                 {
                     await _bot.Client.SendTextMessageAsync(message.Chat, "Неизвестное действие.");
                 }
@@ -54,6 +66,16 @@ namespace GryphonUtility.Bot.Web.Controllers
 
             return Ok();
         }
+
+        private static bool TryParseTags(string text, out HashSet<string> tags)
+        {
+            string[] parts = text?.Split(' ');
+            tags = (parts != null) && (parts.Length > 0) ? new HashSet<string>(parts) : null;
+            return tags != null;
+        }
+
+        private static HashSet<string> _currentTags;
+        private static DateTime _currentTagsTime;
 
         private readonly IBot _bot;
     }
