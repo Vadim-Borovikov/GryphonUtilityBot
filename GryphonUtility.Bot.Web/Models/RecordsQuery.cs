@@ -7,7 +7,7 @@ namespace GryphonUtility.Bot.Web.Models
     internal sealed class RecordsQuery
     {
         public DateTime From;
-        public DateTime? To;
+        public DateTime To;
         public List<string> Tags = new List<string>();
 
         public static bool TryParseQuery(string text, out RecordsQuery query)
@@ -24,13 +24,17 @@ namespace GryphonUtility.Bot.Web.Models
             if (parts.Length > 1)
             {
                 int datesAmount = 1;
-                if (!DateTime.TryParse(parts[1], out DateTime to))
+                if (DateTime.TryParse(parts[1], out DateTime to))
                 {
                     query.To = to;
                     ++datesAmount;
                 }
 
                 query.Tags = parts.Skip(datesAmount).ToList();
+            }
+            else
+            {
+                query.To = query.From;
             }
 
             return true;

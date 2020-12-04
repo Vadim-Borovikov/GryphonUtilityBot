@@ -28,19 +28,26 @@ namespace GryphonUtility.Bot.Web.Models
         {
             _saveManager.Load();
 
-            IEnumerable<Record> records = _saveManager.Data.Records.Where(r => r.DateTime >= query.From);
-            if (query.To.HasValue)
-            {
-                records = records.Where(r => r.DateTime <= query.To.Value);
-            }
+            List<Record> records = _saveManager.Data.Records
+                .Where(r => r.DateTime.Date >= query.From)
+                .Where(r => r.DateTime.Date <= query.To)
+                .ToList();
+
             if (query.Tags.Any())
             {
-                records = records.Where(r => r.Tags.Any(t => query.Tags.Contains(t)));
+                records = records.Where(r => r.Tags.Any(t => query.Tags.Contains(t))).ToList();
             }
 
-            foreach (Record record in records)
+            if (records.Any())
             {
-                await client.ForwardMessageAsync(chatId, record.ChatId, record.MessageId);
+                foreach (Record record in records)
+                {
+                    await client.ForwardMessageAsync(chatId, record.ChatId, record.MessageId);
+                }
+            }
+            else
+            {
+                await client.SendTextMessageAsync(chatId, "Я не нашёл таких записей.");
             }
         }
 
