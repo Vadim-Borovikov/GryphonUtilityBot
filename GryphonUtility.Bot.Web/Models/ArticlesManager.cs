@@ -36,7 +36,7 @@ namespace GryphonUtility.Bot.Web.Models
             return true;
         }
 
-        internal Task ProcessNewArticleAsync(Article article, Message message, ITelegramBotClient client)
+        internal Task ProcessNewArticleAsync(ITelegramBotClient client, ChatId chatId, Article article)
         {
             AddArticle(article);
 
@@ -48,10 +48,10 @@ namespace GryphonUtility.Bot.Web.Models
             sb.AppendLine();
             sb.AppendLine($"Первая статья: {firstArticleText}");
 
-            return client.SendTextMessageAsync(message.Chat, sb.ToString(), ParseMode.Markdown);
+            return client.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Markdown);
         }
 
-        internal Task SendFirstArticleAsync(ChatId chatId, ITelegramBotClient client)
+        internal Task SendFirstArticleAsync(ITelegramBotClient client, ChatId chatId)
         {
             _saveManager.Load();
 
@@ -59,7 +59,7 @@ namespace GryphonUtility.Bot.Web.Models
             return client.SendTextMessageAsync(chatId, text);
         }
 
-        internal Task DeleteFirstArticleAsync(Message message, ITelegramBotClient client)
+        internal Task DeleteFirstArticleAsync(ITelegramBotClient client, ChatId chatId)
         {
             _saveManager.Load();
 
@@ -77,7 +77,7 @@ namespace GryphonUtility.Bot.Web.Models
             sb.AppendLine();
             sb.AppendLine($"Первая статья: {firstArticleText}");
 
-            return client.SendTextMessageAsync(message.Chat, sb.ToString(), ParseMode.Markdown);
+            return client.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Markdown);
         }
 
         private void AddArticle(Article article)

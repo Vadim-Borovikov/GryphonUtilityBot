@@ -11,6 +11,6 @@ namespace GryphonUtility.Bot.Web.Models.Commands
 
         internal bool Contains(Message message) => (message.Type == MessageType.Text) && message.Text.Contains(Name);
 
-        internal abstract Task ExecuteAsync(Message message, ITelegramBotClient client);
+        internal abstract Task ExecuteAsync(ITelegramBotClient client, ChatId chatId);
     }
 }

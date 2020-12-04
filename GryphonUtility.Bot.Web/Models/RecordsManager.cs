@@ -24,7 +24,7 @@ namespace GryphonUtility.Bot.Web.Models
             _saveManager.Save();
         }
 
-        internal async Task ProcessQuery(RecordsQuery query, ChatId chatId, TelegramBotClient client)
+        internal async Task ProcessQuery(TelegramBotClient client, ChatId chatId, RecordsQuery query)
         {
             _saveManager.Load();
 

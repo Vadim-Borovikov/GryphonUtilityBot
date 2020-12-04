@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using GryphonUtility.Bot.Web.Models;
+using GryphonUtility.Bot.Web.Models.Actions;
 using GryphonUtility.Bot.Web.Models.Commands;
 using GryphonUtility.Bot.Web.Models.Save;
 using Microsoft.AspNetCore.Mvc;
@@ -19,38 +20,35 @@ namespace GryphonUtility.Bot.Web.Controllers
             {
                 Message message = update.Message;
 
-                bool fromMaster = message.From.Id == _bot.Config.MasterId;
-                bool fromMistress = message.From.Id == _bot.Config.MistressId;
-
-                if (fromMaster || fromMistress)
+                SupportedAction action = null;
+                if (message.ForwardFrom != null)
                 {
-                    if (message.ForwardFrom != null)
-                    {
-                        _bot.RecordsManager.SaveRecord(message);
-                    }
-                    else
-                    {
-                        if (fromMaster && _bot.TryParseCommand(message, out Command command))
-                        {
-                            await command.ExecuteAsync(message, _bot.Client);
-                        }
-                        else if (fromMaster && int.TryParse(message.Text, out int number))
-                        {
-                            await _bot.ShopCommand.ProcessNumberAsync(message.Chat, _bot.Client, number);
-                        }
-                        else if (fromMaster && ArticlesManager.TryParseArticle(message.Text, out Article article))
-                        {
-                            await _bot.ArticlesManager.ProcessNewArticleAsync(article, message, _bot.Client);
-                        }
-                        else if (RecordsQuery.TryParseQuery(message.Text, out RecordsQuery query))
-                        {
-                            await _bot.RecordsManager.ProcessQuery(query, message.Chat, _bot.Client);
-                        }
-                        else
-                        {
-                            await _bot.Client.SendTextMessageAsync(message.Chat, "Неизвестная команда!");
-                        }
-                    }
+                    action = new ForwardAction(_bot, message);
+                }
+                else if (_bot.TryParseCommand(message, out Command command))
+                {
+                    action = new CommandAction(_bot, message, command);
+                }
+                else if (int.TryParse(message.Text, out int number))
+                {
+                    action = new NumberAction(_bot, message, number);
+                }
+                else if (ArticlesManager.TryParseArticle(message.Text, out Article article))
+                {
+                    action = new ArticleAction(_bot, message, article);
+                }
+                else if (RecordsQuery.TryParseQuery(message.Text, out RecordsQuery query))
+                {
+                    action = new QueryAction(_bot, message, query);
+                }
+
+                if (action != null)
+                {
+                    await action.ExecuteWrapperAsync();
+                }
+                else
+                {
+                    await _bot.Client.SendTextMessageAsync(message.Chat, "Неизвестное действие.");
                 }
             }
 

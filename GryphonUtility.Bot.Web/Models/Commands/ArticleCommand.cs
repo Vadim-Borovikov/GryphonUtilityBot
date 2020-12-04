@@ -10,9 +10,9 @@ namespace GryphonUtility.Bot.Web.Models.Commands
 
         public ArticleCommand(ArticlesManager articlesManager) { _articlesManager = articlesManager; }
 
-        internal override Task ExecuteAsync(Message message, ITelegramBotClient client)
+        internal override Task ExecuteAsync(ITelegramBotClient client, ChatId chatId)
         {
-            return _articlesManager.SendFirstArticleAsync(message.Chat, client);
+            return _articlesManager.SendFirstArticleAsync(client, chatId);
         }
 
         private readonly ArticlesManager _articlesManager;

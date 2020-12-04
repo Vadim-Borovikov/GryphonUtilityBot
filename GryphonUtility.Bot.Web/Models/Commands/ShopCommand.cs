@@ -21,26 +21,25 @@ namespace GryphonUtility.Bot.Web.Models.Commands
             _keyboard = GetKeyboard();
         }
 
-        internal async Task ProcessNumberAsync(ChatId chatId, ITelegramBotClient client, int number)
+        internal Task ProcessNumberAsync(ITelegramBotClient client, ChatId chatId, int number)
         {
             if (_currentItem == null)
             {
-                await client.SendTextMessageAsync(chatId, "Unknown command!");
-                return;
+                return client.SendTextMessageAsync(chatId, "Продукт не задан!");
             }
 
             Add(number);
 
-            await InvokeNextActionAsync(chatId, client);
+            return InvokeNextActionAsync(client, chatId);
         }
 
-        internal override async Task ExecuteAsync(Message message, ITelegramBotClient client)
+        internal override async Task ExecuteAsync(ITelegramBotClient client, ChatId chatId)
         {
             Reset();
 
-            await client.SendTextMessageAsync(message.Chat, "Сейчас есть:");
+            await client.SendTextMessageAsync(chatId, "Сейчас есть:");
 
-            await InvokeNextActionAsync(message.Chat, client);
+            await InvokeNextActionAsync(client, chatId);
         }
 
         private static ReplyKeyboardMarkup GetKeyboard()
@@ -73,7 +72,7 @@ namespace GryphonUtility.Bot.Web.Models.Commands
             }
         }
 
-        private Task InvokeNextActionAsync(ChatId chatId, ITelegramBotClient client)
+        private Task InvokeNextActionAsync(ITelegramBotClient client, ChatId chatId)
         {
             if (_items.Count > 0)
             {
