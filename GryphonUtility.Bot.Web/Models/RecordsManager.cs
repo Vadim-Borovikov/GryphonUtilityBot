@@ -51,6 +51,23 @@ namespace GryphonUtility.Bot.Web.Models
             }
         }
 
+        internal Task SetTags(TelegramBotClient client, ChatId chatId, Message recordMessage, HashSet<string> tags)
+        {
+            _saveManager.Load();
+
+            Record record = _saveManager.Data.Records.FirstOrDefault(
+                r => (r.ChatId == recordMessage.Chat.Id) && (r.MessageId == recordMessage.MessageId));
+
+            if (record == null)
+            {
+                return client.SendTextMessageAsync(chatId, "Я не нашёл нужной записи.");
+            }
+
+            record.Tags = tags;
+            _saveManager.Save();
+            return client.SendTextMessageAsync(chatId, "Теги записаны.");
+        }
+
         private static Record GetRecord(Message message, HashSet<string> tags)
         {
             if (!message.ForwardDate.HasValue)

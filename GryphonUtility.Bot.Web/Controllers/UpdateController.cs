@@ -67,7 +67,15 @@ namespace GryphonUtility.Bot.Web.Controllers
 
             if (TryParseTags(message.Text, out HashSet<string> tags))
             {
-                return new RememberTagsAction(_bot, message, tags);
+                if (message.ReplyToMessage == null)
+                {
+                    return new RememberTagsAction(_bot, message, tags);
+                }
+
+                if (message.ReplyToMessage.ForwardFrom != null)
+                {
+                    return new TagAction(_bot, message, message.ReplyToMessage, tags);
+                }
             }
 
             return null;
