@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using GryphonUtility.Bot.Web.Models;
 using GryphonUtility.Bot.Web.Models.Actions;
@@ -21,50 +20,57 @@ namespace GryphonUtility.Bot.Web.Controllers
             if ((update != null) && (update.Type == UpdateType.Message))
             {
                 Message message = update.Message;
-
-                SupportedAction action = null;
-                bool tagsJustSetted = false;
-                if (message.ForwardFrom != null)
-                {
-                    if ((_currentTags != null) && (message.Date > _currentTagsTime))
-                    {
-                        _currentTags = null;
-                    }
-                    action = new ForwardAction(_bot, message, _currentTags);
-                }
-                else if (_bot.TryParseCommand(message, out Command command))
-                {
-                    action = new CommandAction(_bot, message, command);
-                }
-                else if (int.TryParse(message.Text, out int number))
-                {
-                    action = new NumberAction(_bot, message, number);
-                }
-                else if (ArticlesManager.TryParseArticle(message.Text, out Article article))
-                {
-                    action = new ArticleAction(_bot, message, article);
-                }
-                else if (RecordsQuery.TryParseQuery(message.Text, out RecordsQuery query))
-                {
-                    action = new QueryAction(_bot, message, query);
-                }
-                else if (TryParseTags(message.Text, out _currentTags))
-                {
-                    _currentTagsTime = message.Date;
-                    tagsJustSetted = true;
-                }
-
-                if (action != null)
-                {
-                    await action.ExecuteWrapperAsync();
-                }
-                else if (!tagsJustSetted)
+                SupportedAction action = GetAction(message);
+                if (action == null)
                 {
                     await _bot.Client.SendTextMessageAsync(message.Chat, "Неизвестное действие.");
+                }
+                else
+                {
+                    await action.ExecuteWrapperAsync();
                 }
             }
 
             return Ok();
+        }
+
+        private SupportedAction GetAction(Message message)
+        {
+            if (message.ForwardFrom != null)
+            {
+                if ((_bot.CurrentTags != null) && (message.Date > _bot.CurrentTagsTime))
+                {
+                    _bot.CurrentTags = null;
+                }
+                return new ForwardAction(_bot, message);
+            }
+
+            if (_bot.TryParseCommand(message, out Command command))
+            {
+                return new CommandAction(_bot, message, command);
+            }
+
+            if (int.TryParse(message.Text, out int number))
+            {
+                return new NumberAction(_bot, message, number);
+            }
+
+            if (ArticlesManager.TryParseArticle(message.Text, out Article article))
+            {
+                return new ArticleAction(_bot, message, article);
+            }
+
+            if (RecordsQuery.TryParseQuery(message.Text, out RecordsQuery query))
+            {
+                return new QueryAction(_bot, message, query);
+            }
+
+            if (TryParseTags(message.Text, out HashSet<string> tags))
+            {
+                return new RememberTagsAction(_bot, message, tags);
+            }
+
+            return null;
         }
 
         private static bool TryParseTags(string text, out HashSet<string> tags)
@@ -73,9 +79,6 @@ namespace GryphonUtility.Bot.Web.Controllers
             tags = (parts != null) && (parts.Length > 0) ? new HashSet<string>(parts) : null;
             return tags != null;
         }
-
-        private static HashSet<string> _currentTags;
-        private static DateTime _currentTagsTime;
 
         private readonly IBot _bot;
     }

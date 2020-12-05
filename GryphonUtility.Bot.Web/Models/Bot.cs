@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using GryphonUtility.Bot.Web.Models.Commands;
@@ -16,6 +17,9 @@ namespace GryphonUtility.Bot.Web.Models
         public RecordsManager RecordsManager { get; }
 
         public Config.Config Config { get; }
+
+        public HashSet<string> CurrentTags { get; set; }
+        public DateTime CurrentTagsTime { get; set; }
 
         public bool TryParseCommand(Message message, out Command command)
         {
