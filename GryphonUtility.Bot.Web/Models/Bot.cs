@@ -40,9 +40,8 @@ namespace GryphonUtility.Bot.Web.Models
 
             ShopCommand = new ShopCommand(Config.Items);
 
-            var articlesSaveManager = new Manager<SortedSet<Article>>(Config.ArticlesPath,
-                () => new SortedSet<Article>(new ArticleComparer()));
-            var recordsSaveManager = new Manager<List<Record>>(Config.ArticlesPath, () => new List<Record>());
+            var articlesSaveManager = new Manager<SortedSet<Article>>(Config.ArticlesPath);
+            var recordsSaveManager = new Manager<List<Record>>(Config.RecordsPath);
 
             ArticlesManager = new ArticlesManager(articlesSaveManager);
             RecordsManager = new RecordsManager(recordsSaveManager);

@@ -1,17 +1,15 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using Newtonsoft.Json;
 
 namespace GryphonUtility.Bot.Web.Models.Save
 {
-    internal sealed class Manager<T>
+    internal sealed class Manager<T> where T : class, new()
     {
         public T Data { get; private set; }
 
-        public Manager(string path, Func<T> create)
+        public Manager(string path)
         {
             _path = path;
-            _create = create;
             _locker = new object();
         }
 
@@ -37,12 +35,11 @@ namespace GryphonUtility.Bot.Web.Models.Save
 
             if (Data == null)
             {
-                Data = _create();
+                Data = new T();
             }
         }
 
         private readonly string _path;
-        private readonly Func<T> _create;
         private readonly object _locker;
     }
 }
