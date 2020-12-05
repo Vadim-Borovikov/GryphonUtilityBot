@@ -84,7 +84,7 @@ namespace GryphonUtility.Bot.Web.Models
             {
                 MessageId = message.MessageId,
                 ChatId = message.Chat.Id,
-                DateTime = message.ForwardDate.Value,
+                DateTime = message.ForwardDate.Value.ToLocal(),
                 Tags = tags
             };
         }

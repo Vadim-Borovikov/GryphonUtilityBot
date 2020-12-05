@@ -21,6 +21,8 @@ namespace GryphonUtility.Bot.Web.Models.Config
         public int Port { get; set; }
         [JsonProperty]
         public string CultureInfoName { get; set; }
+        [JsonProperty]
+        public string SystemTimeZoneId { get; set; }
 
         internal string Url => $"{Host}:{Port}/{Token}";
     }

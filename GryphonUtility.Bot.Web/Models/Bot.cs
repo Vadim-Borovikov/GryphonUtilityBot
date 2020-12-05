@@ -33,6 +33,8 @@ namespace GryphonUtility.Bot.Web.Models
 
             CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(Config.CultureInfoName);
 
+            Utils.SetupTimeZoneInfo(Config.SystemTimeZoneId);
+
             Client = new TelegramBotClient(Config.Token);
 
             ShopCommand = new ShopCommand(Config.Items);
