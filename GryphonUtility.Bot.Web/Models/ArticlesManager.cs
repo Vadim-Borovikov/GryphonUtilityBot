@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,7 +12,7 @@ namespace GryphonUtility.Bot.Web.Models
 {
     public sealed class ArticlesManager
     {
-        internal ArticlesManager(Manager saveManager) { _saveManager = saveManager; }
+        internal ArticlesManager(Manager<SortedSet<Article>> saveManager) { _saveManager = saveManager; }
 
         internal static bool TryParseArticle(string text, out Article article)
         {
@@ -41,7 +42,7 @@ namespace GryphonUtility.Bot.Web.Models
             AddArticle(article);
 
             string articleText = GetArticleMessageText(article);
-            string firstArticleText = GetArticleMessageText(_saveManager.Data.Articles.First());
+            string firstArticleText = GetArticleMessageText(_saveManager.Data.First());
 
             var sb = new StringBuilder();
             sb.AppendLine($"Добавлено: `{articleText}`.");
@@ -55,7 +56,7 @@ namespace GryphonUtility.Bot.Web.Models
         {
             _saveManager.Load();
 
-            string text = GetArticleMessageText(_saveManager.Data.Articles.First());
+            string text = GetArticleMessageText(_saveManager.Data.First());
             return client.SendTextMessageAsync(chatId, text);
         }
 
@@ -63,14 +64,14 @@ namespace GryphonUtility.Bot.Web.Models
         {
             _saveManager.Load();
 
-            Article article = _saveManager.Data.Articles.First();
+            Article article = _saveManager.Data.First();
             string articleText = GetArticleMessageText(article);
 
-            _saveManager.Data.Articles.Remove(article);
+            _saveManager.Data.Remove(article);
 
             _saveManager.Save();
 
-            string firstArticleText = GetArticleMessageText(_saveManager.Data.Articles.First());
+            string firstArticleText = GetArticleMessageText(_saveManager.Data.First());
 
             var sb = new StringBuilder();
             sb.AppendLine($"Удалено: `{articleText}`.");
@@ -84,7 +85,7 @@ namespace GryphonUtility.Bot.Web.Models
         {
             _saveManager.Load();
 
-            _saveManager.Data.Articles.Add(article);
+            _saveManager.Data.Add(article);
 
             _saveManager.Save();
         }
@@ -94,6 +95,6 @@ namespace GryphonUtility.Bot.Web.Models
             return $"{article.Date:d MMMM yyyy}{Environment.NewLine}{article.Uri}";
         }
 
-        private readonly Manager _saveManager;
+        private readonly Manager<SortedSet<Article>> _saveManager;
     }
 }

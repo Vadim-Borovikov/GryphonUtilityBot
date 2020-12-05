@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using GryphonUtility.Bot.Web.Models.Commands;
+using GryphonUtility.Bot.Web.Models.Save;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -39,10 +40,12 @@ namespace GryphonUtility.Bot.Web.Models
 
             ShopCommand = new ShopCommand(Config.Items);
 
-            var saveManager = new Save.Manager(Config.SavePath);
+            var articlesSaveManager = new Manager<SortedSet<Article>>(Config.ArticlesPath,
+                () => new SortedSet<Article>(new ArticleComparer()));
+            var recordsSaveManager = new Manager<List<Record>>(Config.ArticlesPath, () => new List<Record>());
 
-            ArticlesManager = new ArticlesManager(saveManager);
-            RecordsManager = new RecordsManager(saveManager);
+            ArticlesManager = new ArticlesManager(articlesSaveManager);
+            RecordsManager = new RecordsManager(recordsSaveManager);
 
             _commands = new List<Command>
             {

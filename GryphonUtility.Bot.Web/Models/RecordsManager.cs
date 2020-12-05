@@ -9,7 +9,7 @@ namespace GryphonUtility.Bot.Web.Models
 {
     public sealed class RecordsManager
     {
-        internal RecordsManager(Manager saveManager) { _saveManager = saveManager; }
+        internal RecordsManager(Manager<List<Record>> saveManager) { _saveManager = saveManager; }
 
         internal void SaveRecord(Message message, HashSet<string> tags)
         {
@@ -18,7 +18,7 @@ namespace GryphonUtility.Bot.Web.Models
             Record record = GetRecord(message, tags);
             if (record != null)
             {
-                _saveManager.Data.Records.Add(record);
+                _saveManager.Data.Add(record);
             }
 
             _saveManager.Save();
@@ -28,7 +28,7 @@ namespace GryphonUtility.Bot.Web.Models
         {
             _saveManager.Load();
 
-            List<Record> records = _saveManager.Data.Records
+            List<Record> records = _saveManager.Data
                 .Where(r => r.DateTime.Date >= query.From)
                 .Where(r => r.DateTime.Date <= query.To)
                 .ToList();
@@ -55,7 +55,7 @@ namespace GryphonUtility.Bot.Web.Models
         {
             _saveManager.Load();
 
-            Record record = _saveManager.Data.Records.FirstOrDefault(
+            Record record = _saveManager.Data.FirstOrDefault(
                 r => (r.ChatId == recordMessage.Chat.Id) && (r.MessageId == recordMessage.MessageId));
 
             if (record == null)
@@ -89,6 +89,6 @@ namespace GryphonUtility.Bot.Web.Models
             };
         }
 
-        private readonly Manager _saveManager;
+        private readonly Manager<List<Record>> _saveManager;
     }
 }
