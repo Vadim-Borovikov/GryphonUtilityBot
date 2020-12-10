@@ -57,24 +57,22 @@ namespace GryphonUtility.Bot.Web.Models.Commands
         {
             if (_currentAmountIsPacks)
             {
-                _itemAmounts[_currentItem] = _currentItem.PackSize * amount;
+                amount *= _currentItem.PackSize;
+            }
+
+            if (_itemAmounts.ContainsKey(_currentItem))
+            {
+                _itemAmounts[_currentItem] += amount;
             }
             else
             {
-                if (_itemAmounts.ContainsKey(_currentItem))
-                {
-                    _itemAmounts[_currentItem] += amount;
-                }
-                else
-                {
-                    _itemAmounts[_currentItem] = amount;
-                }
+                _itemAmounts[_currentItem] = amount;
             }
         }
 
         private Task InvokeNextActionAsync(ITelegramBotClient client, ChatId chatId)
         {
-            if (_items.Count > 0)
+            if (_currentAmountIsPacks || (_items.Count > 0))
             {
                 string question = PrepareQuestion();
                 return client.SendTextMessageAsync(chatId, question, replyMarkup: _keyboard);
