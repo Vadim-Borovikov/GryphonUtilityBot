@@ -8,7 +8,7 @@ namespace GryphonUtility.Bot.Web.Models.Commands
     {
         protected override string Name => "article";
 
-        public ArticleCommand(ArticlesManager articlesManager) { _articlesManager = articlesManager; }
+        public ArticleCommand(ArticlesManager articlesManager) => _articlesManager = articlesManager;
 
         internal override Task ExecuteAsync(ITelegramBotClient client, ChatId chatId)
         {

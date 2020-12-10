@@ -6,7 +6,7 @@ namespace GryphonUtility.Bot.Web.Models.Actions
 {
     internal sealed class CommandAction : SupportedAction
     {
-        public CommandAction(IBot bot, Message message, Command command) : base(bot, message) { _command = command; }
+        public CommandAction(IBot bot, Message message, Command command) : base(bot, message) => _command = command;
 
         protected override Task ExecuteAsync() => _command.ExecuteAsync(Bot.Client, ChatId);
 

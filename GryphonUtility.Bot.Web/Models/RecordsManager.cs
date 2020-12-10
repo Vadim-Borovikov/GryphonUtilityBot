@@ -9,7 +9,7 @@ namespace GryphonUtility.Bot.Web.Models
 {
     public sealed class RecordsManager
     {
-        internal RecordsManager(Manager<List<Record>> saveManager) { _saveManager = saveManager; }
+        internal RecordsManager(Manager<List<Record>> saveManager) => _saveManager = saveManager;
 
         internal void SaveRecord(Message message, HashSet<string> tags)
         {

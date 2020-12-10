@@ -5,7 +5,7 @@ namespace GryphonUtility.Bot.Web.Models.Actions
 {
     internal sealed class QueryAction : SupportedAction
     {
-        public QueryAction(IBot bot, Message message, RecordsQuery query) : base(bot, message) { _query = query; }
+        public QueryAction(IBot bot, Message message, RecordsQuery query) : base(bot, message) => _query = query;
 
         protected override Task ExecuteAsync() => Bot.RecordsManager.ProcessQuery(Bot.Client, ChatId, _query);
 

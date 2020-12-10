@@ -6,7 +6,7 @@ namespace GryphonUtility.Bot.Web.Models
 {
     internal sealed class Service : IHostedService
     {
-        public Service(IBot bot) { _bot = bot; }
+        public Service(IBot bot) => _bot = bot;
 
         public Task StartAsync(CancellationToken cancellationToken)
         {

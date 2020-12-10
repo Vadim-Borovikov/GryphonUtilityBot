@@ -12,7 +12,7 @@ namespace GryphonUtility.Bot.Web.Models
 {
     public sealed class ArticlesManager
     {
-        internal ArticlesManager(Manager<SortedSet<Article>> saveManager) { _saveManager = saveManager; }
+        internal ArticlesManager(Manager<SortedSet<Article>> saveManager) => _saveManager = saveManager;
 
         internal static bool TryParseArticle(string text, out Article article)
         {
