@@ -19,8 +19,8 @@ namespace GryphonUtility.Bot.Web.Models
 
         public Config.Config Config { get; }
 
-        public HashSet<string> CurrentTags { get; set; }
-        public DateTime CurrentTagsTime { get; set; }
+        public RecordsMarkQuery CurrentQuery { get; set; }
+        public DateTime CurrentQueryTime { get; set; }
 
         public bool TryParseCommand(Message message, out Command command)
         {

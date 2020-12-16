@@ -11,11 +11,11 @@ namespace GryphonUtility.Bot.Web.Models
     {
         internal RecordsManager(Manager<List<Record>> saveManager) => _saveManager = saveManager;
 
-        internal void SaveRecord(Message message, HashSet<string> tags)
+        internal void SaveRecord(Message message, RecordsMarkQuery query)
         {
             _saveManager.Load();
 
-            Record record = GetRecord(message, tags);
+            Record record = GetRecord(message, query);
             if (record != null)
             {
                 _saveManager.Data.Add(record);
@@ -24,7 +24,7 @@ namespace GryphonUtility.Bot.Web.Models
             _saveManager.Save();
         }
 
-        internal async Task ProcessQuery(TelegramBotClient client, ChatId chatId, RecordsQuery query)
+        internal async Task ProcessFindQuery(TelegramBotClient client, ChatId chatId, RecordsFindQuery query)
         {
             _saveManager.Load();
 
@@ -51,7 +51,7 @@ namespace GryphonUtility.Bot.Web.Models
             }
         }
 
-        internal Task SetTags(TelegramBotClient client, ChatId chatId, Message recordMessage, HashSet<string> tags)
+        internal Task Mark(TelegramBotClient client, ChatId chatId, Message recordMessage, RecordsMarkQuery query)
         {
             _saveManager.Load();
 
@@ -63,29 +63,29 @@ namespace GryphonUtility.Bot.Web.Models
                 return client.SendTextMessageAsync(chatId, "Я не нашёл нужной записи.");
             }
 
-            record.Tags = tags;
+            if (query.DateTime.HasValue)
+            {
+                record.DateTime = query.DateTime.Value;
+            }
+
+            record.Tags = query.Tags;
             _saveManager.Save();
-            return client.SendTextMessageAsync(chatId, "Теги записаны.");
+            return client.SendTextMessageAsync(chatId, "Запись обновлена.");
         }
 
-        private static Record GetRecord(Message message, HashSet<string> tags)
+        private static Record GetRecord(Message message, RecordsMarkQuery query)
         {
             if (!message.ForwardDate.HasValue)
             {
                 return null;
             }
 
-            if (tags == null)
-            {
-                tags = new HashSet<string>();
-            }
-
             return new Record
             {
                 MessageId = message.MessageId,
                 ChatId = message.Chat.Id,
-                DateTime = message.ForwardDate.Value.ToLocal(),
-                Tags = tags
+                DateTime = query?.DateTime ?? message.ForwardDate.Value.ToLocal(),
+                Tags = query?.Tags ?? new HashSet<string>()
             };
         }
 

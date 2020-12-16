@@ -9,7 +9,7 @@ namespace GryphonUtility.Bot.Web.Models.Actions
 
         protected override Task ExecuteAsync()
         {
-            Bot.RecordsManager.SaveRecord(_message, Bot.CurrentTags);
+            Bot.RecordsManager.SaveRecord(_message, Bot.CurrentQuery);
             return Task.CompletedTask;
         }
 

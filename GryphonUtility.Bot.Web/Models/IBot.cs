@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using GryphonUtility.Bot.Web.Models.Commands;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -16,7 +15,7 @@ namespace GryphonUtility.Bot.Web.Models
 
         bool TryParseCommand(Message message, out Command command);
 
-        HashSet<string> CurrentTags { get; set; }
-        DateTime CurrentTagsTime { get; set; }
+        RecordsMarkQuery CurrentQuery { get; set; }
+        DateTime CurrentQueryTime { get; set; }
     }
 }

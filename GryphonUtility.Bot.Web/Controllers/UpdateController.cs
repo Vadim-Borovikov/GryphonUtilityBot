@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using GryphonUtility.Bot.Web.Models;
 using GryphonUtility.Bot.Web.Models.Actions;
 using GryphonUtility.Bot.Web.Models.Commands;
@@ -38,9 +37,9 @@ namespace GryphonUtility.Bot.Web.Controllers
         {
             if (message.ForwardFrom != null)
             {
-                if ((_bot.CurrentTags != null) && (message.Date > _bot.CurrentTagsTime))
+                if ((_bot.CurrentQuery != null) && (message.Date > _bot.CurrentQueryTime))
                 {
-                    _bot.CurrentTags = null;
+                    _bot.CurrentQuery = null;
                 }
                 return new ForwardAction(_bot, message);
             }
@@ -60,32 +59,25 @@ namespace GryphonUtility.Bot.Web.Controllers
                 return new ArticleAction(_bot, message, article);
             }
 
-            if (RecordsQuery.TryParseQuery(message.Text, out RecordsQuery query))
+            if (RecordsFindQuery.TryParseFindQuery(message.Text, out RecordsFindQuery findQuery))
             {
-                return new QueryAction(_bot, message, query);
+                return new FindQueryAction(_bot, message, findQuery);
             }
 
-            if (TryParseTags(message.Text, out HashSet<string> tags))
+            if (RecordsMarkQuery.TryParseMarkQuery(message.Text, out RecordsMarkQuery markQuery))
             {
                 if (message.ReplyToMessage == null)
                 {
-                    return new RememberTagsAction(_bot, message, tags);
+                    return new RememberMarkAction(_bot, message, markQuery);
                 }
 
                 if (message.ReplyToMessage.ForwardFrom != null)
                 {
-                    return new TagAction(_bot, message, message.ReplyToMessage, tags);
+                    return new MarkAction(_bot, message, message.ReplyToMessage, markQuery);
                 }
             }
 
             return null;
-        }
-
-        private static bool TryParseTags(string text, out HashSet<string> tags)
-        {
-            string[] parts = text?.Split(' ');
-            tags = (parts != null) && (parts.Length > 0) ? new HashSet<string>(parts) : null;
-            return tags != null;
         }
 
         private readonly IBot _bot;
