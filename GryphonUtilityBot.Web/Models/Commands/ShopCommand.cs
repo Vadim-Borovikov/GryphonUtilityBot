@@ -117,15 +117,22 @@ namespace GryphonUtilityBot.Web.Models.Commands
             foreach (Item item in _itemAmounts.Keys.OrderBy(i => i.ResultOrder))
             {
                 int need = item.GetRefillingAmount(_itemAmounts[item], days);
+                if (need == 0)
+                {
+                    continue;
+                }
                 if (item.HasHalves)
                 {
                     int need2 = need / 2;
                     int need1 = need - need2;
                     sb.AppendLine($"{item.Half1}: {need1}");
                     sb.AppendLine(item.UriHalf1.AbsoluteUri);
-                    sb.AppendLine();
-                    sb.AppendLine($"{item.Half2}: {need2}");
-                    sb.AppendLine(item.UriHalf2.AbsoluteUri);
+                    if (need2 > 0)
+                    {
+                        sb.AppendLine();
+                        sb.AppendLine($"{item.Half2}: {need2}");
+                        sb.AppendLine(item.UriHalf2.AbsoluteUri);
+                    }
                 }
                 else
                 {
@@ -142,7 +149,12 @@ namespace GryphonUtilityBot.Web.Models.Commands
                 }
                 sb.AppendLine();
             }
-            return sb.ToString();
+            string result = sb.ToString();
+            if (string.IsNullOrWhiteSpace(result))
+            {
+                result = "А ничего и не надо!";
+            }
+            return result;
         }
 
         private static int GetDaysBeforeNextSunday() => 8 + (7 + (DayOfWeek.Sunday - DateTime.Today.DayOfWeek)) % 7;
