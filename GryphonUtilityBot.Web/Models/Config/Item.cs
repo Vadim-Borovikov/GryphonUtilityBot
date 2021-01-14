@@ -23,6 +23,12 @@ namespace GryphonUtilityBot.Web.Models.Config
         public int AskOrder { get; set; }
         [JsonProperty]
         public int ResultOrder { get; set; }
+        [JsonProperty]
+        public Uri Uri { get; set; }
+        [JsonProperty]
+        public Uri UriHalf1 { get; set; }
+        [JsonProperty]
+        public Uri UriHalf2 { get; set; }
 
         internal int GetRefillingAmount(int stocked, int days)
         {

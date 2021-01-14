@@ -81,7 +81,7 @@ namespace GryphonUtilityBot.Web.Models.Commands
 
             _currentItem = null;
             string result = PrepareResult();
-            return client.SendTextMessageAsync(chatId, result, replyMarkup: NoKeyboard);
+            return client.SendTextMessageAsync(chatId, result, disableWebPagePreview: true, replyMarkup: NoKeyboard);
         }
 
         private void Reset()
@@ -124,18 +124,25 @@ namespace GryphonUtilityBot.Web.Models.Commands
                     int need2 = need / 2;
                     int need1 = need - need2;
                     sb.AppendLine($"{item.Half1}: {need1}");
+                    sb.AppendLine(item.UriHalf1.AbsoluteUri);
+                    sb.AppendLine();
                     sb.AppendLine($"{item.Half2}: {need2}");
-                }
-                else if (item.HasMass)
-                {
-                    decimal mass = item.GetRefillingMass(need);
-                    sb.AppendLine($"{item.Name}: {mass.ToString(CultureInfo.InvariantCulture)} кг.");
+                    sb.AppendLine(item.UriHalf2.AbsoluteUri);
                 }
                 else
                 {
-                    string packsPart = item.PackSize > 1 ? ", пачки" : "";
-                    sb.AppendLine($"{item.Name}{packsPart}: {need}");
+                    if (item.HasMass)
+                    {
+                        decimal mass = item.GetRefillingMass(need);
+                        sb.AppendLine($"{item.Name}: {mass.ToString(CultureInfo.InvariantCulture)} кг.");
+                    }
+                    else
+                    {
+                        sb.AppendLine($"{item.Name}: {need}");
+                    }
+                    sb.AppendLine(item.Uri.AbsoluteUri);
                 }
+                sb.AppendLine();
             }
             return sb.ToString();
         }
