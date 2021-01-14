@@ -12,6 +12,8 @@ namespace GryphonUtilityBot.Web.Models.Config
         [JsonProperty]
         public int PackSize { get; set; }
         [JsonProperty]
+        public int MetaPackSize { get; set; }
+        [JsonProperty]
         public int AskOrder { get; set; }
         [JsonProperty]
         public int ResultOrder { get; set; }
@@ -20,7 +22,7 @@ namespace GryphonUtilityBot.Web.Models.Config
         {
             int needed = days * DailyNeed;
             int refillItems = Math.Max(needed - stocked, 0);
-            return (int) Math.Ceiling(1.0 * refillItems / PackSize);
+            return (int) Math.Ceiling(1.0 * refillItems / (PackSize * MetaPackSize));
         }
     }
 }
