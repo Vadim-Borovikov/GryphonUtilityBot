@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -128,7 +129,7 @@ namespace GryphonUtilityBot.Web.Models.Commands
                 else if (item.HasMass)
                 {
                     decimal mass = item.GetRefillingMass(need);
-                    sb.AppendLine($"{item.Name}: {mass} кг.");
+                    sb.AppendLine($"{item.Name}: {mass.ToString(CultureInfo.InvariantCulture)} кг.");
                 }
                 else
                 {
