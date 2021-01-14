@@ -361,5 +361,5 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-/GryphonUtility.Bot.Web/appsettings.Development.json
-/GryphonUtility.Bot.Web/records.json
+/GryphonUtilityBot.Web/appsettings.Development.json
+/GryphonUtilityBot.Web/records.json
