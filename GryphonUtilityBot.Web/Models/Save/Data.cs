@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace GryphonUtilityBot.Web.Models.Save
 {
-    public sealed class Record
+    internal sealed class Data
     {
         [JsonProperty]
         public int MessageId { get; set; }

@@ -9,13 +9,13 @@ namespace GryphonUtilityBot.Web.Models
 {
     public sealed class RecordsManager
     {
-        internal RecordsManager(Manager<List<Record>> saveManager) => _saveManager = saveManager;
+        internal RecordsManager(Manager saveManager) => _saveManager = saveManager;
 
         internal void SaveRecord(Message message, RecordsMarkQuery query)
         {
             _saveManager.Load();
 
-            Record record = GetRecord(message, query);
+            Data record = GetRecord(message, query);
             if (record != null)
             {
                 _saveManager.Data.Add(record);
@@ -28,7 +28,7 @@ namespace GryphonUtilityBot.Web.Models
         {
             _saveManager.Load();
 
-            List<Record> records = _saveManager.Data
+            List<Data> records = _saveManager.Data
                 .Where(r => r.DateTime.Date >= query.From)
                 .Where(r => r.DateTime.Date <= query.To)
                 .ToList();
@@ -40,7 +40,7 @@ namespace GryphonUtilityBot.Web.Models
 
             if (records.Any())
             {
-                foreach (Record record in records)
+                foreach (Data record in records)
                 {
                     await client.ForwardMessageAsync(chatId, record.ChatId, record.MessageId);
                 }
@@ -55,7 +55,7 @@ namespace GryphonUtilityBot.Web.Models
         {
             _saveManager.Load();
 
-            Record record = _saveManager.Data.FirstOrDefault(
+            Data record = _saveManager.Data.FirstOrDefault(
                 r => (r.ChatId == recordMessage.Chat.Id) && (r.MessageId == recordMessage.MessageId));
 
             if (record == null)
@@ -73,14 +73,14 @@ namespace GryphonUtilityBot.Web.Models
             return client.SendTextMessageAsync(chatId, "Запись обновлена.");
         }
 
-        private static Record GetRecord(Message message, RecordsMarkQuery query)
+        private static Data GetRecord(Message message, RecordsMarkQuery query)
         {
             if (!message.ForwardDate.HasValue)
             {
                 return null;
             }
 
-            return new Record
+            return new Data
             {
                 MessageId = message.MessageId,
                 ChatId = message.Chat.Id,
@@ -89,6 +89,6 @@ namespace GryphonUtilityBot.Web.Models
             };
         }
 
-        private readonly Manager<List<Record>> _saveManager;
+        private readonly Manager _saveManager;
     }
 }

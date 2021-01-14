@@ -18,7 +18,7 @@ namespace GryphonUtilityBot.Web.Models.Config
         public List<Item> Items { get; set; }
 
         [JsonProperty]
-        public string RecordsPath { get; set; }
+        public string SavePath { get; set; }
 
         [JsonProperty]
         public string Host { get; set; }

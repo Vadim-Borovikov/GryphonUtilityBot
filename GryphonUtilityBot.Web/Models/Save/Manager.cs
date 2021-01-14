@@ -1,11 +1,12 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using Newtonsoft.Json;
 
 namespace GryphonUtilityBot.Web.Models.Save
 {
-    internal sealed class Manager<T> where T : class, new()
+    internal sealed class Manager
     {
-        public T Data { get; private set; }
+        public List<Data> Data { get; private set; }
 
         public Manager(string path)
         {
@@ -29,13 +30,13 @@ namespace GryphonUtilityBot.Web.Models.Save
                 if (File.Exists(_path))
                 {
                     string json = File.ReadAllText(_path);
-                    Data = JsonConvert.DeserializeObject<T>(json);
+                    Data = JsonConvert.DeserializeObject<List<Data>>(json);
                 }
             }
 
             if (Data == null)
             {
-                Data = new T();
+                Data = new List<Data>();
             }
         }
 

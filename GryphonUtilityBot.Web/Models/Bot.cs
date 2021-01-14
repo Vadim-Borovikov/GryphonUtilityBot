@@ -41,9 +41,8 @@ namespace GryphonUtilityBot.Web.Models
 
             ShopCommand = new ShopCommand(Config.Items);
 
-            var recordsSaveManager = new Manager<List<Record>>(Config.RecordsPath);
-
-            RecordsManager = new RecordsManager(recordsSaveManager);
+            var saveManager = new Manager(Config.SavePath);
+            RecordsManager = new RecordsManager(saveManager);
         }
 
         public void Initialize(Provider googleSheetsProvider)
