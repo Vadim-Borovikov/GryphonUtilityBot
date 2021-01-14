@@ -362,5 +362,4 @@ MigrationBackup/
 FodyWeavers.xsd
 
 /GryphonUtility.Bot.Web/appsettings.Development.json
-/GryphonUtility.Bot.Web/articles.json
 /GryphonUtility.Bot.Web/records.json

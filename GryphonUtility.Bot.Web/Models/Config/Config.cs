@@ -18,9 +18,6 @@ namespace GryphonUtility.Bot.Web.Models.Config
         public List<Item> Items { get; set; }
 
         [JsonProperty]
-        public string ArticlesPath { get; set; }
-
-        [JsonProperty]
         public string RecordsPath { get; set; }
 
         [JsonProperty]
@@ -40,6 +37,18 @@ namespace GryphonUtility.Bot.Web.Models.Config
 
         [JsonProperty]
         public string ForbiddenStickerFileId { get; set; }
+
+        [JsonProperty]
+        public Dictionary<string, string> GoogleCredentials { get; set; }
+
+        [JsonProperty]
+        public string GoogleCredentialsJson { get; set; }
+
+        [JsonProperty]
+        public string GoogleSheetId { get; set; }
+
+        [JsonProperty]
+        public string GoogleRange { get; set; }
 
         internal string Url => $"{Host}:{Port}/{Token}";
     }

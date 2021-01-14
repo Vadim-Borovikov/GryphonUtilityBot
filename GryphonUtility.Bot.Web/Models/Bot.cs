@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using GoogleSheetsManager;
 using GryphonUtility.Bot.Web.Models.Commands;
 using GryphonUtility.Bot.Web.Models.Save;
 using Microsoft.Extensions.Options;
@@ -14,7 +15,7 @@ namespace GryphonUtility.Bot.Web.Models
     {
         public TelegramBotClient Client { get; }
         public ShopCommand ShopCommand { get; }
-        public ArticlesManager ArticlesManager { get; }
+        public ArticlesManager ArticlesManager { get; private set; }
         public RecordsManager RecordsManager { get; }
 
         public Config.Config Config { get; }
@@ -40,11 +41,14 @@ namespace GryphonUtility.Bot.Web.Models
 
             ShopCommand = new ShopCommand(Config.Items);
 
-            var articlesSaveManager = new Manager<SortedSet<Article>>(Config.ArticlesPath);
             var recordsSaveManager = new Manager<List<Record>>(Config.RecordsPath);
 
-            ArticlesManager = new ArticlesManager(articlesSaveManager);
             RecordsManager = new RecordsManager(recordsSaveManager);
+        }
+
+        public void Initialize(Provider googleSheetsProvider)
+        {
+            ArticlesManager = new ArticlesManager(googleSheetsProvider, Config.GoogleRange);
 
             _commands = new List<Command>
             {
@@ -54,6 +58,6 @@ namespace GryphonUtility.Bot.Web.Models
             };
         }
 
-        private readonly IEnumerable<Command> _commands;
+        private IEnumerable<Command> _commands;
     }
 }

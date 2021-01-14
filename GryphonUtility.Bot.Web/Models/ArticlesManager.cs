@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GoogleSheetsManager;
 using GryphonUtility.Bot.Web.Models.Save;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -12,7 +13,12 @@ namespace GryphonUtility.Bot.Web.Models
 {
     public sealed class ArticlesManager
     {
-        internal ArticlesManager(Manager<SortedSet<Article>> saveManager) => _saveManager = saveManager;
+        internal ArticlesManager(Provider googleSheetsProvider, string range)
+        {
+            _googleSheetsProvider = googleSheetsProvider;
+            _range = range;
+            _articles = new SortedSet<Article>();
+        }
 
         internal static bool TryParseArticle(string text, out Article article)
         {
@@ -42,7 +48,7 @@ namespace GryphonUtility.Bot.Web.Models
             AddArticle(article);
 
             string articleText = GetArticleMessageText(article);
-            string firstArticleText = GetArticleMessageText(_saveManager.Data.First());
+            string firstArticleText = GetArticleMessageText(_articles.First());
 
             var sb = new StringBuilder();
             sb.AppendLine($"Добавлено: `{articleText}`.");
@@ -54,24 +60,24 @@ namespace GryphonUtility.Bot.Web.Models
 
         internal Task SendFirstArticleAsync(ITelegramBotClient client, ChatId chatId)
         {
-            _saveManager.Load();
+            Load();
 
-            string text = GetArticleMessageText(_saveManager.Data.First());
+            string text = GetArticleMessageText(_articles.First());
             return client.SendTextMessageAsync(chatId, text);
         }
 
         internal Task DeleteFirstArticleAsync(ITelegramBotClient client, ChatId chatId)
         {
-            _saveManager.Load();
+            Load();
 
-            Article article = _saveManager.Data.First();
+            Article article = _articles.First();
             string articleText = GetArticleMessageText(article);
 
-            _saveManager.Data.Remove(article);
+            _articles.Remove(article);
 
-            _saveManager.Save();
+            Save();
 
-            string firstArticleText = GetArticleMessageText(_saveManager.Data.First());
+            string firstArticleText = GetArticleMessageText(_articles.First());
 
             var sb = new StringBuilder();
             sb.AppendLine($"Удалено: `{articleText}`.");
@@ -83,11 +89,23 @@ namespace GryphonUtility.Bot.Web.Models
 
         private void AddArticle(Article article)
         {
-            _saveManager.Load();
+            Load();
 
-            _saveManager.Data.Add(article);
+            _articles.Add(article);
 
-            _saveManager.Save();
+            Save();
+        }
+
+        private void Load()
+        {
+            IList<Article> articles = DataManager.GetValues<Article>(_googleSheetsProvider, _range);
+            _articles = new SortedSet<Article>(articles);
+        }
+
+        private void Save()
+        {
+            _googleSheetsProvider.ClearValues(_range);
+            DataManager.UpdateValues(_googleSheetsProvider, _range, _articles);
         }
 
         private static string GetArticleMessageText(Article article)
@@ -95,6 +113,8 @@ namespace GryphonUtility.Bot.Web.Models
             return $"{article.Date:d MMMM yyyy}{Environment.NewLine}{article.Uri}";
         }
 
-        private readonly Manager<SortedSet<Article>> _saveManager;
+        private SortedSet<Article> _articles;
+        private readonly Provider _googleSheetsProvider;
+        private readonly string _range;
     }
 }
