@@ -10,7 +10,7 @@ namespace GryphonUtility.Bot.Web.Models.Actions
 
         protected override Task ExecuteAsync()
         {
-            return Bot.ArticlesManager.ProcessNewArticleAsync(Bot.Client, ChatId, _article);
+            return Bot.ArticlesManager.ProcessNewArticleAsync(Bot.Client, Message.Chat, _article);
         }
 
         private readonly Article _article;

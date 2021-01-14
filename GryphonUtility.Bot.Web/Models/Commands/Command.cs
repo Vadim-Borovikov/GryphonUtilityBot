@@ -9,7 +9,10 @@ namespace GryphonUtility.Bot.Web.Models.Commands
     {
         protected abstract string Name { get; }
 
-        internal bool Contains(Message message) => (message.Type == MessageType.Text) && message.Text.Contains(Name);
+        internal bool IsInvokingBy(Message message)
+        {
+            return (message.Type == MessageType.Text) && (message.Text == $"/{Name}");
+        }
 
         internal abstract Task ExecuteAsync(ITelegramBotClient client, ChatId chatId);
     }

@@ -24,7 +24,7 @@ namespace GryphonUtility.Bot.Web.Models
 
         public bool TryParseCommand(Message message, out Command command)
         {
-            command = _commands.FirstOrDefault(c => c.Contains(message));
+            command = _commands.FirstOrDefault(c => c.IsInvokingBy(message));
             return command != null;
         }
 

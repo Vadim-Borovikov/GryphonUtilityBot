@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.InputFiles;
 
 namespace GryphonUtility.Bot.Web.Models.Actions
 {
@@ -8,28 +9,22 @@ namespace GryphonUtility.Bot.Web.Models.Actions
         protected SupportedAction(IBot bot, Message message)
         {
             Bot = bot;
-            ChatId = message.Chat;
-            _from = message.From.Id;
+            Message = message;
         }
 
-        internal Task ExecuteWrapperAsync()
+        internal Task ExecuteWrapperAsync(InputOnlineFile forbiddenSticker)
         {
-            bool authorized = _from == Bot.Config.MasterId;
-
-            if (_from == Bot.Config.MistressId)
+            bool isMistress = Message.From.Id == Bot.Config.MistressId;
+            if (isMistress && !AllowedForMistress)
             {
-                if (AllowedForMistress)
-                {
-                    authorized = true;
-                }
-                else
-                {
-                    return Bot.Client.SendTextMessageAsync(ChatId,
-                        "Простите, госпожа, но господин заблокировал это действие даже для Вас.");
-                }
+                return Bot.Client.SendTextMessageAsync(Message.Chat,
+                    "Простите, госпожа, но господин заблокировал это действие даже для Вас.");
             }
 
-            return authorized ? ExecuteAsync() : Bot.Client.SendTextMessageAsync(ChatId, "Действие заблокировано.");
+            bool isMaster = Message.From.Id == Bot.Config.MasterId;
+            return isMaster || isMistress
+                ? ExecuteAsync()
+                : Bot.Client.SendStickerAsync(Message, forbiddenSticker);
         }
 
         protected abstract Task ExecuteAsync();
@@ -37,8 +32,6 @@ namespace GryphonUtility.Bot.Web.Models.Actions
         protected virtual bool AllowedForMistress => false;
 
         protected readonly IBot Bot;
-        protected readonly ChatId ChatId;
-
-        private readonly int _from;
+        protected readonly Message Message;
     }
 }

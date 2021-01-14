@@ -5,16 +5,14 @@ namespace GryphonUtility.Bot.Web.Models.Actions
 {
     internal sealed class ForwardAction : SupportedAction
     {
-        public ForwardAction(IBot bot, Message message) : base(bot, message) => _message = message;
+        public ForwardAction(IBot bot, Message message) : base(bot, message) { }
 
         protected override Task ExecuteAsync()
         {
-            Bot.RecordsManager.SaveRecord(_message, Bot.CurrentQuery);
+            Bot.RecordsManager.SaveRecord(Message, Bot.CurrentQuery);
             return Task.CompletedTask;
         }
 
         protected override bool AllowedForMistress => true;
-
-        private readonly Message _message;
     }
 }

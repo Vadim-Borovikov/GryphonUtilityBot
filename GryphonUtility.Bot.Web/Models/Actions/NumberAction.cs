@@ -7,7 +7,10 @@ namespace GryphonUtility.Bot.Web.Models.Actions
     {
         public NumberAction(IBot bot, Message message, int number) : base(bot, message) => _number = number;
 
-        protected override Task ExecuteAsync() => Bot.ShopCommand.ProcessNumberAsync(Bot.Client, ChatId, _number);
+        protected override Task ExecuteAsync()
+        {
+            return Bot.ShopCommand.ProcessNumberAsync(Bot.Client, Message.Chat, _number);
+        }
 
         private readonly int _number;
     }

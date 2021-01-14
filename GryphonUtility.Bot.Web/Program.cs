@@ -1,5 +1,4 @@
 ﻿using System;
-using GryphonUtility.Bot.Web.Models;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;

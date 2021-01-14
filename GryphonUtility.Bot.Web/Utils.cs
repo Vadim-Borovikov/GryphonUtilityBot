@@ -1,12 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using Telegram.Bot;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.InputFiles;
+using File = System.IO.File;
 
-namespace GryphonUtility.Bot.Web.Models
+namespace GryphonUtility.Bot.Web
 {
     internal static class Utils
     {
+        public static Task<Message> SendStickerAsync(this ITelegramBotClient client, Message message,
+            InputOnlineFile sticker)
+        {
+            return client.SendStickerAsync(message.Chat, sticker, replyToMessageId: message.MessageId);
+        }
+
         public static void LogException(Exception ex)
         {
             File.AppendAllText(ExceptionsLogPath, $"{ex}{Environment.NewLine}");

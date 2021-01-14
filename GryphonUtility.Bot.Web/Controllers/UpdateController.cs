@@ -6,31 +6,38 @@ using GryphonUtility.Bot.Web.Models.Save;
 using Microsoft.AspNetCore.Mvc;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InputFiles;
 
 namespace GryphonUtility.Bot.Web.Controllers
 {
     public sealed class UpdateController : Controller
     {
-        public UpdateController(IBot bot) => _bot = bot;
+        public UpdateController(IBot bot)
+        {
+            _bot = bot;
+            _dontUnderstandSticker = new InputOnlineFile(_bot.Config.DontUnderstandStickerFileId);
+            _forbiddenSticker = new InputOnlineFile(_bot.Config.ForbiddenStickerFileId);
+        }
 
         [HttpPost]
         public async Task<OkResult> Post([FromBody]Update update)
         {
-            if ((update != null) && (update.Type == UpdateType.Message))
+            await ProcessAsync(update);
+            return Ok();
+        }
+
+        private Task ProcessAsync(Update update)
+        {
+            if (update?.Type != UpdateType.Message)
             {
-                Message message = update.Message;
-                SupportedAction action = GetAction(message);
-                if (action == null)
-                {
-                    await _bot.Client.SendTextMessageAsync(message.Chat, "Неизвестное действие.");
-                }
-                else
-                {
-                    await action.ExecuteWrapperAsync();
-                }
+                return Task.CompletedTask;
             }
 
-            return Ok();
+            Message message = update.Message;
+            SupportedAction action = GetAction(message);
+            return action == null
+                ? _bot.Client.SendStickerAsync(message, _dontUnderstandSticker)
+                : action.ExecuteWrapperAsync(_forbiddenSticker);
         }
 
         private SupportedAction GetAction(Message message)
@@ -81,5 +88,7 @@ namespace GryphonUtility.Bot.Web.Controllers
         }
 
         private readonly IBot _bot;
+        private readonly InputOnlineFile _dontUnderstandSticker;
+        private readonly InputOnlineFile _forbiddenSticker;
     }
 }
