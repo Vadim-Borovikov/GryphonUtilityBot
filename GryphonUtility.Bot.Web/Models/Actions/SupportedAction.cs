@@ -29,9 +29,7 @@ namespace GryphonUtility.Bot.Web.Models.Actions
                 }
             }
 
-            return authorized
-                ? ExecuteAsync()
-                : Bot.Client.SendTextMessageAsync(ChatId, "Действие заблокировано.");
+            return authorized ? ExecuteAsync() : Bot.Client.SendTextMessageAsync(ChatId, "Действие заблокировано.");
         }
 
         protected abstract Task ExecuteAsync();

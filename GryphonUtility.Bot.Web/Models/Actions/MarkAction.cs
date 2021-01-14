@@ -12,10 +12,7 @@ namespace GryphonUtility.Bot.Web.Models.Actions
             _query = query;
         }
 
-        protected override Task ExecuteAsync()
-        {
-            return Bot.RecordsManager.Mark(Bot.Client, ChatId, _recordMessage, _query);
-        }
+        protected override Task ExecuteAsync() => Bot.RecordsManager.Mark(Bot.Client, ChatId, _recordMessage, _query);
 
         protected override bool AllowedForMistress => true;
 
