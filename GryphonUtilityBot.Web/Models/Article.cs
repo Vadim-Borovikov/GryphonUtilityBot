@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using GoogleSheetsManager;
 
-namespace GryphonUtilityBot.Web.Models.Save
+namespace GryphonUtilityBot.Web.Models
 {
     internal sealed class Article : IComparable<Article>, ISavable, ILoadable
     {
