@@ -119,7 +119,17 @@ namespace GryphonUtilityBot.Web.Models.Commands
             {
                 int need = item.GetRefillingAmount(_itemAmounts[item], days);
                 string packsPart = item.PackSize > 1 ? ", пачки" : "";
-                sb.AppendLine($"{item.Name}{packsPart}: {need}");
+                if (item.HasHalves)
+                {
+                    int need2 = need / 2;
+                    int need1 = need - need2;
+                    sb.AppendLine($"{item.Half1}: {need1}");
+                    sb.AppendLine($"{item.Half2}: {need2}");
+                }
+                else
+                {
+                    sb.AppendLine($"{item.Name}{packsPart}: {need}");
+                }
             }
             return sb.ToString();
         }

@@ -8,6 +8,10 @@ namespace GryphonUtilityBot.Web.Models.Config
         [JsonProperty]
         public string Name { get; set; }
         [JsonProperty]
+        public string Half1 { get; set; }
+        [JsonProperty]
+        public string Half2 { get; set; }
+        [JsonProperty]
         public int DailyNeed { get; set; }
         [JsonProperty]
         public int PackSize { get; set; }
@@ -24,5 +28,7 @@ namespace GryphonUtilityBot.Web.Models.Config
             int refillItems = Math.Max(needed - stocked, 0);
             return (int) Math.Ceiling(1.0 * refillItems / (PackSize * MetaPackSize));
         }
+
+        internal bool HasHalves => !string.IsNullOrWhiteSpace(Half1) && !string.IsNullOrWhiteSpace(Half2);
     }
 }
