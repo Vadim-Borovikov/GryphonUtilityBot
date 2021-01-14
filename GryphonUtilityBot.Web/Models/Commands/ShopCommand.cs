@@ -118,7 +118,6 @@ namespace GryphonUtilityBot.Web.Models.Commands
             foreach (Item item in _itemAmounts.Keys.OrderBy(i => i.ResultOrder))
             {
                 int need = item.GetRefillingAmount(_itemAmounts[item], days);
-                string packsPart = item.PackSize > 1 ? ", пачки" : "";
                 if (item.HasHalves)
                 {
                     int need2 = need / 2;
@@ -126,8 +125,14 @@ namespace GryphonUtilityBot.Web.Models.Commands
                     sb.AppendLine($"{item.Half1}: {need1}");
                     sb.AppendLine($"{item.Half2}: {need2}");
                 }
+                else if (item.HasMass)
+                {
+                    decimal mass = item.GetRefillingMass(need);
+                    sb.AppendLine($"{item.Name}: {mass} кг.");
+                }
                 else
                 {
+                    string packsPart = item.PackSize > 1 ? ", пачки" : "";
                     sb.AppendLine($"{item.Name}{packsPart}: {need}");
                 }
             }
