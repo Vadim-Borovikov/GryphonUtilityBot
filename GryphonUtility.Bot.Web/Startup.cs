@@ -1,11 +1,10 @@
-﻿using GryphonUtility.Bot.Web.Models;
+﻿using System.Diagnostics.CodeAnalysis;
+using GryphonUtility.Bot.Web.Models;
 using GryphonUtility.Bot.Web.Models.Config;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
-// ReSharper disable UnusedMember.Global
 
 namespace GryphonUtility.Bot.Web
 {
@@ -13,7 +12,7 @@ namespace GryphonUtility.Bot.Web
     {
         public Startup(IConfiguration config) => _config = config;
 
-        // This method gets called by the runtime. Use this method to add services to the container.
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IBot, Models.Bot>();
@@ -23,7 +22,7 @@ namespace GryphonUtility.Bot.Web
             services.AddMvc();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        [SuppressMessage("ReSharper", "UnusedMember.Global")]
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
