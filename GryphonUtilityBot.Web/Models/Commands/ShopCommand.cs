@@ -114,8 +114,6 @@ namespace GryphonUtilityBot.Web.Models.Commands
         {
             int days = GetDaysBeforeNextSunday();
             var sb = new StringBuilder();
-            sb.AppendLine($"На {days} дней нужно докупить:");
-            sb.AppendLine();
             foreach (Item item in _itemAmounts.Keys.OrderBy(i => i.ResultOrder))
             {
                 int need = item.GetRefillingAmount(_itemAmounts[item], days);
