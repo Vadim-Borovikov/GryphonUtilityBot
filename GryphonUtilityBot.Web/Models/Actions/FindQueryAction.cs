@@ -5,7 +5,7 @@ namespace GryphonUtilityBot.Web.Models.Actions
 {
     internal sealed class FindQueryAction : SupportedAction
     {
-        public FindQueryAction(IBot bot, Message message, RecordsFindQuery query) : base(bot, message)
+        public FindQueryAction(Bot bot, Message message, RecordsFindQuery query) : base(bot, message)
         {
             _query = query;
         }

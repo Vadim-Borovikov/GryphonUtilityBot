@@ -5,7 +5,7 @@ namespace GryphonUtilityBot.Web.Models.Actions
 {
     internal sealed class ForwardAction : SupportedAction
     {
-        public ForwardAction(IBot bot, Message message) : base(bot, message) { }
+        public ForwardAction(Bot bot, Message message) : base(bot, message) { }
 
         protected override Task ExecuteAsync()
         {

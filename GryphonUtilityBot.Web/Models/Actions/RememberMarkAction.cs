@@ -5,7 +5,7 @@ namespace GryphonUtilityBot.Web.Models.Actions
 {
     internal sealed class RememberMarkAction : SupportedAction
     {
-        public RememberMarkAction(IBot bot, Message message, RecordsMarkQuery query) : base(bot, message)
+        public RememberMarkAction(Bot bot, Message message, RecordsMarkQuery query) : base(bot, message)
         {
             _query = query;
         }

@@ -6,7 +6,7 @@ namespace GryphonUtilityBot.Web.Models.Actions
 {
     internal abstract class SupportedAction
     {
-        protected SupportedAction(IBot bot, Message message)
+        protected SupportedAction(Bot bot, Message message)
         {
             Bot = bot;
             Message = message;
@@ -31,7 +31,7 @@ namespace GryphonUtilityBot.Web.Models.Actions
 
         protected virtual bool AllowedForMistress => false;
 
-        protected readonly IBot Bot;
+        protected readonly Bot Bot;
         protected readonly Message Message;
     }
 }

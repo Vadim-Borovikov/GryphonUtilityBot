@@ -5,7 +5,7 @@ namespace GryphonUtilityBot.Web.Models.Actions
 {
     internal sealed class ArticleAction : SupportedAction
     {
-        public ArticleAction(IBot bot, Message message, Article article) : base(bot, message) => _article = article;
+        public ArticleAction(Bot bot, Message message, Article article) : base(bot, message) => _article = article;
 
         protected override Task ExecuteAsync()
         {
