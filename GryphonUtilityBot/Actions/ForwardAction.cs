@@ -1,11 +1,11 @@
 ﻿using System.Threading.Tasks;
 using Telegram.Bot.Types;
 
-namespace GryphonUtilityBot.Web.Models.Actions
+namespace GryphonUtilityBot.Actions
 {
     internal sealed class ForwardAction : SupportedAction
     {
-        public ForwardAction(Bot bot, Message message) : base(bot, message) { }
+        public ForwardAction(Bot.Bot bot, Message message) : base(bot, message) { }
 
         protected override Task ExecuteAsync()
         {

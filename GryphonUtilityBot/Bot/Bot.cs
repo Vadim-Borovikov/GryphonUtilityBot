@@ -1,22 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GoogleSheetsManager;
-using GryphonUtilityBot.Web.Models.Actions;
-using GryphonUtilityBot.Web.Models.Commands;
-using GryphonUtilityBot.Web.Models.Save;
+using GryphonUtilityBot.Actions;
+using GryphonUtilityBot.Articles;
+using GryphonUtilityBot.Bot.Commands;
+using GryphonUtilityBot.Records;
 using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InputFiles;
 
-namespace GryphonUtilityBot.Web.Models
+namespace GryphonUtilityBot.Bot
 {
-    internal sealed class Bot : IDisposable
+    public sealed class Bot : IDisposable
     {
         public Bot(Config.Config config)
         {
@@ -24,20 +24,14 @@ namespace GryphonUtilityBot.Web.Models
 
             Client = new TelegramBotClient(Config.Token);
 
-            string googleCredentialsJson = Config.GoogleCredentialsJson;
-            if (string.IsNullOrWhiteSpace(googleCredentialsJson))
-            {
-                googleCredentialsJson = JsonConvert.SerializeObject(Config.GoogleCredentials);
-            }
+            string googleCredentialsJson = JsonConvert.SerializeObject(Config.GoogleCredentials);
             _googleSheetsProvider = new Provider(googleCredentialsJson, ApplicationName, Config.GoogleSheetId);
-
-            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(Config.CultureInfoName);
 
             Utils.SetupTimeZoneInfo(Config.SystemTimeZoneId);
 
-            var saveManager = new Manager(Config.SavePath);
-            RecordsManager = new RecordsManager(saveManager);
-            ArticlesManager = new ArticlesManager(_googleSheetsProvider, Config.GoogleRange);
+            var saveManager = new Save.Manager(Config.SavePath);
+            RecordsManager = new Records.Manager(saveManager);
+            ArticlesManager = new Articles.Manager(_googleSheetsProvider, Config.GoogleRange);
 
             ShopCommand = new ShopCommand(Config.Items);
             _commands = new List<Command>
@@ -97,17 +91,17 @@ namespace GryphonUtilityBot.Web.Models
                 return new NumberAction(this, message, number);
             }
 
-            if (ArticlesManager.TryParseArticle(message.Text, out Article article))
+            if (Articles.Manager.TryParseArticle(message.Text, out Article article))
             {
                 return new ArticleAction(this, message, article);
             }
 
-            if (RecordsFindQuery.TryParseFindQuery(message.Text, out RecordsFindQuery findQuery))
+            if (FindQuery.TryParseFindQuery(message.Text, out FindQuery findQuery))
             {
                 return new FindQueryAction(this, message, findQuery);
             }
 
-            if (RecordsMarkQuery.TryParseMarkQuery(message.Text, out RecordsMarkQuery markQuery))
+            if (MarkQuery.TryParseMarkQuery(message.Text, out MarkQuery markQuery))
             {
                 if (message.ReplyToMessage == null)
                 {
@@ -129,14 +123,14 @@ namespace GryphonUtilityBot.Web.Models
             return command != null;
         }
 
-        public readonly Config.Config Config;
-        public readonly TelegramBotClient Client;
-        public readonly ArticlesManager ArticlesManager;
-        public readonly RecordsManager RecordsManager;
-        public readonly ShopCommand ShopCommand;
+        internal readonly Config.Config Config;
+        internal readonly TelegramBotClient Client;
+        internal readonly Articles.Manager ArticlesManager;
+        internal readonly Records.Manager RecordsManager;
+        internal readonly ShopCommand ShopCommand;
 
-        public RecordsMarkQuery CurrentQuery;
-        public DateTime CurrentQueryTime;
+        internal MarkQuery CurrentQuery;
+        internal DateTime CurrentQueryTime;
 
         private readonly IEnumerable<Command> _commands;
         private readonly Provider _googleSheetsProvider;

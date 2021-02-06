@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace GryphonUtilityBot.Web.Models.Config
+namespace GryphonUtilityBot.Bot.Config
 {
     public sealed class Item
     {

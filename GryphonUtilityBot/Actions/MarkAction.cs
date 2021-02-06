@@ -1,11 +1,12 @@
 ﻿using System.Threading.Tasks;
+using GryphonUtilityBot.Records;
 using Telegram.Bot.Types;
 
-namespace GryphonUtilityBot.Web.Models.Actions
+namespace GryphonUtilityBot.Actions
 {
     internal sealed class MarkAction : SupportedAction
     {
-        public MarkAction(Bot bot, Message message, Message recordMessage, RecordsMarkQuery query)
+        public MarkAction(Bot.Bot bot, Message message, Message recordMessage, MarkQuery query)
             : base(bot, message)
         {
             _recordMessage = recordMessage;
@@ -20,6 +21,6 @@ namespace GryphonUtilityBot.Web.Models.Actions
         protected override bool AllowedForMistress => true;
 
         private readonly Message _recordMessage;
-        private readonly RecordsMarkQuery _query;
+        private readonly MarkQuery _query;
     }
 }

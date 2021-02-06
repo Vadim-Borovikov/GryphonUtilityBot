@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace GryphonUtilityBot.Web.Models
+namespace GryphonUtilityBot.Records
 {
-    internal sealed class RecordsFindQuery : RecordsMarkQuery
+    internal sealed class FindQuery : MarkQuery
     {
         public DateTime From;
         public DateTime To;
 
-        public static bool TryParseFindQuery(string text, out RecordsFindQuery query)
+        public static bool TryParseFindQuery(string text, out FindQuery query)
         {
             query = ParseFindQuery(text);
             return query != null;
         }
 
-        private static RecordsFindQuery ParseFindQuery(string text)
+        private static FindQuery ParseFindQuery(string text)
         {
             var parts = new List<string>(text.Split(' '));
             if (parts.Count == 0)
@@ -34,7 +34,7 @@ namespace GryphonUtilityBot.Web.Models
                 return null;
             }
 
-            return new RecordsFindQuery
+            return new FindQuery
             {
                 From = from.Value,
                 To = to.Value,

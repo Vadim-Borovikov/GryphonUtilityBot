@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace GryphonUtilityBot.Web.Models.Config
+namespace GryphonUtilityBot.Bot.Config
 {
-    public sealed class Config
+    public class Config
     {
         [JsonProperty]
         public string Token { get; set; }
@@ -27,9 +27,6 @@ namespace GryphonUtilityBot.Web.Models.Config
         public int Port { get; set; }
 
         [JsonProperty]
-        public string CultureInfoName { get; set; }
-
-        [JsonProperty]
         public string SystemTimeZoneId { get; set; }
 
         [JsonProperty]
@@ -40,9 +37,6 @@ namespace GryphonUtilityBot.Web.Models.Config
 
         [JsonProperty]
         public Dictionary<string, string> GoogleCredentials { get; set; }
-
-        [JsonProperty]
-        public string GoogleCredentialsJson { get; set; }
 
         [JsonProperty]
         public string GoogleSheetId { get; set; }

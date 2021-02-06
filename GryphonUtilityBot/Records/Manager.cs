@@ -1,17 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using GryphonUtilityBot.Web.Models.Save;
+using GryphonUtilityBot.Save;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace GryphonUtilityBot.Web.Models
+namespace GryphonUtilityBot.Records
 {
-    internal sealed class RecordsManager
+    internal sealed class Manager
     {
-        public RecordsManager(Manager saveManager) => _saveManager = saveManager;
+        public Manager(Save.Manager saveManager) => _saveManager = saveManager;
 
-        public void SaveRecord(Message message, RecordsMarkQuery query)
+        public void SaveRecord(Message message, MarkQuery query)
         {
             _saveManager.Load();
 
@@ -24,7 +24,7 @@ namespace GryphonUtilityBot.Web.Models
             _saveManager.Save();
         }
 
-        public async Task ProcessFindQuery(TelegramBotClient client, ChatId chatId, RecordsFindQuery query)
+        public async Task ProcessFindQuery(TelegramBotClient client, ChatId chatId, FindQuery query)
         {
             _saveManager.Load();
 
@@ -51,7 +51,7 @@ namespace GryphonUtilityBot.Web.Models
             }
         }
 
-        public Task Mark(TelegramBotClient client, ChatId chatId, Message recordMessage, RecordsMarkQuery query)
+        public Task Mark(TelegramBotClient client, ChatId chatId, Message recordMessage, MarkQuery query)
         {
             _saveManager.Load();
 
@@ -73,7 +73,7 @@ namespace GryphonUtilityBot.Web.Models
             return client.SendTextMessageAsync(chatId, "Запись обновлена.");
         }
 
-        private static Data GetRecord(Message message, RecordsMarkQuery query)
+        private static Data GetRecord(Message message, MarkQuery query)
         {
             if (!message.ForwardDate.HasValue)
             {
@@ -89,6 +89,6 @@ namespace GryphonUtilityBot.Web.Models
             };
         }
 
-        private readonly Manager _saveManager;
+        private readonly Save.Manager _saveManager;
     }
 }

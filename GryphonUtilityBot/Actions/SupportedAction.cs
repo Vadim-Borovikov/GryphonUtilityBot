@@ -2,11 +2,11 @@
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.InputFiles;
 
-namespace GryphonUtilityBot.Web.Models.Actions
+namespace GryphonUtilityBot.Actions
 {
     internal abstract class SupportedAction
     {
-        protected SupportedAction(Bot bot, Message message)
+        protected SupportedAction(Bot.Bot bot, Message message)
         {
             Bot = bot;
             Message = message;
@@ -31,7 +31,7 @@ namespace GryphonUtilityBot.Web.Models.Actions
 
         protected virtual bool AllowedForMistress => false;
 
-        protected readonly Bot Bot;
+        protected readonly Bot.Bot Bot;
         protected readonly Message Message;
     }
 }

@@ -3,7 +3,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace GryphonUtilityBot.Web.Models.Commands
+namespace GryphonUtilityBot.Bot.Commands
 {
     internal abstract class Command
     {

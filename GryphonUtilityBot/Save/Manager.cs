@@ -2,7 +2,7 @@
 using System.IO;
 using Newtonsoft.Json;
 
-namespace GryphonUtilityBot.Web.Models.Save
+namespace GryphonUtilityBot.Save
 {
     internal sealed class Manager
     {

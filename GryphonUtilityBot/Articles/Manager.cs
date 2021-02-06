@@ -8,11 +8,11 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace GryphonUtilityBot.Web.Models
+namespace GryphonUtilityBot.Articles
 {
-    internal sealed class ArticlesManager
+    internal sealed class Manager
     {
-        public ArticlesManager(Provider googleSheetsProvider, string range)
+        public Manager(Provider googleSheetsProvider, string range)
         {
             _googleSheetsProvider = googleSheetsProvider;
             _range = range;

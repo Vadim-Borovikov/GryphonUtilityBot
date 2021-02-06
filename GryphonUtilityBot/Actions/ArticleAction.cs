@@ -1,11 +1,12 @@
 ﻿using System.Threading.Tasks;
+using GryphonUtilityBot.Articles;
 using Telegram.Bot.Types;
 
-namespace GryphonUtilityBot.Web.Models.Actions
+namespace GryphonUtilityBot.Actions
 {
     internal sealed class ArticleAction : SupportedAction
     {
-        public ArticleAction(Bot bot, Message message, Article article) : base(bot, message) => _article = article;
+        public ArticleAction(Bot.Bot bot, Message message, Article article) : base(bot, message) => _article = article;
 
         protected override Task ExecuteAsync()
         {

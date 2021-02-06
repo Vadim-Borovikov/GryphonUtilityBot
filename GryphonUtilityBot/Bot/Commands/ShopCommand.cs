@@ -4,13 +4,13 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using GryphonUtilityBot.Web.Models.Config;
+using GryphonUtilityBot.Bot.Config;
 using MoreLinq.Extensions;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace GryphonUtilityBot.Web.Models.Commands
+namespace GryphonUtilityBot.Bot.Commands
 {
     internal sealed class ShopCommand : Command
     {

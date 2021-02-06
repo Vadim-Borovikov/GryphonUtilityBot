@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace GryphonUtilityBot.Web.Models
+namespace GryphonUtilityBot.Records
 {
-    internal class RecordsMarkQuery
+    internal class MarkQuery
     {
         public DateTime? DateTime;
         public HashSet<string> Tags;
 
-        public static bool TryParseMarkQuery(string text, out RecordsMarkQuery query)
+        public static bool TryParseMarkQuery(string text, out MarkQuery query)
         {
             query = ParseMarkQuery(text);
             return query != null;
         }
 
-        private static RecordsMarkQuery ParseMarkQuery(string text)
+        private static MarkQuery ParseMarkQuery(string text)
         {
             var parts = new List<string>(text.Split(' '));
             if (parts.Count == 0)
@@ -24,7 +24,7 @@ namespace GryphonUtilityBot.Web.Models
 
             DateTime? dateTime = Utils.ParseFirstDateTime(parts);
 
-            return new RecordsMarkQuery
+            return new MarkQuery
             {
                 DateTime = dateTime,
                 Tags = new HashSet<string>(parts)

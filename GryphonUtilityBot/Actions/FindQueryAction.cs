@@ -1,11 +1,12 @@
 ﻿using System.Threading.Tasks;
+using GryphonUtilityBot.Records;
 using Telegram.Bot.Types;
 
-namespace GryphonUtilityBot.Web.Models.Actions
+namespace GryphonUtilityBot.Actions
 {
     internal sealed class FindQueryAction : SupportedAction
     {
-        public FindQueryAction(Bot bot, Message message, RecordsFindQuery query) : base(bot, message)
+        public FindQueryAction(Bot.Bot bot, Message message, FindQuery query) : base(bot, message)
         {
             _query = query;
         }
@@ -17,6 +18,6 @@ namespace GryphonUtilityBot.Web.Models.Actions
 
         protected override bool AllowedForMistress => true;
 
-        private readonly RecordsFindQuery _query;
+        private readonly FindQuery _query;
     }
 }

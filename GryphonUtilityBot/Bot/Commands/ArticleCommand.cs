@@ -1,20 +1,21 @@
 ﻿using System.Threading.Tasks;
+using GryphonUtilityBot.Articles;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace GryphonUtilityBot.Web.Models.Commands
+namespace GryphonUtilityBot.Bot.Commands
 {
     internal sealed class ArticleCommand : Command
     {
         protected override string Name => "article";
 
-        public ArticleCommand(ArticlesManager articlesManager) => _articlesManager = articlesManager;
+        public ArticleCommand(Manager articlesManager) => _articlesManager = articlesManager;
 
         public override Task ExecuteAsync(ITelegramBotClient client, ChatId chatId)
         {
             return _articlesManager.SendFirstArticleAsync(client, chatId);
         }
 
-        private readonly ArticlesManager _articlesManager;
+        private readonly Manager _articlesManager;
     }
 }

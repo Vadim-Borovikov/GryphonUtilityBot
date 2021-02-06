@@ -15,12 +15,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GoogleSheetsManager" Version="3.1.0" />
     <PackageReference Include="Karambolo.Extensions.Logging.File" Version="3.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
-    <PackageReference Include="morelinq" Version="3.3.2" />
-    <PackageReference Include="Telegram.Bot" Version="15.7.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GryphonUtilityBot\GryphonUtilityBot.csproj" />
   </ItemGroup>
 
 </Project>
