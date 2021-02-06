@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace GryphonUtilityBot.Web
 {
-    internal sealed class Startup
+    public sealed class Startup
     {
         public Startup(IConfiguration config) => _config = config;
 
@@ -35,6 +35,9 @@ namespace GryphonUtilityBot.Web
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
 
             app.UseMvc(routes => routes.MapRoute("update", $"{_config["Token"]}/{{controller=Update}}/{{action=post}}"));
         }
