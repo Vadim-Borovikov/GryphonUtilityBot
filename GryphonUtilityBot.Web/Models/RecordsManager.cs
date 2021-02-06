@@ -7,11 +7,11 @@ using Telegram.Bot.Types;
 
 namespace GryphonUtilityBot.Web.Models
 {
-    public sealed class RecordsManager
+    internal sealed class RecordsManager
     {
-        internal RecordsManager(Manager saveManager) => _saveManager = saveManager;
+        public RecordsManager(Manager saveManager) => _saveManager = saveManager;
 
-        internal void SaveRecord(Message message, RecordsMarkQuery query)
+        public void SaveRecord(Message message, RecordsMarkQuery query)
         {
             _saveManager.Load();
 
@@ -24,7 +24,7 @@ namespace GryphonUtilityBot.Web.Models
             _saveManager.Save();
         }
 
-        internal async Task ProcessFindQuery(TelegramBotClient client, ChatId chatId, RecordsFindQuery query)
+        public async Task ProcessFindQuery(TelegramBotClient client, ChatId chatId, RecordsFindQuery query)
         {
             _saveManager.Load();
 
@@ -51,7 +51,7 @@ namespace GryphonUtilityBot.Web.Models
             }
         }
 
-        internal Task Mark(TelegramBotClient client, ChatId chatId, Message recordMessage, RecordsMarkQuery query)
+        public Task Mark(TelegramBotClient client, ChatId chatId, Message recordMessage, RecordsMarkQuery query)
         {
             _saveManager.Load();
 

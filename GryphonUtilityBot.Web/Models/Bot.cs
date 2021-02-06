@@ -8,7 +8,6 @@ using GoogleSheetsManager;
 using GryphonUtilityBot.Web.Models.Actions;
 using GryphonUtilityBot.Web.Models.Commands;
 using GryphonUtilityBot.Web.Models.Save;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -17,11 +16,11 @@ using Telegram.Bot.Types.InputFiles;
 
 namespace GryphonUtilityBot.Web.Models
 {
-    public sealed class Bot : IDisposable
+    internal sealed class Bot : IDisposable
     {
-        public Bot(IOptions<Config.Config> options)
+        public Bot(Config.Config config)
         {
-            Config = options.Value;
+            Config = config;
 
             Client = new TelegramBotClient(Config.Token);
 
@@ -52,12 +51,12 @@ namespace GryphonUtilityBot.Web.Models
             _forbiddenSticker = new InputOnlineFile(Config.ForbiddenStickerFileId);
         }
 
-        internal Task StartAsync(CancellationToken cancellationToken)
+        public Task StartAsync(CancellationToken cancellationToken)
         {
             return Client.SetWebhookAsync(Config.Url, cancellationToken: cancellationToken);
         }
 
-        internal Task UpdateAsync(Update update)
+        public Task UpdateAsync(Update update)
         {
             if (update?.Type != UpdateType.Message)
             {
@@ -71,11 +70,11 @@ namespace GryphonUtilityBot.Web.Models
                 : action.ExecuteWrapperAsync(_forbiddenSticker);
         }
 
-        internal Task StopAsync(CancellationToken cancellationToken) => Client.DeleteWebhookAsync(cancellationToken);
+        public Task StopAsync(CancellationToken cancellationToken) => Client.DeleteWebhookAsync(cancellationToken);
 
         public void Dispose() => _googleSheetsProvider?.Dispose();
 
-        internal Task<User> GetUserAsunc() => Client.GetMeAsync();
+        public Task<User> GetUserAsunc() => Client.GetMeAsync();
 
         private SupportedAction GetAction(Message message)
         {
@@ -130,14 +129,14 @@ namespace GryphonUtilityBot.Web.Models
             return command != null;
         }
 
-        internal readonly Config.Config Config;
-        internal readonly TelegramBotClient Client;
-        internal readonly ArticlesManager ArticlesManager;
-        internal readonly RecordsManager RecordsManager;
-        internal readonly ShopCommand ShopCommand;
+        public readonly Config.Config Config;
+        public readonly TelegramBotClient Client;
+        public readonly ArticlesManager ArticlesManager;
+        public readonly RecordsManager RecordsManager;
+        public readonly ShopCommand ShopCommand;
 
-        internal RecordsMarkQuery CurrentQuery;
-        internal DateTime CurrentQueryTime;
+        public RecordsMarkQuery CurrentQuery;
+        public DateTime CurrentQueryTime;
 
         private readonly IEnumerable<Command> _commands;
         private readonly Provider _googleSheetsProvider;

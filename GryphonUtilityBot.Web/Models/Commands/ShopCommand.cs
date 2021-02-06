@@ -12,17 +12,17 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace GryphonUtilityBot.Web.Models.Commands
 {
-    public sealed class ShopCommand : Command
+    internal sealed class ShopCommand : Command
     {
         protected override string Name => "shop";
 
-        internal ShopCommand(IReadOnlyList<Item> allItems)
+        public ShopCommand(IReadOnlyList<Item> allItems)
         {
             _allItems = allItems;
             _keyboard = GetKeyboard();
         }
 
-        internal Task ProcessNumberAsync(ITelegramBotClient client, ChatId chatId, int number)
+        public Task ProcessNumberAsync(ITelegramBotClient client, ChatId chatId, int number)
         {
             if (_currentItem == null)
             {
@@ -34,7 +34,7 @@ namespace GryphonUtilityBot.Web.Models.Commands
             return InvokeNextActionAsync(client, chatId);
         }
 
-        internal override async Task ExecuteAsync(ITelegramBotClient client, ChatId chatId)
+        public override async Task ExecuteAsync(ITelegramBotClient client, ChatId chatId)
         {
             Reset();
 

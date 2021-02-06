@@ -10,16 +10,16 @@ using Telegram.Bot.Types.Enums;
 
 namespace GryphonUtilityBot.Web.Models
 {
-    public sealed class ArticlesManager
+    internal sealed class ArticlesManager
     {
-        internal ArticlesManager(Provider googleSheetsProvider, string range)
+        public ArticlesManager(Provider googleSheetsProvider, string range)
         {
             _googleSheetsProvider = googleSheetsProvider;
             _range = range;
             _articles = new SortedSet<Article>();
         }
 
-        internal static bool TryParseArticle(string text, out Article article)
+        public static bool TryParseArticle(string text, out Article article)
         {
             article = null;
             string[] parts = text.Split(' ');
@@ -42,7 +42,7 @@ namespace GryphonUtilityBot.Web.Models
             return true;
         }
 
-        internal Task ProcessNewArticleAsync(ITelegramBotClient client, ChatId chatId, Article article)
+        public Task ProcessNewArticleAsync(ITelegramBotClient client, ChatId chatId, Article article)
         {
             AddArticle(article);
 
@@ -57,7 +57,7 @@ namespace GryphonUtilityBot.Web.Models
             return client.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Markdown);
         }
 
-        internal Task SendFirstArticleAsync(ITelegramBotClient client, ChatId chatId)
+        public Task SendFirstArticleAsync(ITelegramBotClient client, ChatId chatId)
         {
             Load();
 
@@ -65,7 +65,7 @@ namespace GryphonUtilityBot.Web.Models
             return client.SendTextMessageAsync(chatId, text);
         }
 
-        internal Task DeleteFirstArticleAsync(ITelegramBotClient client, ChatId chatId)
+        public Task DeleteFirstArticleAsync(ITelegramBotClient client, ChatId chatId)
         {
             Load();
 

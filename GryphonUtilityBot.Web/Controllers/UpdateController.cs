@@ -8,9 +8,9 @@ namespace GryphonUtilityBot.Web.Controllers
     public sealed class UpdateController : Controller
     {
         [HttpPost]
-        public async Task<OkResult> Post([FromBody]Update update, [FromServices]Bot bot)
+        public async Task<OkResult> Post([FromBody]Update update, [FromServices]BotSingleton singleton)
         {
-            await bot.UpdateAsync(update);
+            await singleton.Bot.UpdateAsync(update);
             return Ok();
         }
     }

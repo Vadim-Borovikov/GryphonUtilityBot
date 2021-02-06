@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 namespace GryphonUtilityBot.Web.Models
 {
-    public class RecordsMarkQuery
+    internal class RecordsMarkQuery
     {
-        internal DateTime? DateTime;
-        internal HashSet<string> Tags;
+        public DateTime? DateTime;
+        public HashSet<string> Tags;
 
-        internal static bool TryParseMarkQuery(string text, out RecordsMarkQuery query)
+        public static bool TryParseMarkQuery(string text, out RecordsMarkQuery query)
         {
             query = ParseMarkQuery(text);
             return query != null;
