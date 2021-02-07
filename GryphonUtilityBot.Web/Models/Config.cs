@@ -9,5 +9,8 @@ namespace GryphonUtilityBot.Web.Models
 
         [JsonProperty]
         public string GoogleCredentialJson { get; set; }
+
+        [JsonProperty]
+        public string AdminIdsJson { get; set; }
     }
 }
