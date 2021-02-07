@@ -2,7 +2,7 @@
 
 namespace GryphonUtilityBot.Web.Models
 {
-    public sealed class Config : Bot.Config.Config
+    public sealed class Config : Bot.Config
     {
         [JsonProperty]
         public string CultureInfoName { get; set; }

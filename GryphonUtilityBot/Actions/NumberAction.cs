@@ -9,7 +9,7 @@ namespace GryphonUtilityBot.Actions
 
         protected override Task ExecuteAsync()
         {
-            return Bot.ShopCommand.ProcessNumberAsync(Bot.Client, Message.Chat, _number);
+            return Bot.ShopManager.ProcessNumberAsync(Bot.Client, Message.Chat, _number);
         }
 
         private readonly int _number;

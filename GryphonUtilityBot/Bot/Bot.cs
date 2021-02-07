@@ -12,16 +12,16 @@ using Telegram.Bot.Types.InputFiles;
 
 namespace GryphonUtilityBot.Bot
 {
-    public sealed class Bot : BotBaseGoogleSheets<Config.Config>
+    public sealed class Bot : BotBaseGoogleSheets<Config>
     {
-        public Bot(Config.Config config) : base(config)
+        public Bot(Config config) : base(config)
         {
             var saveManager = new SaveManager<List<Record>>(Config.SavePath);
             RecordsManager = new Records.Manager(saveManager);
             ArticlesManager = new Articles.Manager(GoogleSheetsProvider, Config.GoogleRange);
+            ShopManager = new Shop.Manager(Config.Items);
 
-            ShopCommand = new ShopCommand(Config.Items);
-            Commands.Add(ShopCommand);
+            Commands.Add(new ShopCommand(ShopManager));
             Commands.Add(new ArticleCommand(ArticlesManager));
             Commands.Add(new ReadCommand(ArticlesManager));
 
@@ -91,7 +91,7 @@ namespace GryphonUtilityBot.Bot
 
         internal readonly Articles.Manager ArticlesManager;
         internal readonly Records.Manager RecordsManager;
-        internal readonly ShopCommand ShopCommand;
+        internal readonly Shop.Manager ShopManager;
 
         internal MarkQuery CurrentQuery;
         internal DateTime CurrentQueryTime;

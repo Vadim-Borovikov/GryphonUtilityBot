@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using AbstractBot;
+using GryphonUtilityBot.Shop;
 using Newtonsoft.Json;
 
-namespace GryphonUtilityBot.Bot.Config
+namespace GryphonUtilityBot.Bot
 {
     public class Config : ConfigGoogleSheets
     {
@@ -10,7 +11,7 @@ namespace GryphonUtilityBot.Bot.Config
         public int MistressId { get; set; }
 
         [JsonProperty]
-        public List<ShopItem> Items { get; set; }
+        public List<Item> Items { get; set; }
 
         [JsonProperty]
         public string SavePath { get; set; }

@@ -1,9 +1,9 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace GryphonUtilityBot.Bot.Config
+namespace GryphonUtilityBot.Shop
 {
-    public sealed class ShopItem
+    public sealed class Item
     {
         [JsonProperty]
         public string Name { get; set; }
