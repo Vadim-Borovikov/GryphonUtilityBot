@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace GryphonUtilityBot.Bot.Config
 {
-    public sealed class Item
+    public sealed class ShopItem
     {
         [JsonProperty]
         public string Name { get; set; }

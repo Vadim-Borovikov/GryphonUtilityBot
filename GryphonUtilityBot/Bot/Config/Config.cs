@@ -1,49 +1,21 @@
 ﻿using System.Collections.Generic;
+using AbstractBot;
 using Newtonsoft.Json;
 
 namespace GryphonUtilityBot.Bot.Config
 {
-    public class Config
+    public class Config : ConfigGoogleSheets
     {
-        [JsonProperty]
-        public string Token { get; set; }
-
-        [JsonProperty]
-        public int MasterId { get; set; }
-
         [JsonProperty]
         public int MistressId { get; set; }
 
         [JsonProperty]
-        public List<Item> Items { get; set; }
+        public List<ShopItem> Items { get; set; }
 
         [JsonProperty]
         public string SavePath { get; set; }
 
         [JsonProperty]
-        public string Host { get; set; }
-
-        [JsonProperty]
-        public int Port { get; set; }
-
-        [JsonProperty]
-        public string SystemTimeZoneId { get; set; }
-
-        [JsonProperty]
-        public string DontUnderstandStickerFileId { get; set; }
-
-        [JsonProperty]
-        public string ForbiddenStickerFileId { get; set; }
-
-        [JsonProperty]
-        public Dictionary<string, string> GoogleCredentials { get; set; }
-
-        [JsonProperty]
-        public string GoogleSheetId { get; set; }
-
-        [JsonProperty]
         public string GoogleRange { get; set; }
-
-        internal string Url => $"{Host}:{Port}/{Token}";
     }
 }

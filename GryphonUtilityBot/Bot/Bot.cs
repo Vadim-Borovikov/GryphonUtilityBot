@@ -1,74 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using GoogleSheetsManager;
+using AbstractBot;
 using GryphonUtilityBot.Actions;
 using GryphonUtilityBot.Articles;
 using GryphonUtilityBot.Bot.Commands;
 using GryphonUtilityBot.Records;
-using Newtonsoft.Json;
-using Telegram.Bot;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InputFiles;
 
 namespace GryphonUtilityBot.Bot
 {
-    public sealed class Bot : IDisposable
+    public sealed class Bot : BotBaseGoogleSheets<Config.Config>
     {
-        public Bot(Config.Config config)
+        public Bot(Config.Config config) : base(config)
         {
-            Config = config;
-
-            Client = new TelegramBotClient(Config.Token);
-
-            string googleCredentialsJson = JsonConvert.SerializeObject(Config.GoogleCredentials);
-            _googleSheetsProvider = new Provider(googleCredentialsJson, ApplicationName, Config.GoogleSheetId);
-
-            Utils.SetupTimeZoneInfo(Config.SystemTimeZoneId);
-
-            var saveManager = new Save.Manager(Config.SavePath);
+            var saveManager = new SaveManager<List<Record>>(Config.SavePath);
             RecordsManager = new Records.Manager(saveManager);
-            ArticlesManager = new Articles.Manager(_googleSheetsProvider, Config.GoogleRange);
+            ArticlesManager = new Articles.Manager(GoogleSheetsProvider, Config.GoogleRange);
 
             ShopCommand = new ShopCommand(Config.Items);
-            _commands = new List<Command>
-            {
-                ShopCommand,
-                new ArticleCommand(ArticlesManager),
-                new ReadCommand(ArticlesManager)
-            };
+            Commands.Add(ShopCommand);
+            Commands.Add(new ArticleCommand(ArticlesManager));
+            Commands.Add(new ReadCommand(ArticlesManager));
 
-            _dontUnderstandSticker = new InputOnlineFile(Config.DontUnderstandStickerFileId);
             _forbiddenSticker = new InputOnlineFile(Config.ForbiddenStickerFileId);
         }
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        protected override Task UpdateAsync(Message message)
         {
-            return Client.SetWebhookAsync(Config.Url, cancellationToken: cancellationToken);
-        }
-
-        public Task UpdateAsync(Update update)
-        {
-            if (update?.Type != UpdateType.Message)
-            {
-                return Task.CompletedTask;
-            }
-
-            Message message = update.Message;
             SupportedAction action = GetAction(message);
             return action == null
-                ? Client.SendStickerAsync(message, _dontUnderstandSticker)
+                ? Client.SendStickerAsync(message, DontUnderstandSticker)
                 : action.ExecuteWrapperAsync(_forbiddenSticker);
         }
-
-        public Task StopAsync(CancellationToken cancellationToken) => Client.DeleteWebhookAsync(cancellationToken);
-
-        public void Dispose() => _googleSheetsProvider?.Dispose();
-
-        public Task<User> GetUserAsunc() => Client.GetMeAsync();
 
         private SupportedAction GetAction(Message message)
         {
@@ -81,7 +47,7 @@ namespace GryphonUtilityBot.Bot
                 return new ForwardAction(this, message);
             }
 
-            if (TryParseCommand(message, out Command command))
+            if (TryParseCommand(message, out CommandBase command))
             {
                 return new CommandAction(this, message, command);
             }
@@ -117,26 +83,18 @@ namespace GryphonUtilityBot.Bot
             return null;
         }
 
-        private bool TryParseCommand(Message message, out Command command)
+        private bool TryParseCommand(Message message, out CommandBase command)
         {
-            command = _commands.FirstOrDefault(c => c.IsInvokingBy(message));
+            command = Commands.FirstOrDefault(c => c.IsInvokingBy(message.Text));
             return command != null;
         }
 
-        internal readonly Config.Config Config;
-        internal readonly TelegramBotClient Client;
         internal readonly Articles.Manager ArticlesManager;
         internal readonly Records.Manager RecordsManager;
         internal readonly ShopCommand ShopCommand;
 
         internal MarkQuery CurrentQuery;
         internal DateTime CurrentQueryTime;
-
-        private readonly IEnumerable<Command> _commands;
-        private readonly Provider _googleSheetsProvider;
-        private readonly InputOnlineFile _dontUnderstandSticker;
         private readonly InputOnlineFile _forbiddenSticker;
-
-        private const string ApplicationName = "GryphonUtilityBot";
     }
 }

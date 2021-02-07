@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AbstractBot;
 using GryphonUtilityBot.Bot.Config;
 using MoreLinq.Extensions;
 using Telegram.Bot;
@@ -12,11 +13,12 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace GryphonUtilityBot.Bot.Commands
 {
-    internal sealed class ShopCommand : Command
+    internal sealed class ShopCommand : CommandBase
     {
         protected override string Name => "shop";
+        protected override string Description => null;
 
-        public ShopCommand(IReadOnlyList<Item> allItems)
+        public ShopCommand(IReadOnlyList<ShopItem> allItems)
         {
             _allItems = allItems;
             _keyboard = GetKeyboard();
@@ -34,7 +36,8 @@ namespace GryphonUtilityBot.Bot.Commands
             return InvokeNextActionAsync(client, chatId);
         }
 
-        public override async Task ExecuteAsync(ITelegramBotClient client, ChatId chatId)
+        public override async Task ExecuteAsync(ChatId chatId, ITelegramBotClient client, int replyToMessageId = 0,
+            IReplyMarkup replyMarkup = null)
         {
             Reset();
 
@@ -86,8 +89,8 @@ namespace GryphonUtilityBot.Bot.Commands
 
         private void Reset()
         {
-            _items = new Queue<Item>(_allItems.OrderBy(i => i.AskOrder));
-            _itemAmounts = new Dictionary<Item, int>();
+            _items = new Queue<ShopItem>(_allItems.OrderBy(i => i.AskOrder));
+            _itemAmounts = new Dictionary<ShopItem, int>();
             _currentItem = null;
             _currentAmountIsPacks = false;
         }
@@ -114,7 +117,7 @@ namespace GryphonUtilityBot.Bot.Commands
         {
             int days = GetDaysBeforeNextSunday();
             var sb = new StringBuilder();
-            foreach (Item item in _itemAmounts.Keys.OrderBy(i => i.ResultOrder))
+            foreach (ShopItem item in _itemAmounts.Keys.OrderBy(i => i.ResultOrder))
             {
                 int need = item.GetRefillingAmount(_itemAmounts[item], days);
                 if (need == 0)
@@ -164,11 +167,11 @@ namespace GryphonUtilityBot.Bot.Commands
         private static readonly ReplyKeyboardRemove NoKeyboard = new ReplyKeyboardRemove();
 
         private readonly ReplyKeyboardMarkup _keyboard;
-        private readonly IReadOnlyList<Item> _allItems;
+        private readonly IReadOnlyList<ShopItem> _allItems;
 
-        private Queue<Item> _items;
-        private Dictionary<Item, int> _itemAmounts;
-        private Item _currentItem;
+        private Queue<ShopItem> _items;
+        private Dictionary<ShopItem, int> _itemAmounts;
+        private ShopItem _currentItem;
         private bool _currentAmountIsPacks;
     }
 }

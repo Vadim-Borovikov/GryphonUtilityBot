@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace GryphonUtilityBot.Save
+namespace GryphonUtilityBot.Records
 {
-    internal sealed class Data
+    internal sealed class Record
     {
         [JsonProperty]
         public int MessageId { get; set; }

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using GryphonUtilityBot.Save;
+using AbstractBot;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
@@ -9,13 +9,13 @@ namespace GryphonUtilityBot.Records
 {
     internal sealed class Manager
     {
-        public Manager(Save.Manager saveManager) => _saveManager = saveManager;
+        public Manager(SaveManager<List<Record>> saveManager) => _saveManager = saveManager;
 
         public void SaveRecord(Message message, MarkQuery query)
         {
             _saveManager.Load();
 
-            Data record = GetRecord(message, query);
+            Record record = GetRecord(message, query);
             if (record != null)
             {
                 _saveManager.Data.Add(record);
@@ -28,7 +28,7 @@ namespace GryphonUtilityBot.Records
         {
             _saveManager.Load();
 
-            List<Data> records = _saveManager.Data
+            List<Record> records = _saveManager.Data
                 .Where(r => r.DateTime.Date >= query.From)
                 .Where(r => r.DateTime.Date <= query.To)
                 .ToList();
@@ -40,7 +40,7 @@ namespace GryphonUtilityBot.Records
 
             if (records.Any())
             {
-                foreach (Data record in records)
+                foreach (Record record in records)
                 {
                     await client.ForwardMessageAsync(chatId, record.ChatId, record.MessageId);
                 }
@@ -55,7 +55,7 @@ namespace GryphonUtilityBot.Records
         {
             _saveManager.Load();
 
-            Data record = _saveManager.Data.FirstOrDefault(
+            Record record = _saveManager.Data.FirstOrDefault(
                 r => (r.ChatId == recordMessage.Chat.Id) && (r.MessageId == recordMessage.MessageId));
 
             if (record == null)
@@ -73,14 +73,14 @@ namespace GryphonUtilityBot.Records
             return client.SendTextMessageAsync(chatId, "Запись обновлена.");
         }
 
-        private static Data GetRecord(Message message, MarkQuery query)
+        private static Record GetRecord(Message message, MarkQuery query)
         {
             if (!message.ForwardDate.HasValue)
             {
                 return null;
             }
 
-            return new Data
+            return new Record
             {
                 MessageId = message.MessageId,
                 ChatId = message.Chat.Id,
@@ -89,6 +89,6 @@ namespace GryphonUtilityBot.Records
             };
         }
 
-        private readonly Save.Manager _saveManager;
+        private readonly SaveManager<List<Record>> _saveManager;
     }
 }

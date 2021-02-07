@@ -21,10 +21,7 @@ namespace GryphonUtilityBot.Actions
                     "Простите, госпожа, но господин заблокировал это действие даже для Вас.");
             }
 
-            bool isMaster = Message.From.Id == Bot.Config.MasterId;
-            return isMaster || isMistress
-                ? ExecuteAsync()
-                : Bot.Client.SendStickerAsync(Message, forbiddenSticker);
+            return Bot.FromAdmin(Message) ? ExecuteAsync() : Bot.Client.SendStickerAsync(Message, forbiddenSticker);
         }
 
         protected abstract Task ExecuteAsync();
