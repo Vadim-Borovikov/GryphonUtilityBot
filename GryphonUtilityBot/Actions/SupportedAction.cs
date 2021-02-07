@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using AbstractBot;
+using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.InputFiles;
 

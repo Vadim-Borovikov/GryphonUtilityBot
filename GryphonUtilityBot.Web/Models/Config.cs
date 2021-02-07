@@ -8,6 +8,6 @@ namespace GryphonUtilityBot.Web.Models
         public string CultureInfoName { get; set; }
 
         [JsonProperty]
-        public string GoogleCredentialsJson { get; set; }
+        public string GoogleCredentialJson { get; set; }
     }
 }
