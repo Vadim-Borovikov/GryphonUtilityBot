@@ -8,7 +8,6 @@ using GryphonUtilityBot.Articles;
 using GryphonUtilityBot.Bot.Commands;
 using GryphonUtilityBot.Records;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.InputFiles;
 
 namespace GryphonUtilityBot.Bot
 {
@@ -21,19 +20,17 @@ namespace GryphonUtilityBot.Bot
             ArticlesManager = new Articles.Manager(GoogleSheetsProvider, Config.GoogleRange);
             ShopManager = new Shop.Manager(Config.Items);
 
-            Commands.Add(new ShopCommand(ShopManager));
-            Commands.Add(new ArticleCommand(ArticlesManager));
-            Commands.Add(new ReadCommand(ArticlesManager));
-
-            _forbiddenSticker = new InputOnlineFile(Config.ForbiddenStickerFileId);
+            Commands.Add(new ShopCommand(this));
+            Commands.Add(new ArticleCommand(this));
+            Commands.Add(new ReadCommand(this));
         }
 
         protected override Task UpdateAsync(Message message)
         {
             SupportedAction action = GetAction(message);
             return action == null
-                ? Client.SendStickerAsync(message, DontUnderstandSticker)
-                : action.ExecuteWrapperAsync(_forbiddenSticker);
+                ? Client.SendStickerAsync(message.Chat, DontUnderstandSticker)
+                : action.ExecuteWrapperAsync(ForbiddenSticker);
         }
 
         private SupportedAction GetAction(Message message)
@@ -47,7 +44,7 @@ namespace GryphonUtilityBot.Bot
                 return new ForwardAction(this, message);
             }
 
-            if (TryParseCommand(message, out CommandBase command))
+            if (TryParseCommand(message, out CommandBase<Config> command))
             {
                 return new CommandAction(this, message, command);
             }
@@ -83,7 +80,7 @@ namespace GryphonUtilityBot.Bot
             return null;
         }
 
-        private bool TryParseCommand(Message message, out CommandBase command)
+        private bool TryParseCommand(Message message, out CommandBase<Config> command)
         {
             command = Commands.FirstOrDefault(c => c.IsInvokingBy(message.Text));
             return command != null;
@@ -95,6 +92,5 @@ namespace GryphonUtilityBot.Bot
 
         internal MarkQuery CurrentQuery;
         internal DateTime CurrentQueryTime;
-        private readonly InputOnlineFile _forbiddenSticker;
     }
 }

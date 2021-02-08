@@ -1,23 +1,20 @@
 ﻿using System.Threading.Tasks;
 using AbstractBot;
 using GryphonUtilityBot.Articles;
-using Telegram.Bot;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.ReplyMarkups;
 
 namespace GryphonUtilityBot.Bot.Commands
 {
-    internal sealed class ArticleCommand : CommandBase
+    internal sealed class ArticleCommand : CommandBase<Config>
     {
         protected override string Name => "article";
         protected override string Description => null;
 
-        public ArticleCommand(Manager articlesManager) => _articlesManager = articlesManager;
+        public ArticleCommand(Bot bot) : base(bot) => _articlesManager = bot.ArticlesManager;
 
-        public override Task ExecuteAsync(ChatId chatId, ITelegramBotClient client, int replyToMessageId = 0,
-            IReplyMarkup replyMarkup = null)
+        public override Task ExecuteAsync(Message message, bool fromChat = false)
         {
-            return _articlesManager.SendFirstArticleAsync(client, chatId);
+            return _articlesManager.SendFirstArticleAsync(Bot.Client, message.Chat);
         }
 
         private readonly Manager _articlesManager;

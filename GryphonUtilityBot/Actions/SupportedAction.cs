@@ -1,5 +1,4 @@
-﻿using AbstractBot;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.InputFiles;
 
@@ -22,7 +21,9 @@ namespace GryphonUtilityBot.Actions
                     "Простите, госпожа, но господин заблокировал это действие даже для Вас.");
             }
 
-            return Bot.FromAdmin(Message) ? ExecuteAsync() : Bot.Client.SendStickerAsync(Message, forbiddenSticker);
+            return Bot.FromAdmin(Message)
+                ? ExecuteAsync()
+                : Bot.Client.SendStickerAsync(Message.Chat, forbiddenSticker);
         }
 
         protected abstract Task ExecuteAsync();

@@ -1,24 +1,20 @@
 ﻿using System.Threading.Tasks;
 using AbstractBot;
 using GryphonUtilityBot.Shop;
-using Telegram.Bot;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.ReplyMarkups;
 
 namespace GryphonUtilityBot.Bot.Commands
 {
-    internal sealed class ShopCommand : CommandBase
+    internal sealed class ShopCommand : CommandBase<Config>
     {
         protected override string Name => "shop";
         protected override string Description => null;
 
-        public ShopCommand(Manager manager) => _manager = manager;
+        public ShopCommand(Bot bot) : base(bot) => _manager = bot.ShopManager;
 
-
-        public override Task ExecuteAsync(ChatId chatId, ITelegramBotClient client, int replyToMessageId = 0,
-            IReplyMarkup replyMarkup = null)
+        public override Task ExecuteAsync(Message message, bool fromChat = false)
         {
-            return _manager.ResetAndStartAskingAsync(chatId, client);
+            return _manager.ResetAndStartAskingAsync(message.Chat, Bot.Client);
         }
 
         private readonly Manager _manager;
