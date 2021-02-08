@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MoreLinq.Extensions;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -13,37 +12,37 @@ namespace GryphonUtilityBot.Shop
 {
     internal sealed class Manager
     {
-        public Manager(IReadOnlyList<Item> allItems)
+        public Manager(Bot.Bot bot)
         {
-            _allItems = allItems;
+            _bot = bot;
 
             IEnumerable<KeyboardButton> buttons = Enumerable.Range(0, ButtonsTotal).Select(CreateButton);
             IEnumerable<IEnumerable<KeyboardButton>> keyboard = buttons.Batch(ButtonsPerRaw);
             _amountKeyboard = new ReplyKeyboardMarkup(keyboard);
         }
 
-        public async Task ResetAndStartAskingAsync(ChatId chatId, ITelegramBotClient client)
+        public async Task ResetAndStartAskingAsync(ChatId chatId)
         {
-            _items = new Queue<Item>(_allItems.OrderBy(i => i.AskOrder));
+            _items = new Queue<Item>(_bot.Config.Items.OrderBy(i => i.AskOrder));
             _itemAmounts = new Dictionary<Item, int>();
             _currentItem = null;
             _currentAmountIsPacks = false;
 
-            await client.SendTextMessageAsync(chatId, "Сейчас есть:");
+            await _bot.Client.SendTextMessageAsync(chatId, "Сейчас есть:");
 
-            await InvokeNextActionAsync(client, chatId);
+            await InvokeNextActionAsync(chatId);
         }
 
-        public Task ProcessNumberAsync(ITelegramBotClient client, ChatId chatId, int number)
+        public Task ProcessNumberAsync(ChatId chatId, int number)
         {
             if (_currentItem == null)
             {
-                return client.SendTextMessageAsync(chatId, "Продукт не задан!");
+                return _bot.Client.SendTextMessageAsync(chatId, "Продукт не задан!");
             }
 
             Add(number);
 
-            return InvokeNextActionAsync(client, chatId);
+            return InvokeNextActionAsync(chatId);
         }
 
         private static KeyboardButton CreateButton(int option) => new KeyboardButton(option.ToString());
@@ -65,17 +64,17 @@ namespace GryphonUtilityBot.Shop
             }
         }
 
-        private Task InvokeNextActionAsync(ITelegramBotClient client, ChatId chatId)
+        private Task InvokeNextActionAsync(ChatId chatId)
         {
             if (_currentAmountIsPacks || (_items.Count > 0))
             {
                 string question = PrepareQuestion();
-                return client.SendTextMessageAsync(chatId, question, replyMarkup: _amountKeyboard);
+                return _bot.Client.SendTextMessageAsync(chatId, question, replyMarkup: _amountKeyboard);
             }
 
             _currentItem = null;
             string result = PrepareResult();
-            return client.SendTextMessageAsync(chatId, result, disableWebPagePreview: true, replyMarkup: NoKeyboard);
+            return _bot.Client.SendTextMessageAsync(chatId, result, disableWebPagePreview: true, replyMarkup: NoKeyboard);
         }
 
         private string PrepareQuestion()
@@ -150,11 +149,12 @@ namespace GryphonUtilityBot.Shop
         private static readonly ReplyKeyboardRemove NoKeyboard = new ReplyKeyboardRemove();
 
         private readonly ReplyKeyboardMarkup _amountKeyboard;
-        private readonly IReadOnlyList<Item> _allItems;
 
         private Queue<Item> _items;
         private Dictionary<Item, int> _itemAmounts;
         private Item _currentItem;
         private bool _currentAmountIsPacks;
+
+        private readonly Bot.Bot _bot;
     }
 }

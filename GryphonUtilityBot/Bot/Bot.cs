@@ -11,14 +11,14 @@ using Telegram.Bot.Types;
 
 namespace GryphonUtilityBot.Bot
 {
-    public sealed class Bot : BotBaseGoogleSheets<Config>
+    public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
     {
         public Bot(Config config) : base(config)
         {
             var saveManager = new SaveManager<List<Record>>(Config.SavePath);
-            RecordsManager = new Records.Manager(saveManager);
-            ArticlesManager = new Articles.Manager(GoogleSheetsProvider, Config.GoogleRange);
-            ShopManager = new Shop.Manager(Config.Items);
+            RecordsManager = new Records.Manager(this, saveManager);
+            ArticlesManager = new Articles.Manager(this);
+            ShopManager = new Shop.Manager(this);
 
             Commands.Add(new ShopCommand(this));
             Commands.Add(new ArticleCommand(this));
@@ -44,7 +44,7 @@ namespace GryphonUtilityBot.Bot
                 return new ForwardAction(this, message);
             }
 
-            if (TryParseCommand(message, out CommandBase<Config> command))
+            if (TryParseCommand(message, out CommandBase<Bot, Config> command))
             {
                 return new CommandAction(this, message, command);
             }
@@ -80,7 +80,7 @@ namespace GryphonUtilityBot.Bot
             return null;
         }
 
-        private bool TryParseCommand(Message message, out CommandBase<Config> command)
+        private bool TryParseCommand(Message message, out CommandBase<Bot, Config> command)
         {
             command = Commands.FirstOrDefault(c => c.IsInvokingBy(message.Text));
             return command != null;

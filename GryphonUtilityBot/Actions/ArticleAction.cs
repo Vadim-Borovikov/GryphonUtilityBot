@@ -8,10 +8,7 @@ namespace GryphonUtilityBot.Actions
     {
         public ArticleAction(Bot.Bot bot, Message message, Article article) : base(bot, message) => _article = article;
 
-        protected override Task ExecuteAsync()
-        {
-            return Bot.ArticlesManager.ProcessNewArticleAsync(Bot.Client, Message.Chat, _article);
-        }
+        protected override Task ExecuteAsync() => Bot.ArticlesManager.ProcessNewArticleAsync(Message.Chat, _article);
 
         private readonly Article _article;
     }

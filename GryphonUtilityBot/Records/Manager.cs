@@ -2,14 +2,17 @@
 using System.Linq;
 using System.Threading.Tasks;
 using AbstractBot;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace GryphonUtilityBot.Records
 {
     internal sealed class Manager
     {
-        public Manager(SaveManager<List<Record>> saveManager) => _saveManager = saveManager;
+        public Manager(Bot.Bot bot, SaveManager<List<Record>> saveManager)
+        {
+            _saveManager = saveManager;
+            _bot = bot;
+        }
 
         public void SaveRecord(Message message, MarkQuery query)
         {
@@ -24,7 +27,7 @@ namespace GryphonUtilityBot.Records
             _saveManager.Save();
         }
 
-        public async Task ProcessFindQuery(TelegramBotClient client, ChatId chatId, FindQuery query)
+        public async Task ProcessFindQuery(ChatId chatId, FindQuery query)
         {
             _saveManager.Load();
 
@@ -42,16 +45,16 @@ namespace GryphonUtilityBot.Records
             {
                 foreach (Record record in records)
                 {
-                    await client.ForwardMessageAsync(chatId, record.ChatId, record.MessageId);
+                    await _bot.Client.ForwardMessageAsync(chatId, record.ChatId, record.MessageId);
                 }
             }
             else
             {
-                await client.SendTextMessageAsync(chatId, "Я не нашёл таких записей.");
+                await _bot.Client.SendTextMessageAsync(chatId, "Я не нашёл таких записей.");
             }
         }
 
-        public Task Mark(TelegramBotClient client, ChatId chatId, Message recordMessage, MarkQuery query)
+        public Task Mark(ChatId chatId, Message recordMessage, MarkQuery query)
         {
             _saveManager.Load();
 
@@ -60,7 +63,7 @@ namespace GryphonUtilityBot.Records
 
             if (record == null)
             {
-                return client.SendTextMessageAsync(chatId, "Я не нашёл нужной записи.");
+                return _bot.Client.SendTextMessageAsync(chatId, "Я не нашёл нужной записи.");
             }
 
             if (query.DateTime.HasValue)
@@ -70,10 +73,10 @@ namespace GryphonUtilityBot.Records
 
             record.Tags = query.Tags;
             _saveManager.Save();
-            return client.SendTextMessageAsync(chatId, "Запись обновлена.");
+            return _bot.Client.SendTextMessageAsync(chatId, "Запись обновлена.");
         }
 
-        private static Record GetRecord(Message message, MarkQuery query)
+        private Record GetRecord(Message message, MarkQuery query)
         {
             if (!message.ForwardDate.HasValue)
             {
@@ -84,11 +87,12 @@ namespace GryphonUtilityBot.Records
             {
                 MessageId = message.MessageId,
                 ChatId = message.Chat.Id,
-                DateTime = query?.DateTime ?? message.ForwardDate.Value.ToLocal(),
+                DateTime = query?.DateTime ?? _bot.TimeManager.ToLocal(message.ForwardDate.Value),
                 Tags = query?.Tags ?? new HashSet<string>()
             };
         }
 
         private readonly SaveManager<List<Record>> _saveManager;
+        private readonly Bot.Bot _bot;
     }
 }

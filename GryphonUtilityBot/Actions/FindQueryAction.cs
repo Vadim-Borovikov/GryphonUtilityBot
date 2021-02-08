@@ -10,7 +10,7 @@ namespace GryphonUtilityBot.Actions
 
         protected override Task ExecuteAsync()
         {
-            return Bot.RecordsManager.ProcessFindQuery(Bot.Client, Message.Chat, _query);
+            return Bot.RecordsManager.ProcessFindQuery(Message.Chat, _query);
         }
 
         protected override bool AllowedForMistress => true;

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GoogleSheetsManager;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -12,10 +11,9 @@ namespace GryphonUtilityBot.Articles
 {
     internal sealed class Manager
     {
-        public Manager(Provider googleSheetsProvider, string range)
+        public Manager(Bot.Bot bot)
         {
-            _googleSheetsProvider = googleSheetsProvider;
-            _range = range;
+            _bot = bot;
             _articles = new SortedSet<Article>();
         }
 
@@ -42,7 +40,7 @@ namespace GryphonUtilityBot.Articles
             return true;
         }
 
-        public Task ProcessNewArticleAsync(ITelegramBotClient client, ChatId chatId, Article article)
+        public Task ProcessNewArticleAsync(ChatId chatId, Article article)
         {
             AddArticle(article);
 
@@ -54,18 +52,18 @@ namespace GryphonUtilityBot.Articles
             sb.AppendLine();
             sb.AppendLine($"Первая статья: {firstArticleText}");
 
-            return client.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Markdown);
+            return _bot.Client.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Markdown);
         }
 
-        public Task SendFirstArticleAsync(ITelegramBotClient client, ChatId chatId)
+        public Task SendFirstArticleAsync(ChatId chatId)
         {
             Load();
 
             string text = GetArticleMessageText(_articles.First());
-            return client.SendTextMessageAsync(chatId, text);
+            return _bot.Client.SendTextMessageAsync(chatId, text);
         }
 
-        public Task DeleteFirstArticleAsync(ITelegramBotClient client, ChatId chatId)
+        public Task DeleteFirstArticleAsync(ChatId chatId)
         {
             Load();
 
@@ -83,7 +81,7 @@ namespace GryphonUtilityBot.Articles
             sb.AppendLine();
             sb.AppendLine($"Первая статья: {firstArticleText}");
 
-            return client.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Markdown);
+            return _bot.Client.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Markdown);
         }
 
         private void AddArticle(Article article)
@@ -97,14 +95,15 @@ namespace GryphonUtilityBot.Articles
 
         private void Load()
         {
-            IList<Article> articles = DataManager.GetValues<Article>(_googleSheetsProvider, _range);
+            IList<Article> articles =
+                DataManager.GetValues<Article>(_bot.GoogleSheetsProvider, _bot.Config.GoogleRange);
             _articles = new SortedSet<Article>(articles);
         }
 
         private void Save()
         {
-            _googleSheetsProvider.ClearValues(_range);
-            DataManager.UpdateValues(_googleSheetsProvider, _range, _articles);
+            _bot.GoogleSheetsProvider.ClearValues(_bot.Config.GoogleRange);
+            DataManager.UpdateValues(_bot.GoogleSheetsProvider, _bot.Config.GoogleRange, _articles);
         }
 
         private static string GetArticleMessageText(Article article)
@@ -113,7 +112,6 @@ namespace GryphonUtilityBot.Articles
         }
 
         private SortedSet<Article> _articles;
-        private readonly Provider _googleSheetsProvider;
-        private readonly string _range;
+        private readonly Bot.Bot _bot;
     }
 }
