@@ -28,7 +28,19 @@ namespace GryphonUtilityBot.Articles
 
             if (!DateTime.TryParse(parts[0], out DateTime date))
             {
-                return false;
+                if (!int.TryParse(parts[0], out int day))
+                {
+                    return false;
+                }
+
+                try
+                {
+                    date = new DateTime(DateTime.Today.Year, DateTime.Today.Month, day);
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    return false;
+                }
             }
 
             if (!Uri.TryCreate(parts[1], UriKind.Absolute, out Uri uri))
