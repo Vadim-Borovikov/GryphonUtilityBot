@@ -19,37 +19,8 @@ namespace GryphonUtilityBot.Articles
 
         public static bool TryParseArticle(string text, out Article article)
         {
-            article = null;
-            string[] parts = text.Split(' ');
-            if (parts.Length != 2)
-            {
-                return false;
-            }
-
-            if (!DateTime.TryParse(parts[0], out DateTime date))
-            {
-                if (!int.TryParse(parts[0], out int day))
-                {
-                    return false;
-                }
-
-                try
-                {
-                    date = new DateTime(DateTime.Today.Year, DateTime.Today.Month, day);
-                }
-                catch (ArgumentOutOfRangeException)
-                {
-                    return false;
-                }
-            }
-
-            if (!Uri.TryCreate(parts[1], UriKind.Absolute, out Uri uri))
-            {
-                return false;
-            }
-
-            article = new Article(date, uri);
-            return true;
+            article = ParseArticle(text);
+            return article != null;
         }
 
         public Task ProcessNewArticleAsync(ChatId chatId, Article article)
@@ -94,6 +65,55 @@ namespace GryphonUtilityBot.Articles
             sb.AppendLine($"Первая статья: {firstArticleText}");
 
             return _bot.Client.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Markdown);
+        }
+
+        private static Article ParseArticle(string text)
+        {
+            string[] parts = text.Split(' ');
+
+            Uri uri;
+            switch (parts.Length)
+            {
+                case 1:
+                    uri = CreateUri(parts[0]);
+                    return uri == null ? null : new Article(DateTime.Today, uri);
+                case 2:
+                    DateTime? date = ParseDate(parts[0]);
+                    if (!date.HasValue)
+                    {
+                        return null;
+                    }
+                    uri = CreateUri(parts[1]);
+                    return uri == null ? null : new Article(date.Value, uri);
+                default: return null;
+            }
+        }
+
+        private static DateTime? ParseDate(string dateString)
+        {
+            if (DateTime.TryParse(dateString, out DateTime date))
+            {
+                return date;
+            }
+
+            if (!int.TryParse(dateString, out int day))
+            {
+                return null;
+            }
+
+            try
+            {
+                return new DateTime(DateTime.Today.Year, DateTime.Today.Month, day);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return null;
+            }
+        }
+
+        private static Uri CreateUri(string uriString)
+        {
+            return Uri.TryCreate(uriString, UriKind.Absolute, out Uri uri) ? uri : null;
         }
 
         private void AddArticle(Article article)
