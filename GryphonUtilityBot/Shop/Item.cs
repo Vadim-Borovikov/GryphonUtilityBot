@@ -12,9 +12,11 @@ namespace GryphonUtilityBot.Shop
         [JsonProperty]
         public string Half2 { get; set; }
         [JsonProperty]
-        public decimal Mass { get; set; }
+        public decimal? Mass { get; set; }
         [JsonProperty]
         public int DailyNeed { get; set; }
+        [JsonProperty]
+        public int? FixedNeed { get; set; }
         [JsonProperty]
         public int PackSize { get; set; }
         [JsonProperty]
@@ -32,18 +34,16 @@ namespace GryphonUtilityBot.Shop
 
         internal int GetRefillingAmount(int stocked, int days)
         {
+            if (FixedNeed.HasValue)
+            {
+                return FixedNeed.Value;
+            }
+
             int needed = days * DailyNeed;
             int refillItems = Math.Max(needed - stocked, 0);
             return (int) Math.Ceiling(1.0 * refillItems / (PackSize * MetaPackSize));
         }
 
-        internal decimal GetRefillingMass(int amount)
-        {
-            decimal mass = Mass * amount;
-            return Math.Ceiling(mass * 10) / 10;
-        }
-
         internal bool HasHalves => !string.IsNullOrWhiteSpace(Half1) && !string.IsNullOrWhiteSpace(Half2);
-        internal bool HasMass => Mass > 0;
     }
 }

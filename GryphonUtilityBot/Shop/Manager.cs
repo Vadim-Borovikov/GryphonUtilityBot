@@ -23,8 +23,10 @@ namespace GryphonUtilityBot.Shop
 
         public async Task ResetAndStartAskingAsync(ChatId chatId)
         {
-            _items = new Queue<Item>(_bot.Config.Items.OrderBy(i => i.AskOrder));
-            _itemAmounts = new Dictionary<Item, int>();
+            _items = new Queue<Item>(_bot.Config.Items.Where(i => !i.FixedNeed.HasValue).OrderBy(i => i.AskOrder));
+
+            _itemAmounts = _bot.Config.Items.Where(i => i.FixedNeed.HasValue).ToDictionary(i => i, i => 0);
+
             _currentItem = null;
             _currentAmountIsPacks = false;
 
@@ -121,16 +123,19 @@ namespace GryphonUtilityBot.Shop
                 }
                 else
                 {
-                    if (item.HasMass)
+                    if (item.Mass.HasValue)
                     {
-                        decimal mass = item.GetRefillingMass(need);
+                        decimal mass = GetRefillingMass(item.Mass.Value, need);
                         sb.AppendLine($"{item.Name}: {mass.ToString(CultureInfo.InvariantCulture)} кг.");
                     }
                     else
                     {
                         sb.AppendLine($"{item.Name}: {need}");
                     }
-                    sb.AppendLine(item.Uri.AbsoluteUri);
+                    if (item.Uri != null)
+                    {
+                        sb.AppendLine(item.Uri.AbsoluteUri);
+                    }
                 }
                 sb.AppendLine();
             }
@@ -143,6 +148,7 @@ namespace GryphonUtilityBot.Shop
         }
 
         private static int GetDaysBeforeNextSunday() => 8 + (7 + (DayOfWeek.Sunday - DateTime.Today.DayOfWeek)) % 7;
+        private static decimal GetRefillingMass(decimal mass, int amount) => Math.Ceiling(mass * amount * 10) / 10;
 
         private const int ButtonsTotal = 12;
         private const int ButtonsPerRaw = 4;
