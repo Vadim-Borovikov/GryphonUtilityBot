@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using GoogleSheetsManager;
 using Telegram.Bot.Types;
@@ -23,19 +22,13 @@ namespace GryphonUtilityBot.Articles
             return article != null;
         }
 
-        public Task ProcessNewArticleAsync(ChatId chatId, Article article)
+        public async Task ProcessNewArticleAsync(ChatId chatId, Article article)
         {
             AddArticle(article);
 
             string articleText = GetArticleMessageText(article);
-            string firstArticleText = GetArticleMessageText(_articles.First());
-
-            var sb = new StringBuilder();
-            sb.AppendLine($"Добавлено: `{articleText}`.");
-            sb.AppendLine();
-            sb.AppendLine($"Первая статья: {firstArticleText}");
-
-            return _bot.Client.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Markdown);
+            await _bot.Client.SendTextMessageAsync(chatId, $"Добавлено: `{articleText}`.", ParseMode.Markdown);
+            await SendFirstArticleAsync(chatId);
         }
 
         public Task SendFirstArticleAsync(ChatId chatId)
@@ -46,25 +39,18 @@ namespace GryphonUtilityBot.Articles
             return _bot.Client.SendTextMessageAsync(chatId, text);
         }
 
-        public Task DeleteFirstArticleAsync(ChatId chatId)
+        public async Task DeleteFirstArticleAsync(ChatId chatId)
         {
             Load();
 
             Article article = _articles.First();
-            string articleText = GetArticleMessageText(article);
-
             _articles.Remove(article);
 
             Save();
 
-            string firstArticleText = GetArticleMessageText(_articles.First());
-
-            var sb = new StringBuilder();
-            sb.AppendLine($"Удалено: `{articleText}`.");
-            sb.AppendLine();
-            sb.AppendLine($"Первая статья: {firstArticleText}");
-
-            return _bot.Client.SendTextMessageAsync(chatId, sb.ToString(), ParseMode.Markdown);
+            string articleText = GetArticleMessageText(article);
+            await _bot.Client.SendTextMessageAsync(chatId, $"Удалено: `{articleText}`.", ParseMode.Markdown);
+            await SendFirstArticleAsync(chatId);
         }
 
         private static Article ParseArticle(string text)
