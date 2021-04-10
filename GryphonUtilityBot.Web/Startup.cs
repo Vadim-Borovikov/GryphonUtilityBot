@@ -17,6 +17,7 @@ namespace GryphonUtilityBot.Web
         {
             services.AddSingleton<BotSingleton>();
             services.AddHostedService<BotService>();
+            services.AddHostedService<PingService>();
             services.Configure<Config>(_config);
 
             services.AddMvc();
