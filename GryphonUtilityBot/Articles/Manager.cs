@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Google.Apis.Sheets.v4;
 using GoogleSheetsManager;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -114,7 +115,8 @@ namespace GryphonUtilityBot.Articles
         private void Load()
         {
             IList<Article> articles =
-                DataManager.GetValues<Article>(_bot.GoogleSheetsProvider, _bot.Config.GoogleRange);
+                DataManager.GetValues<Article>(_bot.GoogleSheetsProvider, _bot.Config.GoogleRange,
+                    SpreadsheetsResource.ValuesResource.GetRequest.ValueRenderOptionEnum.UNFORMATTEDVALUE);
             _articles = new SortedSet<Article>(articles);
         }
 
