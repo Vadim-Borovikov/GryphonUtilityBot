@@ -36,7 +36,7 @@ namespace GryphonUtilityBot.Articles
         {
             Load();
 
-            string text = GetArticleMessageText(_articles.First());
+            string text = $"{_articles.Count}. {GetArticleMessageText(_articles.First())}";
             return _bot.Client.SendTextMessageAsync(chatId, text);
         }
 
