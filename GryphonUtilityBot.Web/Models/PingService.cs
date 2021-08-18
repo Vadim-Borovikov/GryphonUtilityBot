@@ -52,8 +52,12 @@ namespace GryphonUtilityBot.Web.Models
 
         private void ClearPeriodicCancellationSource()
         {
-            _periodicCancellationSource?.Cancel();
-            _periodicCancellationSource?.Dispose();
+            try
+            {
+                _periodicCancellationSource?.Cancel();
+                _periodicCancellationSource?.Dispose();
+            }
+            catch (ObjectDisposedException) { }
         }
 
         private void PingSites(long _)
