@@ -19,10 +19,13 @@ namespace GryphonUtilityBot.Bot
             RecordsManager = new Records.Manager(this, saveManager);
             ArticlesManager = new Articles.Manager(this);
             ShopManager = new Shop.Manager(this);
+            RollsManager = new Rolls.Manager(this);
 
             Commands.Add(new ShopCommand(this));
             Commands.Add(new ArticleCommand(this));
             Commands.Add(new ReadCommand(this));
+            Commands.Add(new PrepareCommand(this));
+            Commands.Add(new RollCommand(this));
         }
 
         protected override Task UpdateAsync(Message message)
@@ -31,6 +34,11 @@ namespace GryphonUtilityBot.Bot
             return action == null
                 ? Client.SendStickerAsync(message.Chat, DontUnderstandSticker)
                 : action.ExecuteWrapperAsync(ForbiddenSticker);
+        }
+
+        public Task ProcessQueryAsync(CallbackQuery callbackQuery)
+        {
+            return RollsManager.ProcessQueryAsync(callbackQuery.Data, callbackQuery.Message);
         }
 
         private SupportedAction GetAction(Message message)
@@ -89,6 +97,8 @@ namespace GryphonUtilityBot.Bot
         internal readonly Articles.Manager ArticlesManager;
         internal readonly Records.Manager RecordsManager;
         internal readonly Shop.Manager ShopManager;
+        internal readonly Rolls.Manager RollsManager;
+
 
         internal MarkQuery CurrentQuery;
         internal DateTime CurrentQueryTime;
