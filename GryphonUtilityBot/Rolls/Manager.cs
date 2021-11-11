@@ -18,10 +18,10 @@ namespace GryphonUtilityBot.Rolls
             _rageOption = new InlineKeyboardButton { CallbackData = "Rage" };
             _flameOption = new InlineKeyboardButton { CallbackData = "Flame" };
             _critOption = new InlineKeyboardButton { CallbackData = "Crit" };
-            
-            var firstRaw = new[] { _rageOption, _greatWeaponMasterOption, };
+
+            var firstRaw = new[] { _rageOption, _greatWeaponMasterOption };
             var secondRaw = new[] { _flameOption, _critOption };
-            
+
             _options = new InlineKeyboardMarkup(new[] { firstRaw, secondRaw });
         }
 
@@ -43,7 +43,7 @@ namespace GryphonUtilityBot.Rolls
                     break;
                 default: throw new ArgumentOutOfRangeException();
             }
-            
+
             UpdateValues();
 
             return _bot.Client.EditMessageTextAsync(message.Chat, message.MessageId, _prefix, replyMarkup: _options);
@@ -140,7 +140,7 @@ namespace GryphonUtilityBot.Rolls
             _prefix = GetMessage(_d6Slashing, _bonusSlashing, _d6Fire);
         }
 
-        private static string GetEmoji(List<byte> numbers) => string.Join("", numbers.Select(GetEmoji));
+        private static string GetEmoji(IEnumerable<byte> numbers) => string.Join("", numbers.Select(GetEmoji));
 
         private static string GetEmoji(byte number)
         {
@@ -167,11 +167,11 @@ namespace GryphonUtilityBot.Rolls
         private bool _flame;
         private bool _crit;
 
-        private InlineKeyboardButton _greatWeaponMasterOption;
-        private InlineKeyboardButton _rageOption;
-        private InlineKeyboardButton _flameOption;
-        private InlineKeyboardButton _critOption;
-        private InlineKeyboardMarkup _options;
+        private readonly InlineKeyboardButton _greatWeaponMasterOption;
+        private readonly InlineKeyboardButton _rageOption;
+        private readonly InlineKeyboardButton _flameOption;
+        private readonly InlineKeyboardButton _critOption;
+        private readonly InlineKeyboardMarkup _options;
 
         private string _prefix;
     }
