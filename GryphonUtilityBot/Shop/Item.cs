@@ -12,7 +12,7 @@ namespace GryphonUtilityBot.Shop
         [JsonProperty]
         public string Half2 { get; set; }
         [JsonProperty]
-        public decimal? Mass { get; set; }
+        public decimal? Weight { get; set; }
         [JsonProperty]
         public int DailyNeed { get; set; }
         [JsonProperty]
