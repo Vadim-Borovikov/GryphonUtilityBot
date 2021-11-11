@@ -33,6 +33,8 @@ namespace GryphonUtilityBot.Shop
         public Uri UriHalf1 { get; set; }
         [JsonProperty]
         public Uri UriHalf2 { get; set; }
+        [JsonProperty]
+        public bool IsHidden { get; set; }
 
         internal int GetRefillingAmount(int stocked, int days)
         {

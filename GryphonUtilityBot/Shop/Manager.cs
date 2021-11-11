@@ -23,9 +23,10 @@ namespace GryphonUtilityBot.Shop
 
         public async Task ResetAndStartAskingAsync(ChatId chatId)
         {
-            _items = new Queue<Item>(_bot.Config.Items.Where(i => !i.FixedNeed.HasValue).OrderBy(i => i.AskOrder));
+            _items =
+                new Queue<Item>(_bot.Config.Items.Where(i => !i.FixedNeed.HasValue && !i.IsHidden).OrderBy(i => i.AskOrder));
 
-            _itemAmounts = _bot.Config.Items.Where(i => i.FixedNeed.HasValue).ToDictionary(i => i, i => 0);
+            _itemAmounts = _bot.Config.Items.Where(i => i.FixedNeed.HasValue && !i.IsHidden).ToDictionary(i => i, i => 0);
 
             _currentItem = null;
             _currentAmountIsPacks = false;
