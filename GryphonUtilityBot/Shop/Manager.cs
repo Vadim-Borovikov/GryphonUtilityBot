@@ -125,7 +125,7 @@ namespace GryphonUtilityBot.Shop
                 {
                     if (item.Weight.HasValue)
                     {
-                        decimal weight = GetRefillingWeight(item.Weight.Value, need);
+                        decimal weight = GetRefillingWeight(item.Weight.Value, item.MaxWeight, need);
                         sb.AppendLine($"{item.Name}: {weight.ToString(CultureInfo.InvariantCulture)} кг.");
                     }
                     else
@@ -148,7 +148,15 @@ namespace GryphonUtilityBot.Shop
         }
 
         private static int GetDaysBeforeNextSunday() => 8 + (7 + (DayOfWeek.Sunday - DateTime.Today.DayOfWeek)) % 7;
-        private static decimal GetRefillingWeight(decimal weight, int amount) => Math.Ceiling(weight * amount * 10) / 10;
+        private static decimal GetRefillingWeight(decimal weight, decimal? maxWeight, int amount)
+        {
+            decimal result = Math.Ceiling(weight * amount * 10) / 10;
+            if (maxWeight.HasValue)
+            {
+                result = Math.Min(result, maxWeight.Value);
+            }
+            return result;
+        }
 
         private const int ButtonsTotal = 12;
         private const int ButtonsPerRaw = 4;

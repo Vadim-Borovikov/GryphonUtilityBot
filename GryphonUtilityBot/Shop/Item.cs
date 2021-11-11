@@ -14,6 +14,8 @@ namespace GryphonUtilityBot.Shop
         [JsonProperty]
         public decimal? Weight { get; set; }
         [JsonProperty]
+        public decimal? MaxWeight { get; set; }
+        [JsonProperty]
         public int DailyNeed { get; set; }
         [JsonProperty]
         public int? FixedNeed { get; set; }
