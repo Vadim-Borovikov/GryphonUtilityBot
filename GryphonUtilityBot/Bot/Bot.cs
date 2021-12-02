@@ -7,6 +7,7 @@ using GryphonUtilityBot.Actions;
 using GryphonUtilityBot.Articles;
 using GryphonUtilityBot.Bot.Commands;
 using GryphonUtilityBot.Records;
+using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace GryphonUtilityBot.Bot

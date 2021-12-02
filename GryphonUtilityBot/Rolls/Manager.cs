@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -14,10 +15,11 @@ namespace GryphonUtilityBot.Rolls
         {
             _bot = bot;
 
-            _greatWeaponMasterOption = new InlineKeyboardButton { CallbackData = "GreatWeaponMaster" };
-            _rageOption = new InlineKeyboardButton { CallbackData = "Rage" };
-            _flameOption = new InlineKeyboardButton { CallbackData = "Flame" };
-            _critOption = new InlineKeyboardButton { CallbackData = "Crit" };
+            _greatWeaponMasterOption =
+                new InlineKeyboardButton(GreatWeaponMasterText) { CallbackData = GreatWeaponMasterText };
+            _rageOption = new InlineKeyboardButton(RageText) { CallbackData = RageText };
+            _flameOption = new InlineKeyboardButton(FlameText) { CallbackData = FlameText };
+            _critOption = new InlineKeyboardButton(CritText) { CallbackData = CritText };
 
             var firstRaw = new[] { _rageOption, _greatWeaponMasterOption };
             var secondRaw = new[] { _flameOption, _critOption };
@@ -29,16 +31,16 @@ namespace GryphonUtilityBot.Rolls
         {
             switch (callbackQueryData)
             {
-                case "GreatWeaponMaster":
+                case GreatWeaponMasterText:
                     _greatWeaponMaster = !_greatWeaponMaster;
                     break;
-                case "Rage":
+                case RageText:
                     _rage = !_rage;
                     break;
-                case "Flame":
+                case FlameText:
                     _flame = !_flame;
                     break;
-                case "Crit":
+                case CritText:
                     _crit = !_crit;
                     break;
                 default: throw new ArgumentOutOfRangeException();
@@ -132,10 +134,10 @@ namespace GryphonUtilityBot.Rolls
                 _d6Fire *= 2;
             }
 
-            _greatWeaponMasterOption.Text = _greatWeaponMaster ? "✅Размашистая" : "Размашистая";
-            _rageOption.Text = _rage ? "✅Яростная" : "Яростная";
-            _flameOption.Text = _flame ? "✅Огненная" : "Огненная";
-            _critOption.Text = _crit ? "✅Крит!" : "Крит!";
+            _greatWeaponMasterOption.Text = _greatWeaponMaster ? $"✅{GreatWeaponMasterText}" : $"{GreatWeaponMasterText}";
+            _rageOption.Text = _rage ? $"✅{RageText}" : $"{RageText}";
+            _flameOption.Text = _flame ? $"✅{FlameText}" : $"{FlameText}";
+            _critOption.Text = _crit ? $"✅{CritText}" : $"{CritText}";
 
             _prefix = GetMessage(_d6Slashing, _bonusSlashing, _d6Fire);
         }
@@ -166,6 +168,11 @@ namespace GryphonUtilityBot.Rolls
         private bool _rage;
         private bool _flame;
         private bool _crit;
+
+        private const string GreatWeaponMasterText = "Размашистая";
+        private const string RageText = "Яростная";
+        private const string FlameText = "Огненная";
+        private const string CritText = "Крит!";
 
         private readonly InlineKeyboardButton _greatWeaponMasterOption;
         private readonly InlineKeyboardButton _rageOption;

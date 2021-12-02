@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Google.Apis.Sheets.v4;
 using GoogleSheetsManager;
+using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -25,32 +25,32 @@ namespace GryphonUtilityBot.Articles
 
         public async Task ProcessNewArticleAsync(ChatId chatId, Article article)
         {
-            AddArticle(article);
+            await AddArticleAsync(article);
 
             string articleText = GetArticleMessageText(article);
-            await _bot.Client.SendTextMessageAsync(chatId, $"Добавлено: `{articleText}`.", ParseMode.Markdown);
+            await _bot.Client.SendTextMessageAsync(chatId, $"Добавлено: `{articleText}`\\.", ParseMode.MarkdownV2);
             await SendFirstArticleAsync(chatId);
         }
 
-        public Task SendFirstArticleAsync(ChatId chatId)
+        public async Task SendFirstArticleAsync(ChatId chatId)
         {
-            Load();
+            await LoadAsync();
 
             string text = $"{_articles.Count}. {GetArticleMessageText(_articles.First())}";
-            return _bot.Client.SendTextMessageAsync(chatId, text);
+            await _bot.Client.SendTextMessageAsync(chatId, text);
         }
 
         public async Task DeleteFirstArticleAsync(ChatId chatId)
         {
-            Load();
+            await LoadAsync();
 
             Article article = _articles.First();
             _articles.Remove(article);
 
-            Save();
+            await SaveAsync();
 
             string articleText = GetArticleMessageText(article);
-            await _bot.Client.SendTextMessageAsync(chatId, $"Удалено: `{articleText}`.", ParseMode.Markdown);
+            await _bot.Client.SendTextMessageAsync(chatId, $"Удалено: `{articleText}`\\.", ParseMode.MarkdownV2);
             await SendFirstArticleAsync(chatId);
         }
 
@@ -103,27 +103,26 @@ namespace GryphonUtilityBot.Articles
             return Uri.TryCreate(uriString, UriKind.Absolute, out Uri uri) ? uri : null;
         }
 
-        private void AddArticle(Article article)
+        private async Task AddArticleAsync(Article article)
         {
-            Load();
+            await LoadAsync();
 
             _articles.Add(article);
 
-            Save();
+            await SaveAsync();
         }
 
-        private void Load()
+        private async Task LoadAsync()
         {
             IList<Article> articles =
-                DataManager.GetValues<Article>(_bot.GoogleSheetsProvider, _bot.Config.GoogleRange,
-                    SpreadsheetsResource.ValuesResource.GetRequest.ValueRenderOptionEnum.UNFORMATTEDVALUE);
+                await DataManager.GetValuesAsync<Article>(_bot.GoogleSheetsProvider, _bot.Config.GoogleRange);
             _articles = new SortedSet<Article>(articles);
         }
 
-        private void Save()
+        private async Task SaveAsync()
         {
-            _bot.GoogleSheetsProvider.ClearValues(_bot.Config.GoogleRange);
-            DataManager.UpdateValues(_bot.GoogleSheetsProvider, _bot.Config.GoogleRange, _articles);
+            await _bot.GoogleSheetsProvider.ClearValuesAsync(_bot.Config.GoogleRange);
+            await DataManager.UpdateValuesAsync(_bot.GoogleSheetsProvider, _bot.Config.GoogleRange, _articles.ToList());
         }
 
         private static string GetArticleMessageText(Article article)

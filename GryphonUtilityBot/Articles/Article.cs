@@ -6,6 +6,8 @@ namespace GryphonUtilityBot.Articles
 {
     internal sealed class Article : IComparable<Article>, ISavable, ILoadable
     {
+        IList<string> ISavable.Titles => Titles;
+
         public Uri Uri { get; private set; }
         public DateTime Date { get; private set; }
 
@@ -35,19 +37,29 @@ namespace GryphonUtilityBot.Articles
                 : string.Compare(Uri.AbsoluteUri, other.Uri.AbsoluteUri, StringComparison.Ordinal);
         }
 
-        public IList<object> Save()
+        public IDictionary<string, object> Save()
         {
-            return new List<object>
+            return new Dictionary<string, object>
             {
-                Date.ToShortDateString(),
-                Uri
+                {DateTitle, Date.ToShortDateString() },
+                {UriTitle, Uri }
             };
         }
 
-        public void Load(IList<object> values)
+        public void Load(IDictionary<string, object> valueSet)
         {
-            Uri = values.ToUri(1);
-            Date = values.ToDateTime(0) ?? throw new ArgumentNullException($"Empty date for \"{Uri}\"");
+            Uri = valueSet[UriTitle]?.ToUri();
+            Date = valueSet[DateTitle]?.ToDateTime() ?? throw new ArgumentNullException($"Empty date for \"{Uri}\"");
         }
+
+        private static readonly IList<string> Titles = new List<string>
+        {
+            DateTitle,
+            UriTitle
+        };
+
+        private const string DateTitle = "Дата";
+        private const string UriTitle = "Ссылка";
+
     }
 }
