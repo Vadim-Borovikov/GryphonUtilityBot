@@ -8,6 +8,9 @@ namespace GryphonUtilityBot.Bot
     public class Config : ConfigGoogleSheets
     {
         [JsonProperty]
+        public string GoogleCredentialJson { get; set; }
+
+        [JsonProperty]
         public int MistressId { get; set; }
 
         [JsonProperty]
@@ -18,5 +21,17 @@ namespace GryphonUtilityBot.Bot
 
         [JsonProperty]
         public string GoogleRange { get; set; }
+
+        [JsonProperty]
+        public string GoogleSheetIdVinland { get; set; }
+
+        [JsonProperty]
+        public string GoogleVinlandCharactersRange { get; set; }
+
+        [JsonProperty]
+        public string GoogleVinlandConnectionsRange { get; set; }
+
+        [JsonProperty]
+        public string GoogleVinlandActivitiesRange { get; set; }
     }
 }

@@ -10,9 +10,6 @@ namespace GryphonUtilityBot.Web.Models
         public string CultureInfoName { get; set; }
 
         [JsonProperty]
-        public string GoogleCredentialJson { get; set; }
-
-        [JsonProperty]
         public string AdminIdsJson { get; set; }
 
         [JsonProperty]

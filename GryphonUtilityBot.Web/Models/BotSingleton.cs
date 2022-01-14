@@ -18,6 +18,10 @@ namespace GryphonUtilityBot.Web.Models
                 config.GoogleCredential =
                     JsonConvert.DeserializeObject<Dictionary<string, string>>(config.GoogleCredentialJson);
             }
+            if (string.IsNullOrWhiteSpace(config.GoogleCredentialJson))
+            {
+                config.GoogleCredentialJson = JsonConvert.SerializeObject(config.GoogleCredential);
+            }
             if ((config.AdminIds == null) || (config.AdminIds.Count == 0))
             {
                 config.AdminIds = JsonConvert.DeserializeObject<List<long>>(config.AdminIdsJson);

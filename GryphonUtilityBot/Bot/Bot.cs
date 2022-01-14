@@ -20,12 +20,14 @@ namespace GryphonUtilityBot.Bot
             ArticlesManager = new Articles.Manager(this);
             ShopManager = new Shop.Manager(this);
             RollsManager = new Rolls.Manager(this);
+            VinlandManager = new Vinland.Manager(this);
 
             Commands.Add(new ShopCommand(this));
             Commands.Add(new ArticleCommand(this));
             Commands.Add(new ReadCommand(this));
             Commands.Add(new PrepareCommand(this));
             Commands.Add(new RollCommand(this));
+            Commands.Add(new VinlandCommand(this));
         }
 
         protected override Task UpdateAsync(Message message, bool fromChat, CommandBase<Bot, Config> command = null,
@@ -93,6 +95,7 @@ namespace GryphonUtilityBot.Bot
         internal readonly Records.Manager RecordsManager;
         internal readonly Shop.Manager ShopManager;
         internal readonly Rolls.Manager RollsManager;
+        internal readonly Vinland.Manager VinlandManager;
 
         internal MarkQuery CurrentQuery;
         internal DateTime CurrentQueryTime;
