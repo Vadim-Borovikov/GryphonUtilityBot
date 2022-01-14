@@ -12,7 +12,7 @@ namespace GryphonUtilityBot.Actions
             _command = command;
         }
 
-        protected override Task ExecuteAsync() => _command.ExecuteAsync(Message);
+        protected override Task ExecuteAsync() => _command.ExecuteAsync(Message, false, null);
 
         private readonly CommandBase<Bot.Bot, Bot.Config> _command;
     }

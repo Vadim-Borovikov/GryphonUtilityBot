@@ -11,7 +11,7 @@ namespace GryphonUtilityBot.Bot.Commands
 
         public ReadCommand(Bot bot) : base(bot) { }
 
-        public override Task ExecuteAsync(Message message, bool fromChat = false)
+        public override Task ExecuteAsync(Message message, bool fromChat, string payload)
         {
             return Bot.ArticlesManager.DeleteFirstArticleAsync(message.Chat);
         }

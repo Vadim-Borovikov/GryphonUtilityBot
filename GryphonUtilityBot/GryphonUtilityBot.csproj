@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AbstractBot" Version="13.5.0" />
+    <PackageReference Include="AbstractBot" Version="15.2.0" />
     <PackageReference Include="morelinq" Version="3.3.2" />
   </ItemGroup>
 

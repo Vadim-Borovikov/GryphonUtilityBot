@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using AbstractBot;
 using GryphonUtilityBot.Actions;
@@ -29,9 +28,10 @@ namespace GryphonUtilityBot.Bot
             Commands.Add(new RollCommand(this));
         }
 
-        protected override Task UpdateAsync(Message message)
+        protected override Task UpdateAsync(Message message, bool fromChat, CommandBase<Bot, Config> command = null,
+            string payload = null)
         {
-            SupportedAction action = GetAction(message);
+            SupportedAction action = GetAction(message, command);
             return action == null
                 ? Client.SendStickerAsync(message.Chat, DontUnderstandSticker)
                 : action.ExecuteWrapperAsync(ForbiddenSticker);
@@ -42,7 +42,7 @@ namespace GryphonUtilityBot.Bot
             return RollsManager.ProcessQueryAsync(callbackQuery.Data, callbackQuery.Message);
         }
 
-        private SupportedAction GetAction(Message message)
+        private SupportedAction GetAction(Message message, CommandBase<Bot, Config> command)
         {
             if (message.ForwardFrom != null)
             {
@@ -53,7 +53,7 @@ namespace GryphonUtilityBot.Bot
                 return new ForwardAction(this, message);
             }
 
-            if (TryParseCommand(message, out CommandBase<Bot, Config> command))
+            if (command != null)
             {
                 return new CommandAction(this, message, command);
             }
@@ -89,17 +89,10 @@ namespace GryphonUtilityBot.Bot
             return null;
         }
 
-        private bool TryParseCommand(Message message, out CommandBase<Bot, Config> command)
-        {
-            command = Commands.FirstOrDefault(c => c.IsInvokingBy(message.Text));
-            return command != null;
-        }
-
         internal readonly Articles.Manager ArticlesManager;
         internal readonly Records.Manager RecordsManager;
         internal readonly Shop.Manager ShopManager;
         internal readonly Rolls.Manager RollsManager;
-
 
         internal MarkQuery CurrentQuery;
         internal DateTime CurrentQueryTime;
