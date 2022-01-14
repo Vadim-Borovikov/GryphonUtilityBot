@@ -90,7 +90,7 @@ namespace GryphonUtilityBot.Vinland
                 yield break;
             }
 
-            if (options.First().Distribution.Count < _characters.Count)
+            if (options.First().Distribution.Count < _activities.Count)
             {
                 foreach (Activity activity in _activities)
                 {
