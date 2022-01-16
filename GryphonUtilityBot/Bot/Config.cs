@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using AbstractBot;
 using GryphonUtilityBot.Shop;
 using Newtonsoft.Json;
@@ -33,5 +34,18 @@ namespace GryphonUtilityBot.Bot
 
         [JsonProperty]
         public string GoogleVinlandActivitiesRange { get; set; }
+
+        [JsonProperty]
+        public List<string> VinlandMorningPrefixLines { get; set; }
+
+        [JsonProperty]
+        public List<string> VinlandAfternoonPrefixLines { get; set; }
+
+        [JsonProperty]
+        public List<string> VinlandAfternoonPostfixLines { get; set; }
+
+        internal string VinlandMorningPrefixText => string.Join(Environment.NewLine, VinlandMorningPrefixLines);
+        internal string VinlandAfternoonPrefixText => string.Join(Environment.NewLine, VinlandAfternoonPrefixLines);
+        internal string VinlandAfternoonPostfixText => string.Join(Environment.NewLine, VinlandAfternoonPostfixLines);
     }
 }

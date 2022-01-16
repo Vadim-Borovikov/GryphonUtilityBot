@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,7 +27,7 @@ namespace GryphonUtilityBot.Vinland
 
             IEnumerable<Option> options = FillOptions();
             Option best = options.OrderByDescending(o => o.GetScore()).First();
-            await _bot.Client.SendTextMessageAsync(chatId, GetOptionText(best), ParseMode.MarkdownV2);
+            await _bot.Client.SendTextMessageAsync(chatId, GetRecommendationText(best, morning), ParseMode.MarkdownV2);
         }
 
         private async Task LoadAsync(bool morning)
@@ -63,9 +64,12 @@ namespace GryphonUtilityBot.Vinland
             }
         }
 
-        private string GetOptionText(Option option)
+        private string GetRecommendationText(Option option, bool morning)
         {
             var sb = new StringBuilder();
+
+            sb.AppendLine(morning ? _bot.Config.VinlandMorningPrefixText : _bot.Config.VinlandAfternoonPostfixText);
+            sb.AppendLine();
 
             foreach (Activity activity in _activities.Where(a => option.Distribution.ContainsKey(a)))
             {
@@ -77,6 +81,12 @@ namespace GryphonUtilityBot.Vinland
             {
                 sb.AppendLine();
                 sb.AppendLine($"Убежище: {string.Join(", ", resting.Select(c => c.Name))}");
+            }
+
+            if (!morning)
+            {
+                sb.AppendLine();
+                sb.AppendLine(_bot.Config.VinlandAfternoonPostfixText);
             }
 
             return sb.ToString();
