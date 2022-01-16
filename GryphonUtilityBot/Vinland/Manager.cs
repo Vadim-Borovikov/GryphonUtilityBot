@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AbstractBot;
 using GoogleSheetsManager;
 using GoogleSheetsManager.Providers;
 using Telegram.Bot;
@@ -14,23 +12,24 @@ namespace GryphonUtilityBot.Vinland
 {
     internal sealed class Manager
     {
-        public Manager(Bot.Bot bot) => _bot = bot;
-
-        public async Task RecommendAsync(ChatId chatId, bool morning)
+        public Manager(Bot.Bot bot)
         {
-            Message statusMessage =
-                await _bot.Client.SendTextMessageAsync(chatId, "_Загружаю игровые данные…_", ParseMode.MarkdownV2);
+            _bot = bot;
+            _morning = false;
+        }
 
-            await LoadAsync(morning);
-
-            await _bot.Client.FinalizeStatusMessageAsync(statusMessage);
+        public async Task RecommendAsync(ChatId chatId)
+        {
+            await LoadAsync();
 
             IEnumerable<Option> options = FillOptions();
             Option best = options.OrderByDescending(o => o.GetScore()).First();
-            await _bot.Client.SendTextMessageAsync(chatId, GetRecommendationText(best, morning), ParseMode.MarkdownV2);
+            await _bot.Client.SendTextMessageAsync(chatId, GetRecommendationText(best), ParseMode.MarkdownV2);
+
+            _morning = !_morning;
         }
 
-        private async Task LoadAsync(bool morning)
+        private async Task LoadAsync()
         {
             IList<Ability> abilities;
 
@@ -44,7 +43,7 @@ namespace GryphonUtilityBot.Vinland
             }
 
             _characters = _characters.Where(c => c.Relevant).ToList();
-            _activities = _activities.Where(a => a.IsRelevant(morning)).ToList();
+            _activities = _activities.Where(a => a.IsRelevant(_morning)).ToList();
 
             foreach (Ability ability in abilities)
             {
@@ -64,12 +63,11 @@ namespace GryphonUtilityBot.Vinland
             }
         }
 
-        private string GetRecommendationText(Option option, bool morning)
+        private string GetRecommendationText(Option option)
         {
             var sb = new StringBuilder();
 
-            sb.AppendLine(morning ? _bot.Config.VinlandMorningPrefixText : _bot.Config.VinlandAfternoonPostfixText);
-            sb.AppendLine();
+            sb.AppendLine(_morning ? _bot.Config.VinlandMorningPrefixText : _bot.Config.VinlandAfternoonPrefixText);
 
             foreach (Activity activity in _activities.Where(a => option.Distribution.ContainsKey(a)))
             {
@@ -83,11 +81,7 @@ namespace GryphonUtilityBot.Vinland
                 sb.AppendLine($"Убежище: {string.Join(", ", resting.Select(c => c.Name))}");
             }
 
-            if (!morning)
-            {
-                sb.AppendLine();
-                sb.AppendLine(_bot.Config.VinlandAfternoonPostfixText);
-            }
+            sb.AppendLine(_morning ? _bot.Config.VinlandMorningPostfixText : _bot.Config.VinlandAfternoonPostfixText);
 
             return sb.ToString();
         }
@@ -141,7 +135,9 @@ namespace GryphonUtilityBot.Vinland
         private const string ApplicationName = "GryphonUtilityBot";
 
         private readonly Bot.Bot _bot;
+
         private IList<Character> _characters;
         private IList<Activity> _activities;
+        private bool _morning;
     }
 }

@@ -39,13 +39,24 @@ namespace GryphonUtilityBot.Bot
         public List<string> VinlandMorningPrefixLines { get; set; }
 
         [JsonProperty]
+        public List<string> VinlandMorningPostfixLines { get; set; }
+
+        [JsonProperty]
         public List<string> VinlandAfternoonPrefixLines { get; set; }
 
         [JsonProperty]
         public List<string> VinlandAfternoonPostfixLines { get; set; }
 
-        internal string VinlandMorningPrefixText => string.Join(Environment.NewLine, VinlandMorningPrefixLines);
-        internal string VinlandAfternoonPrefixText => string.Join(Environment.NewLine, VinlandAfternoonPrefixLines);
-        internal string VinlandAfternoonPostfixText => string.Join(Environment.NewLine, VinlandAfternoonPostfixLines);
+        internal string VinlandMorningPrefixText =>
+            VinlandMorningPrefixLines == null ? "" : string.Join(Environment.NewLine, VinlandMorningPrefixLines);
+
+        internal string VinlandMorningPostfixText =>
+            VinlandMorningPostfixLines == null ? "" : string.Join(Environment.NewLine, VinlandMorningPostfixLines);
+
+        internal string VinlandAfternoonPrefixText =>
+            VinlandAfternoonPrefixLines == null ? "" : string.Join(Environment.NewLine, VinlandAfternoonPrefixLines);
+
+        internal string VinlandAfternoonPostfixText =>
+            VinlandAfternoonPostfixLines == null ? "" : string.Join(Environment.NewLine, VinlandAfternoonPostfixLines);
     }
 }

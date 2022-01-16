@@ -27,8 +27,7 @@ namespace GryphonUtilityBot.Bot
             Commands.Add(new ReadCommand(this));
             Commands.Add(new PrepareCommand(this));
             Commands.Add(new RollCommand(this));
-            Commands.Add(new VinlandMorningCommand(this));
-            Commands.Add(new VinlandAfternoonCommand(this));
+            Commands.Add(new VinlandCommand(this));
         }
 
         protected override Task UpdateAsync(Message message, bool fromChat, CommandBase<Bot, Config> command = null,
