@@ -15,12 +15,12 @@ namespace GryphonUtilityBot.Vinland
     {
         public Manager(Bot.Bot bot) => _bot = bot;
 
-        public async Task RecommendAsync(ChatId chatId)
+        public async Task RecommendAsync(ChatId chatId, bool morning)
         {
             Message statusMessage =
                 await _bot.Client.SendTextMessageAsync(chatId, "_Загружаю игровые данные…_", ParseMode.MarkdownV2);
 
-            await LoadAsync();
+            await LoadAsync(morning);
 
             await _bot.Client.FinalizeStatusMessageAsync(statusMessage);
 
@@ -29,7 +29,7 @@ namespace GryphonUtilityBot.Vinland
             await _bot.Client.SendTextMessageAsync(chatId, ShowOption(best), ParseMode.MarkdownV2);
         }
 
-        private async Task LoadAsync()
+        private async Task LoadAsync(bool morning)
         {
             IList<Ability> abilities;
 
@@ -43,7 +43,7 @@ namespace GryphonUtilityBot.Vinland
             }
 
             _characters = _characters.Where(c => c.Relevant).ToList();
-            _activities = _activities.Where(a => a.Relevant).ToList();
+            _activities = _activities.Where(a => a.IsRelevant(morning)).ToList();
 
             foreach (Ability ability in abilities)
             {
