@@ -29,7 +29,7 @@ namespace GryphonUtilityBot.Bot
         public string GoogleVinlandCharactersRange { get; set; }
 
         [JsonProperty]
-        public string GoogleVinlandConnectionsRange { get; set; }
+        public string GoogleVinlandAbilitiesRange { get; set; }
 
         [JsonProperty]
         public string GoogleVinlandActivitiesRange { get; set; }

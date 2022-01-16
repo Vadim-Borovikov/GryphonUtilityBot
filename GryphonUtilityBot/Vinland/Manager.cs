@@ -31,35 +31,35 @@ namespace GryphonUtilityBot.Vinland
 
         private async Task LoadAsync()
         {
-            IList<Connection> connections;
+            IList<Ability> abilities;
 
             using (var provider =
                 new SheetsProvider(_bot.Config.GoogleCredentialJson, ApplicationName, _bot.Config.GoogleSheetIdVinland))
             {
                 _characters = await DataManager.GetValuesAsync<Character>(provider, _bot.Config.GoogleVinlandCharactersRange);
                 _activities = await DataManager.GetValuesAsync<Activity>(provider, _bot.Config.GoogleVinlandActivitiesRange);
-                connections =
-                    await DataManager.GetValuesAsync<Connection>(provider, _bot.Config.GoogleVinlandConnectionsRange);
+                abilities =
+                    await DataManager.GetValuesAsync<Ability>(provider, _bot.Config.GoogleVinlandAbilitiesRange);
             }
 
             _characters = _characters.Where(c => c.Relevant).ToList();
             _activities = _activities.Where(a => a.Relevant).ToList();
 
-            foreach (Connection connection in connections)
+            foreach (Ability ability in abilities)
             {
-                Character character = _characters.SingleOrDefault(c => c.Name == connection.Character);
+                Character character = _characters.SingleOrDefault(c => c.Name == ability.Character);
                 if (character == null)
                 {
                     continue;
                 }
 
-                Activity activity = _activities.FirstOrDefault(a => a.Ability == connection.Ability);
+                Activity activity = _activities.FirstOrDefault(a => a.Ability == ability.Name);
                 if (activity == null)
                 {
                     continue;
                 }
 
-                character.Abilities[activity.Ability] = connection.Scores;
+                character.Abilities[activity.Ability] = ability.Scores;
             }
         }
 
