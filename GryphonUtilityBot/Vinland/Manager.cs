@@ -66,10 +66,19 @@ namespace GryphonUtilityBot.Vinland
         private string ShowOption(Option option)
         {
             var sb = new StringBuilder();
+
             foreach (Activity activity in _activities.Where(a => option.Distribution.ContainsKey(a)))
             {
                 sb.AppendLine($"{activity.Name}: {option.Distribution[activity].Name}");
             }
+
+            List<Character> resting = _characters.Where(c => c.Relevant && !option.Distribution.ContainsValue(c)).ToList();
+            if (resting.Any())
+            {
+                sb.AppendLine();
+                sb.AppendLine($"Убежище: {string.Join(", ", resting.Select(c => c.Name))}");
+            }
+
             return sb.ToString();
         }
 
