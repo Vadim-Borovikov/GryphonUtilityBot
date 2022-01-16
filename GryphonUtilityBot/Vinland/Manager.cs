@@ -26,7 +26,7 @@ namespace GryphonUtilityBot.Vinland
 
             IEnumerable<Option> options = FillOptions();
             Option best = options.OrderByDescending(o => o.GetScore()).First();
-            await _bot.Client.SendTextMessageAsync(chatId, ShowOption(best), ParseMode.MarkdownV2);
+            await _bot.Client.SendTextMessageAsync(chatId, GetOptionText(best), ParseMode.MarkdownV2);
         }
 
         private async Task LoadAsync(bool morning)
@@ -63,7 +63,7 @@ namespace GryphonUtilityBot.Vinland
             }
         }
 
-        private string ShowOption(Option option)
+        private string GetOptionText(Option option)
         {
             var sb = new StringBuilder();
 
