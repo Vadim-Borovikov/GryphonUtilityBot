@@ -7,12 +7,14 @@ namespace GryphonUtilityBot.Vinland
     {
         public string Name { get; private set; }
         public string Ability { get; private set; }
+        public bool Priority { get; private set; }
 
         public void Load(IDictionary<string, object> valueSet)
         {
             Name = valueSet[NameTitle]?.ToString();
             Ability = valueSet[AbilityTitle]?.ToString();
             _functional = valueSet[FunctionalTitle]?.ToBool() ?? false;
+            Priority = valueSet[PriorityTitle]?.ToBool() ?? false;
             _morning = valueSet[MorningTitle]?.ToBool() ?? false;
             _afternoon = valueSet[AfternoonTitle]?.ToBool() ?? false;
         }
@@ -26,6 +28,7 @@ namespace GryphonUtilityBot.Vinland
         private const string NameTitle = "Название";
         private const string AbilityTitle = "Способность";
         private const string FunctionalTitle = "Работает";
+        private const string PriorityTitle = "Приоритет";
         private const string MorningTitle = "Утро";
         private const string AfternoonTitle = "Вечер";
     }

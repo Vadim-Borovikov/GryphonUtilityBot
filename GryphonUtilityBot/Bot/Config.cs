@@ -50,6 +50,9 @@ namespace GryphonUtilityBot.Bot
         [JsonProperty]
         public short VinlandXpBonusScore { get; set; }
 
+        [JsonProperty]
+        public short VinlandActivityPriorityScore { get; set; }
+
         internal string VinlandMorningPrefixText =>
             VinlandMorningPrefixLines == null ? "" : string.Join(Environment.NewLine, VinlandMorningPrefixLines);
 

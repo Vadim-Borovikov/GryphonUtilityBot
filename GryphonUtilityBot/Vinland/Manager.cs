@@ -98,7 +98,8 @@ namespace GryphonUtilityBot.Vinland
             {
                 foreach (Activity activity in _activities)
                 {
-                    yield return new Option(activity, character, _bot.Config.VinlandXpBonusScore);
+                    yield return new Option(activity, character, _bot.Config.VinlandXpBonusScore,
+                        _bot.Config.VinlandActivityPriorityScore);
                 }
                 yield break;
             }

@@ -6,8 +6,8 @@ namespace GryphonUtilityBot.Vinland
     {
         public readonly Dictionary<Activity, Character> Distribution;
 
-        public Option(Activity activity, Character character, short xpBonusScore)
-            : this(new Dictionary<Activity, Character> { [activity] = character }, xpBonusScore)
+        public Option(Activity activity, Character character, short xpBonusScore, short activityPriorityScore)
+            : this(new Dictionary<Activity, Character> { [activity] = character }, xpBonusScore, activityPriorityScore)
         { }
 
         public short GetScore()
@@ -26,6 +26,10 @@ namespace GryphonUtilityBot.Vinland
                 {
                     score -= _xpBonusScore;
                 }
+                if (activity.Priority)
+                {
+                    score += _activityPriorityScore;
+                }
                 score += scores.Value;
             }
             return score;
@@ -38,15 +42,17 @@ namespace GryphonUtilityBot.Vinland
             {
                 distribution[activity] = Distribution[activity];
             }
-            return new Option(distribution, _xpBonusScore);
+            return new Option(distribution, _xpBonusScore, _activityPriorityScore);
         }
 
-        private Option(Dictionary<Activity, Character> distribution, short xpBonusScore)
+        private Option(Dictionary<Activity, Character> distribution, short xpBonusScore, short activityPriorityScore)
         {
             Distribution = distribution;
             _xpBonusScore = xpBonusScore;
+            _activityPriorityScore = activityPriorityScore;
         }
 
         private readonly short _xpBonusScore;
+        private readonly short _activityPriorityScore;
     }
 }
