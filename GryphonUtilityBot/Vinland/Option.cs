@@ -18,19 +18,20 @@ namespace GryphonUtilityBot.Vinland
             {
                 Character character = Distribution[activity];
                 AbilityScores scores = character.Abilities[activity.Ability];
+                short currentScore = scores.Value;
+                if (activity.Priority)
+                {
+                    currentScore *= _activityPriorityScore;
+                }
                 if (scores.XpBonus)
                 {
-                    score += _xpBonusScore;
+                    currentScore += _xpBonusScore;
                 }
                 if (scores.XpPenalty)
                 {
-                    score -= _xpBonusScore;
+                    currentScore -= _xpBonusScore;
                 }
-                if (activity.Priority)
-                {
-                    score += _activityPriorityScore;
-                }
-                score += scores.Value;
+                score += currentScore;
             }
             return score;
         }
