@@ -59,7 +59,7 @@ namespace GryphonUtilityBot.Vinland
                     continue;
                 }
 
-                character.Abilities[activity.Ability] = ability.Scores;
+                character.Abilities[activity.Ability] = ability.Score;
             }
         }
 
@@ -98,8 +98,7 @@ namespace GryphonUtilityBot.Vinland
             {
                 foreach (Activity activity in _activities)
                 {
-                    yield return new Option(activity, character, _bot.Config.VinlandXpBonusScore,
-                        _bot.Config.VinlandActivityPriorityScore);
+                    yield return new Option(activity, character, _bot.Config.VinlandActivityPriorityScore);
                 }
                 yield break;
             }

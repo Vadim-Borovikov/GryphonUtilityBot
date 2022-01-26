@@ -48,9 +48,6 @@ namespace GryphonUtilityBot.Bot
         public List<string> VinlandAfternoonPostfixLines { get; set; }
 
         [JsonProperty]
-        public short VinlandXpBonusScore { get; set; }
-
-        [JsonProperty]
         public short VinlandActivityPriorityScore { get; set; }
 
         internal string VinlandMorningPrefixText =>

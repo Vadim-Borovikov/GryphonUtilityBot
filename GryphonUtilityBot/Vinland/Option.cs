@@ -6,30 +6,21 @@ namespace GryphonUtilityBot.Vinland
     {
         public readonly Dictionary<Activity, Character> Distribution;
 
-        public Option(Activity activity, Character character, short xpBonusScore, short activityPriorityScore)
-            : this(new Dictionary<Activity, Character> { [activity] = character }, xpBonusScore, activityPriorityScore)
+        public Option(Activity activity, Character character, short activityPriorityScore)
+            : this(new Dictionary<Activity, Character> { [activity] = character }, activityPriorityScore)
         { }
 
-        public short GetScore()
+        public decimal GetScore()
         {
-            short score = 0;
+            decimal score = 0;
             // ReSharper disable once LoopCanBePartlyConvertedToQuery
             foreach (Activity activity in Distribution.Keys)
             {
                 Character character = Distribution[activity];
-                AbilityScores scores = character.Abilities[activity.Ability];
-                short currentScore = scores.Value;
+                decimal currentScore = character.Abilities[activity.Ability];
                 if (activity.Priority)
                 {
                     currentScore *= _activityPriorityScore;
-                }
-                if (scores.XpBonus)
-                {
-                    currentScore += _xpBonusScore;
-                }
-                if (scores.XpPenalty)
-                {
-                    currentScore -= _xpBonusScore;
                 }
                 score += currentScore;
             }
@@ -43,17 +34,15 @@ namespace GryphonUtilityBot.Vinland
             {
                 distribution[activity] = Distribution[activity];
             }
-            return new Option(distribution, _xpBonusScore, _activityPriorityScore);
+            return new Option(distribution, _activityPriorityScore);
         }
 
-        private Option(Dictionary<Activity, Character> distribution, short xpBonusScore, short activityPriorityScore)
+        private Option(Dictionary<Activity, Character> distribution, short activityPriorityScore)
         {
             Distribution = distribution;
-            _xpBonusScore = xpBonusScore;
             _activityPriorityScore = activityPriorityScore;
         }
 
-        private readonly short _xpBonusScore;
         private readonly short _activityPriorityScore;
     }
 }
