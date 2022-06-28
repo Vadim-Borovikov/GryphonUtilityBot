@@ -364,3 +364,4 @@ FodyWeavers.xsd
 /GryphonUtilityBot.Web/appsettings.Development.json
 /GryphonUtilityBot.Web/save.json
 /GryphonUtilityBot.Web/Properties/launchSettings.json
+/NuGet.Config
