@@ -11,7 +11,7 @@ namespace GryphonUtilityBot.Rolls
 {
     internal sealed class Manager
     {
-        public Manager(Bot.Bot bot)
+        public Manager(Bot bot)
         {
             _bot = bot;
 
@@ -158,7 +158,7 @@ namespace GryphonUtilityBot.Rolls
             }
         }
 
-        private readonly Bot.Bot _bot;
+        private readonly Bot _bot;
 
         private byte _d6Slashing;
         private byte _bonusSlashing;

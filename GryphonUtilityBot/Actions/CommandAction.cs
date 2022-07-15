@@ -6,7 +6,7 @@ namespace GryphonUtilityBot.Actions
 {
     internal sealed class CommandAction : SupportedAction
     {
-        public CommandAction(Bot.Bot bot, Message message, CommandBase<Bot.Bot, Bot.Config> command)
+        public CommandAction(Bot bot, Message message, CommandBase<Bot, Config> command)
             : base(bot, message)
         {
             _command = command;
@@ -14,6 +14,6 @@ namespace GryphonUtilityBot.Actions
 
         protected override Task ExecuteAsync() => _command.ExecuteAsync(Message, false, null);
 
-        private readonly CommandBase<Bot.Bot, Bot.Config> _command;
+        private readonly CommandBase<Bot, Config> _command;
     }
 }

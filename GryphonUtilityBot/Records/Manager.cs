@@ -9,7 +9,7 @@ namespace GryphonUtilityBot.Records
 {
     internal sealed class Manager
     {
-        public Manager(Bot.Bot bot, SaveManager<List<Record>> saveManager)
+        public Manager(Bot bot, SaveManager<List<Record>> saveManager)
         {
             _saveManager = saveManager;
             _bot = bot;
@@ -94,6 +94,6 @@ namespace GryphonUtilityBot.Records
         }
 
         private readonly SaveManager<List<Record>> _saveManager;
-        private readonly Bot.Bot _bot;
+        private readonly Bot _bot;
     }
 }

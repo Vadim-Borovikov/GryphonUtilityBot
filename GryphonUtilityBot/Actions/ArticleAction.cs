@@ -6,7 +6,7 @@ namespace GryphonUtilityBot.Actions
 {
     internal sealed class ArticleAction : SupportedAction
     {
-        public ArticleAction(Bot.Bot bot, Message message, Article article) : base(bot, message) => _article = article;
+        public ArticleAction(Bot bot, Message message, Article article) : base(bot, message) => _article = article;
 
         protected override Task ExecuteAsync() => Bot.ArticlesManager.ProcessNewArticleAsync(Message.Chat, _article);
 

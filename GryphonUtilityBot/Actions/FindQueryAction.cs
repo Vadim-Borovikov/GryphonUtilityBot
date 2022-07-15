@@ -6,7 +6,7 @@ namespace GryphonUtilityBot.Actions
 {
     internal sealed class FindQueryAction : SupportedAction
     {
-        public FindQueryAction(Bot.Bot bot, Message message, FindQuery query) : base(bot, message) => _query = query;
+        public FindQueryAction(Bot bot, Message message, FindQuery query) : base(bot, message) => _query = query;
 
         protected override Task ExecuteAsync()
         {

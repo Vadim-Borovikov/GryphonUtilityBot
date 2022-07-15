@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 using AbstractBot;
 using GryphonUtilityBot.Actions;
 using GryphonUtilityBot.Articles;
-using GryphonUtilityBot.Bot.Commands;
+using GryphonUtilityBot.Commands;
 using GryphonUtilityBot.Records;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace GryphonUtilityBot.Bot
+namespace GryphonUtilityBot
 {
     public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
     {

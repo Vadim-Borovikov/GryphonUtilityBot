@@ -2,7 +2,7 @@
 using AbstractBot;
 using Telegram.Bot.Types;
 
-namespace GryphonUtilityBot.Bot.Commands
+namespace GryphonUtilityBot.Commands
 {
     internal sealed class PrepareCommand : CommandBase<Bot, Config>
     {
