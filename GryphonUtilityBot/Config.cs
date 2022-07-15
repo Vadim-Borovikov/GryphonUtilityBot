@@ -1,17 +1,10 @@
-﻿using AbstractBot;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace GryphonUtilityBot
 {
-    public class Config : ConfigGoogleSheets
+    public class Config : AbstractBot.Config
     {
         [JsonProperty]
-        public string GoogleCredentialJson { get; set; }
-
-        [JsonProperty]
         public int MistressId { get; set; }
-
-        [JsonProperty]
-        public string GoogleRange { get; set; }
     }
 }
