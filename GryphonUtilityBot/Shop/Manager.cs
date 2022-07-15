@@ -15,7 +15,7 @@ namespace GryphonUtilityBot.Shop
     {
         public bool HasCurrentItem => _currentItem != null;
 
-        public Manager(Bot.Bot bot)
+        public Manager(Bot bot)
         {
             _bot = bot;
 
@@ -173,6 +173,6 @@ namespace GryphonUtilityBot.Shop
         private Item _currentItem;
         private bool _currentAmountIsPacks;
 
-        private readonly Bot.Bot _bot;
+        private readonly Bot _bot;
     }
 }

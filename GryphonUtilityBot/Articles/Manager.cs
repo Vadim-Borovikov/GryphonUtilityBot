@@ -11,7 +11,7 @@ namespace GryphonUtilityBot.Articles
 {
     internal sealed class Manager
     {
-        public Manager(Bot.Bot bot)
+        public Manager(Bot bot)
         {
             _bot = bot;
             _articles = new SortedSet<Article>();
@@ -131,6 +131,6 @@ namespace GryphonUtilityBot.Articles
         }
 
         private SortedSet<Article> _articles;
-        private readonly Bot.Bot _bot;
+        private readonly Bot _bot;
     }
 }

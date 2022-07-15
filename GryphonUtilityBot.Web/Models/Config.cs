@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace GryphonUtilityBot.Web.Models
 {
-    public sealed class Config : Bot.Config
+    public sealed class Config : GryphonUtilityBot.Config
     {
         [JsonProperty]
         public string CultureInfoName { get; set; }

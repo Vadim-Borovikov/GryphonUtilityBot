@@ -1,5 +1,5 @@
 ﻿using System;
-using File = System.IO.File;
+using System.IO;
 
 namespace GryphonUtilityBot.Web
 {

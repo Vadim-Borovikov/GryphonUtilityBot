@@ -12,7 +12,7 @@ namespace GryphonUtilityBot.Vinland
 {
     internal sealed class Manager
     {
-        public Manager(Bot.Bot bot)
+        public Manager(Bot bot)
         {
             _bot = bot;
             _morning = false;
@@ -134,7 +134,7 @@ namespace GryphonUtilityBot.Vinland
 
         private const string ApplicationName = "GryphonUtilityBot";
 
-        private readonly Bot.Bot _bot;
+        private readonly Bot _bot;
 
         private IList<Character> _characters;
         private IList<Activity> _activities;

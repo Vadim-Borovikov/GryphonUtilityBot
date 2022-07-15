@@ -14,7 +14,7 @@ namespace GryphonUtilityBot.Currency
             return (currecny == CurrencyInfo.Currecny.RURCurrent) || (currecny == CurrencyInfo.Currecny.RURBefore);
         }
 
-        public Manager(Bot.Bot bot)
+        public Manager(Bot bot)
         {
             _bot = bot;
             _current = CurrencyInfo.Currecny.AED;
@@ -78,6 +78,6 @@ namespace GryphonUtilityBot.Currency
             { CurrencyInfo.Currecny.TRY, new CurrencyInfo(17.5m, "TRY", "TRY ₺, турецкие лиры")  }
         };
 
-        private readonly Bot.Bot _bot;
+        private readonly Bot _bot;
     }
 }

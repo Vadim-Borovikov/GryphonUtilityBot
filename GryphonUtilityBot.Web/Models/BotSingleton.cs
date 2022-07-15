@@ -7,7 +7,7 @@ namespace GryphonUtilityBot.Web.Models
 {
     public sealed class BotSingleton : IDisposable
     {
-        internal readonly Bot.Bot Bot;
+        internal readonly Bot Bot;
 
         public BotSingleton(IOptions<Config> options)
         {
@@ -26,7 +26,7 @@ namespace GryphonUtilityBot.Web.Models
             {
                 config.AdminIds = JsonConvert.DeserializeObject<List<long>>(config.AdminIdsJson);
             }
-            Bot = new Bot.Bot(config);
+            Bot = new Bot(config);
         }
 
         public void Dispose() => Bot.Dispose();

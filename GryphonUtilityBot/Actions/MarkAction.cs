@@ -6,7 +6,7 @@ namespace GryphonUtilityBot.Actions
 {
     internal sealed class MarkAction : SupportedAction
     {
-        public MarkAction(Bot.Bot bot, Message message, Message recordMessage, MarkQuery query)
+        public MarkAction(Bot bot, Message message, Message recordMessage, MarkQuery query)
             : base(bot, message)
         {
             _recordMessage = recordMessage;

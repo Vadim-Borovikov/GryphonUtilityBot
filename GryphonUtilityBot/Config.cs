@@ -4,7 +4,7 @@ using AbstractBot;
 using GryphonUtilityBot.Shop;
 using Newtonsoft.Json;
 
-namespace GryphonUtilityBot.Bot
+namespace GryphonUtilityBot
 {
     public class Config : ConfigGoogleSheets
     {
