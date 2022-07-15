@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace GryphonUtilityBot.Web.Models
 {
@@ -11,16 +9,5 @@ namespace GryphonUtilityBot.Web.Models
 
         [JsonProperty]
         public string AdminIdsJson { get; set; }
-
-        [JsonProperty]
-        public int PingPeriodSeconds { get; set; }
-
-        [JsonProperty]
-        public string PingUrisJson { get; set; }
-
-        [JsonProperty]
-        public List<Uri> PingUris { get; set; }
-
-        internal TimeSpan PingPeriod => TimeSpan.FromSeconds(PingPeriodSeconds);
     }
 }
