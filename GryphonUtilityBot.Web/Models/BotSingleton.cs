@@ -1,22 +1,15 @@
-﻿using System.Collections.Generic;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Options;
 
-namespace GryphonUtilityBot.Web.Models
+namespace GryphonUtilityBot.Web.Models;
+
+public sealed class BotSingleton
 {
-    public sealed class BotSingleton
+    internal readonly Bot Bot;
+
+    public BotSingleton(IOptions<ConfigJson> options)
     {
-        internal readonly Bot Bot;
-
-        public BotSingleton(IOptions<Config> options)
-        {
-            Config config = options.Value;
-
-            if ((config.AdminIds == null) || (config.AdminIds.Count == 0))
-            {
-                config.AdminIds = JsonConvert.DeserializeObject<List<long>>(config.AdminIdsJson);
-            }
-            Bot = new Bot(config);
-        }
+        ConfigJson configJson = options.Value;
+        Config config = configJson.Convert();
+        Bot = new Bot(config);
     }
 }
