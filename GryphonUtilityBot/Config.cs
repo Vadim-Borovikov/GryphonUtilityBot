@@ -12,6 +12,9 @@ namespace GryphonUtilityBot
         public int MistressId { get; set; }
 
         [JsonProperty]
+        public string SavePath { get; set; }
+
+        [JsonProperty]
         public string GoogleRange { get; set; }
     }
 }
