@@ -1,17 +1,21 @@
-﻿using AbstractBot;
-using Newtonsoft.Json;
+﻿using System;
+using AbstractBot;
 
-namespace GryphonUtilityBot
+namespace GryphonUtilityBot;
+
+public sealed class Config : ConfigGoogleSheets
 {
-    public class Config : ConfigGoogleSheets
+    internal readonly string GoogleRange;
+    internal readonly long MistressId;
+
+    public Config(string token, string systemTimeZoneId, string dontUnderstandStickerFileId,
+        string forbiddenStickerFileId, TimeSpan sendMessagePeriodPrivate, TimeSpan sendMessagePeriodGroup,
+        TimeSpan sendMessagePeriodGlobal, string googleCredentialJson, string applicationName, string googleSheetId,
+        string googleRange, long mistressId)
+        : base(token, systemTimeZoneId, dontUnderstandStickerFileId, forbiddenStickerFileId, sendMessagePeriodPrivate,
+            sendMessagePeriodGroup, sendMessagePeriodGlobal, googleCredentialJson, applicationName, googleSheetId)
     {
-        [JsonProperty]
-        public string GoogleCredentialJson { get; set; }
-
-        [JsonProperty]
-        public int MistressId { get; set; }
-
-        [JsonProperty]
-        public string GoogleRange { get; set; }
+        GoogleRange = googleRange;
+        MistressId = mistressId;
     }
 }

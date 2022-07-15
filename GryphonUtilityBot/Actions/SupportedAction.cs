@@ -1,37 +1,37 @@
 ﻿using System.Threading.Tasks;
-using Telegram.Bot;
+using AbstractBot;
+using GryphonUtilities;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.InputFiles;
 
-namespace GryphonUtilityBot.Actions
+namespace GryphonUtilityBot.Actions;
+
+internal abstract class SupportedAction
 {
-    internal abstract class SupportedAction
+    protected SupportedAction(Bot bot, Message message)
     {
-        protected SupportedAction(Bot bot, Message message)
-        {
-            Bot = bot;
-            Message = message;
-        }
-
-        internal Task ExecuteWrapperAsync(InputOnlineFile forbiddenSticker)
-        {
-            bool isMistress = Message.From.Id == Bot.Config.MistressId;
-            if (isMistress && !AllowedForMistress)
-            {
-                return Bot.Client.SendTextMessageAsync(Message.Chat,
-                    "Простите, госпожа, но господин заблокировал это действие даже для Вас.");
-            }
-
-            return Bot.IsSuperAdmin(Message.From.Id) || Bot.IsAdmin(Message.From.Id)
-                ? ExecuteAsync()
-                : Bot.Client.SendStickerAsync(Message.Chat, forbiddenSticker);
-        }
-
-        protected abstract Task ExecuteAsync();
-
-        protected virtual bool AllowedForMistress => false;
-
-        protected readonly Bot Bot;
-        protected readonly Message Message;
+        Bot = bot;
+        Message = message;
     }
+
+    internal Task ExecuteWrapperAsync(InputOnlineFile forbiddenSticker)
+    {
+        User user = Message.From.GetValue(nameof(Message.From));
+        bool isMistress = user.Id == Bot.Config.MistressId;
+        if (isMistress && !AllowedForMistress)
+        {
+            return Bot.SendTextMessageAsync(Message.Chat,
+                "Простите, госпожа, но господин заблокировал это действие даже для Вас.");
+        }
+
+        bool shouldExecute = Bot.IsAccessSuffice(user.Id, BotBase<Bot, Config>.AccessType.Admins);
+        return shouldExecute ? ExecuteAsync() : Bot.SendStickerAsync(Message.Chat, forbiddenSticker);
+    }
+
+    protected abstract Task ExecuteAsync();
+
+    protected virtual bool AllowedForMistress => false;
+
+    protected readonly Bot Bot;
+    protected readonly Message Message;
 }

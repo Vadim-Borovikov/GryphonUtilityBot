@@ -2,18 +2,17 @@
 using AbstractBot;
 using Telegram.Bot.Types;
 
-namespace GryphonUtilityBot.Actions
+namespace GryphonUtilityBot.Actions;
+
+internal sealed class CommandAction : SupportedAction
 {
-    internal sealed class CommandAction : SupportedAction
+    public CommandAction(Bot bot, Message message, CommandBase<Bot, Config> command)
+        : base(bot, message)
     {
-        public CommandAction(Bot bot, Message message, CommandBase<Bot, Config> command)
-            : base(bot, message)
-        {
-            _command = command;
-        }
-
-        protected override Task ExecuteAsync() => _command.ExecuteAsync(Message, false, null);
-
-        private readonly CommandBase<Bot, Config> _command;
+        _command = command;
     }
+
+    protected override Task ExecuteAsync() => _command.ExecuteAsync(Message, false, null);
+
+    private readonly CommandBase<Bot, Config> _command;
 }
