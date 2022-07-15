@@ -1,14 +1,22 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Telegram.Bot.Types;
 
 namespace GryphonUtilityBot.Actions
 {
     internal sealed class NumberAction : SupportedAction
     {
-        public NumberAction(Bot.Bot bot, Message message, int number) : base(bot, message) => _number = number;
+        public NumberAction(Bot.Bot bot, Message message, decimal number) : base(bot, message) => _number = number;
 
-        protected override Task ExecuteAsync() => Bot.ShopManager.ProcessNumberAsync(Message.Chat, _number);
+        protected override Task ExecuteAsync()
+        {
+            if (Bot.ShopManager.HasCurrentItem && (_number == Math.Floor(_number)))
+            {
+                return Bot.ShopManager.ProcessNumberAsync(Message.Chat, (int) _number);
+            }
+            return Bot.CurrencyManager.ProcessNumberAsync(Message.Chat, _number);
+        }
 
-        private readonly int _number;
+        private readonly decimal _number;
     }
 }

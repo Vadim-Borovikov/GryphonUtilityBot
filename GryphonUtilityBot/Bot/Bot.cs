@@ -19,6 +19,7 @@ namespace GryphonUtilityBot.Bot
             RecordsManager = new Records.Manager(this, saveManager);
             ArticlesManager = new Articles.Manager(this);
             ShopManager = new Shop.Manager(this);
+            CurrencyManager = new Currency.Manager(this);
             RollsManager = new Rolls.Manager(this);
             VinlandManager = new Vinland.Manager(this);
 
@@ -94,6 +95,7 @@ namespace GryphonUtilityBot.Bot
         internal readonly Articles.Manager ArticlesManager;
         internal readonly Records.Manager RecordsManager;
         internal readonly Shop.Manager ShopManager;
+        internal readonly Currency.Manager CurrencyManager;
         internal readonly Rolls.Manager RollsManager;
         internal readonly Vinland.Manager VinlandManager;
 

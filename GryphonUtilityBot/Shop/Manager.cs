@@ -13,6 +13,8 @@ namespace GryphonUtilityBot.Shop
 {
     internal sealed class Manager
     {
+        public bool HasCurrentItem => _currentItem != null;
+
         public Manager(Bot.Bot bot)
         {
             _bot = bot;
