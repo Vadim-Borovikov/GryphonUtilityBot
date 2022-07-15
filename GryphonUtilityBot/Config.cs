@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using AbstractBot;
-using GryphonUtilityBot.Shop;
+﻿using AbstractBot;
 using Newtonsoft.Json;
 
 namespace GryphonUtilityBot
@@ -12,9 +10,6 @@ namespace GryphonUtilityBot
 
         [JsonProperty]
         public int MistressId { get; set; }
-
-        [JsonProperty]
-        public List<Item> Items { get; set; }
 
         [JsonProperty]
         public string SavePath { get; set; }

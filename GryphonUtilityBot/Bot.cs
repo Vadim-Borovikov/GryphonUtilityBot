@@ -18,9 +18,7 @@ namespace GryphonUtilityBot
             var saveManager = new SaveManager<List<Record>>(Config.SavePath);
             RecordsManager = new Records.Manager(this, saveManager);
             ArticlesManager = new Articles.Manager(this);
-            ShopManager = new Shop.Manager(this);
 
-            Commands.Add(new ShopCommand(this));
             Commands.Add(new ArticleCommand(this));
             Commands.Add(new ReadCommand(this));
         }
@@ -48,11 +46,6 @@ namespace GryphonUtilityBot
             if (command != null)
             {
                 return new CommandAction(this, message, command);
-            }
-
-            if (int.TryParse(message.Text, out int number))
-            {
-                return new NumberAction(this, message, number);
             }
 
             if (Articles.Manager.TryParseArticle(message.Text, out Article article))
@@ -83,7 +76,6 @@ namespace GryphonUtilityBot
 
         internal readonly Articles.Manager ArticlesManager;
         internal readonly Records.Manager RecordsManager;
-        internal readonly Shop.Manager ShopManager;
 
         internal MarkQuery CurrentQuery;
         internal DateTime CurrentQueryTime;
