@@ -1,6 +1,6 @@
 ﻿namespace GryphonUtilityBot.Currency;
 
-internal sealed class CurrencyInfo
+internal sealed class Info
 {
     public enum Currecny
     {
@@ -15,7 +15,7 @@ internal sealed class CurrencyInfo
     public readonly string Code;
     public readonly string Description;
 
-    public CurrencyInfo(decimal toUSD, string code, string description)
+    public Info(decimal toUSD, string code, string description)
     {
         ToUSD = toUSD;
         Code = code;
