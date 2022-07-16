@@ -7,7 +7,7 @@ namespace GryphonUtilityBot.Commands;
 internal sealed class ArticleCommand : CommandBase<Bot, Config>
 {
     protected override string Name => "article";
-    protected override string Description => "";
+    protected override string Description => "Первая статья";
 
     public ArticleCommand(Bot bot) : base(bot) { }
 

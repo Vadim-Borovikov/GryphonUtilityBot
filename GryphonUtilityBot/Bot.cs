@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using AbstractBot;
 using GryphonUtilityBot.Actions;
@@ -15,14 +16,17 @@ public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
 {
     public Bot(Config config) : base(config)
     {
-        SaveManager<List<RecordData>, List<JsonRecordData?>> saveManager =
-            new(Config.SavePath, JsonRecordData.Convert, RecordData.Convert);
-        RecordsManager = new Records.Manager(this, saveManager);
-        ArticlesManager = new Articles.Manager(this);
-        CurrencyManager = new Currency.Manager(this);
+        _saveManager = new SaveManager<List<RecordData>, List<JsonRecordData?>>(Config.SavePath,
+            JsonRecordData.Convert, RecordData.Convert);
+    }
 
+    public override async Task StartAsync(CancellationToken cancellationToken)
+    {
+        Commands.Add(new StartCommand(this));
         Commands.Add(new ArticleCommand(this));
         Commands.Add(new ReadCommand(this));
+
+        await base.StartAsync(cancellationToken);
     }
 
     protected override Task UpdateAsync(Message message, bool fromChat, CommandBase<Bot, Config>? command = null,
@@ -113,11 +117,16 @@ public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
         return null;
     }
 
-    internal readonly Articles.Manager ArticlesManager;
-    internal readonly Records.Manager RecordsManager;
-    internal readonly Currency.Manager CurrencyManager;
-
     internal MarkQuery? CurrentQuery;
     internal DateTime CurrentQueryTime;
 
+    internal Articles.Manager ArticlesManager => _articlesManager ??= new Articles.Manager(this);
+    internal Records.Manager RecordsManager => _recordsManager ??= new Records.Manager(this, _saveManager);
+    internal Currency.Manager CurrencyManager => _currencyManager ??= new Currency.Manager(this);
+
+    private Articles.Manager? _articlesManager;
+    private Records.Manager? _recordsManager;
+    private Currency.Manager? _currencyManager;
+
+    private readonly SaveManager<List<RecordData>, List<JsonRecordData?>> _saveManager;
 }
