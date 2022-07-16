@@ -1,25 +1,14 @@
-﻿using System.Threading.Tasks;
-using GryphonUtilityBot.Web.Models;
+﻿using GryphonUtilityBot.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 
-namespace GryphonUtilityBot.Web.Controllers
+namespace GryphonUtilityBot.Web.Controllers;
+
+public sealed class UpdateController : Controller
 {
-    public sealed class UpdateController : Controller
+    public OkResult Post([FromServices] BotSingleton singleton, [FromBody] Update update)
     {
-        [HttpPost]
-        public async Task<OkResult> Post([FromBody]Update update, [FromServices]BotSingleton singleton)
-        {
-            if (update?.Type == UpdateType.CallbackQuery)
-            {
-                await singleton.Bot.ProcessQueryAsync(update.CallbackQuery);
-            }
-            else
-            {
-                await singleton.Bot.UpdateAsync(update);
-            }
-            return Ok();
-        }
+        singleton.Bot.Update(update);
+        return Ok();
     }
 }

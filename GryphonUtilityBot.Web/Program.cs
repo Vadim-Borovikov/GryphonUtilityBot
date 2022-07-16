@@ -1,33 +1,35 @@
 ﻿using System;
-using Microsoft.AspNetCore;
+using System.Threading.Tasks;
+using AbstractBot;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 
-namespace GryphonUtilityBot.Web
+namespace GryphonUtilityBot.Web;
+
+internal static class Program
 {
-    internal static class Program
+    public static async Task Main(string[] args)
     {
-        public static void Main(string[] args)
-        {
-            try
-            {
-                CreateWebHostBuilder(args).Build().Run();
-            }
-            catch (Exception ex)
-            {
-                Utils.LogException(ex);
-            }
-        }
+        Utils.LogManager.SetTimeZone(SystemTimeZoneId);
+        Utils.LogManager.LogMessage();
 
-        private static IWebHostBuilder CreateWebHostBuilder(string[] args)
+        Utils.LogManager.LogTimedMessage("Startup");
+        Utils.LogManager.DeleteExceptionLog();
+        try
         {
-            return WebHost.CreateDefaultBuilder(args)
-                .ConfigureLogging((ctx, builder) =>
-                {
-                    builder.AddConfiguration(ctx.Configuration.GetSection("Logging"));
-                    builder.AddFile(o => o.RootPath = ctx.HostingEnvironment.ContentRootPath);
-                })
-                .UseStartup<Startup>();
+            await CreateWebHostBuilder(args).Build().RunAsync();
+        }
+        catch (Exception ex)
+        {
+            Utils.LogManager.LogException(ex);
         }
     }
+
+    private static IHostBuilder CreateWebHostBuilder(string[] args)
+    {
+        return Host.CreateDefaultBuilder(args)
+                   .ConfigureWebHostDefaults(builder => builder.UseStartup<Startup>());
+    }
+
+    private const string SystemTimeZoneId = "Arabian Standard Time";
 }
