@@ -3,81 +3,88 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using AbstractBot;
 using GryphonUtilityBot.Actions;
-using GryphonUtilityBot.Articles;
-using GryphonUtilityBot.Commands;
 using GryphonUtilityBot.Records;
-using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
-namespace GryphonUtilityBot
+namespace GryphonUtilityBot;
+
+public sealed class Bot : BotBase<Bot, Config>
 {
-    public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
+    public Bot(Config config) : base(config)
     {
-        public Bot(Config config) : base(config)
-        {
-            var saveManager = new SaveManager<List<Record>>(Config.SavePath);
-            RecordsManager = new Records.Manager(this, saveManager);
-            ArticlesManager = new Articles.Manager(this);
+        SaveManager<List<RecordData>, List<JsonRecordData?>> saveManager =
+            new(Config.SavePath, JsonRecordData.Convert, RecordData.Convert);
+        RecordsManager = new Records.Manager(this, saveManager);
+    }
 
-            Commands.Add(new ArticleCommand(this));
-            Commands.Add(new ReadCommand(this));
+    protected override Task UpdateAsync(Message message, bool fromChat, CommandBase<Bot, Config>? command = null,
+        string? payload = null)
+    {
+        SupportedAction? action = GetAction(message, command);
+        return action is null
+            ? SendStickerAsync(message.Chat, DontUnderstandSticker)
+            : action.ExecuteWrapperAsync(ForbiddenSticker);
+    }
+
+    private SupportedAction? GetAction(Message message, CommandBase<Bot, Config>? command)
+    {
+        if (message.ForwardFrom is not null)
+        {
+            if (CurrentQuery is not null && (message.Date > CurrentQueryTime))
+            {
+                CurrentQuery = null;
+            }
+            return new ForwardAction(this, message);
         }
 
-        protected override Task UpdateAsync(Message message, bool fromChat, CommandBase<Bot, Config> command = null,
-            string payload = null)
+        if (command is not null)
         {
-            SupportedAction action = GetAction(message, command);
-            return action == null
-                ? Client.SendStickerAsync(message.Chat, DontUnderstandSticker)
-                : action.ExecuteWrapperAsync(ForbiddenSticker);
+            return new CommandAction(this, message, command);
         }
 
-        private SupportedAction GetAction(Message message, CommandBase<Bot, Config> command)
+        if (message.Type is not MessageType.Text)
         {
-            if (message.ForwardFrom != null)
-            {
-                if ((CurrentQuery != null) && (message.Date > CurrentQueryTime))
-                {
-                    CurrentQuery = null;
-                }
-                return new ForwardAction(this, message);
-            }
-
-            if (command != null)
-            {
-                return new CommandAction(this, message, command);
-            }
-
-            if (Articles.Manager.TryParseArticle(message.Text, out Article article))
-            {
-                return new ArticleAction(this, message, article);
-            }
-
-            if (FindQuery.TryParseFindQuery(message.Text, out FindQuery findQuery))
-            {
-                return new FindQueryAction(this, message, findQuery);
-            }
-
-            if (MarkQuery.TryParseMarkQuery(message.Text, out MarkQuery markQuery))
-            {
-                if (message.ReplyToMessage == null)
-                {
-                    return new RememberMarkAction(this, message, markQuery);
-                }
-
-                if (message.ReplyToMessage.ForwardFrom != null)
-                {
-                    return new MarkAction(this, message, message.ReplyToMessage, markQuery);
-                }
-            }
-
             return null;
         }
 
-        internal readonly Articles.Manager ArticlesManager;
-        internal readonly Records.Manager RecordsManager;
+        if (message.Text is null)
+        {
+            return null;
+        }
 
-        internal MarkQuery CurrentQuery;
-        internal DateTime CurrentQueryTime;
+        if (FindQuery.TryParseFindQuery(message.Text, out FindQuery? findQuery))
+        {
+            if (findQuery is null)
+            {
+                throw new NullReferenceException(nameof(findQuery));
+            }
+            return new FindQueryAction(this, message, findQuery);
+        }
+
+        if (MarkQuery.TryParseMarkQuery(message.Text, out MarkQuery? markQuery))
+        {
+            if (markQuery is null)
+            {
+                throw new NullReferenceException(nameof(findQuery));
+            }
+
+            if (message.ReplyToMessage is null)
+            {
+                return new RememberMarkAction(this, message, markQuery);
+            }
+
+            if (message.ReplyToMessage.ForwardFrom is not null)
+            {
+                return new MarkAction(this, message, message.ReplyToMessage, markQuery);
+            }
+        }
+
+        return null;
     }
+
+    internal readonly Records.Manager RecordsManager;
+
+    internal MarkQuery? CurrentQuery;
+    internal DateTime CurrentQueryTime;
 }

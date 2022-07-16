@@ -1,34 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace GryphonUtilityBot.Records
+namespace GryphonUtilityBot.Records;
+
+internal class MarkQuery
 {
-    internal class MarkQuery
+    public readonly DateTime? DateTime;
+    public readonly HashSet<string> Tags;
+
+    protected MarkQuery(DateTime? dateTime, IEnumerable<string> tags)
     {
-        public DateTime? DateTime;
-        public HashSet<string> Tags;
+        DateTime = dateTime;
+        Tags = new HashSet<string>(tags);
+    }
 
-        public static bool TryParseMarkQuery(string text, out MarkQuery query)
+    public static bool TryParseMarkQuery(string text, out MarkQuery? query)
+    {
+        query = ParseMarkQuery(text);
+        return query is not null;
+    }
+
+    private static MarkQuery? ParseMarkQuery(string text)
+    {
+        List<string> parts = new(text.Split(' '));
+        if (parts.Count == 0)
         {
-            query = ParseMarkQuery(text);
-            return query != null;
+            return null;
         }
 
-        private static MarkQuery ParseMarkQuery(string text)
-        {
-            var parts = new List<string>(text.Split(' '));
-            if (parts.Count == 0)
-            {
-                return null;
-            }
+        DateTime? dateTime = Utils.ParseFirstDateTime(parts);
 
-            DateTime? dateTime = Utils.ParseFirstDateTime(parts);
-
-            return new MarkQuery
-            {
-                DateTime = dateTime,
-                Tags = new HashSet<string>(parts)
-            };
-        }
+        return new MarkQuery(dateTime, parts);
     }
 }
