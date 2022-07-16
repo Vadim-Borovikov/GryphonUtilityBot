@@ -15,7 +15,7 @@ internal sealed class Manager
         _bot = bot;
     }
 
-    public void SaveRecord(Message message, MarkQuery? query)
+    public Task SaveRecordAsync(Message message, MarkQuery? query)
     {
         _saveManager.Load();
 
@@ -26,9 +26,11 @@ internal sealed class Manager
         }
 
         _saveManager.Save();
+
+        return _bot.SendTextMessageAsync(message.Chat, "Запись добавлена.", replyToMessageId: message.MessageId);
     }
 
-    public async Task ProcessFindQuery(Chat chat, FindQuery query)
+    public async Task ProcessFindQueryAsync(Chat chat, FindQuery query)
     {
         _saveManager.Load();
 
@@ -55,7 +57,7 @@ internal sealed class Manager
         }
     }
 
-    public Task Mark(Chat chat, Message recordMessage, MarkQuery query)
+    public Task MarkAsync(Chat chat, Message recordMessage, MarkQuery query)
     {
         _saveManager.Load();
 

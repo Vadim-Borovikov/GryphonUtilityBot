@@ -15,7 +15,8 @@ internal sealed class RememberMarkAction : SupportedAction
     {
         Bot.CurrentQuery = _query;
         Bot.CurrentQueryTime = Message.Date;
-        return Task.CompletedTask;
+        return Bot.SendTextMessageAsync(Message.Chat, "Запрос пометки зафиксирован.",
+            replyToMessageId: Message.MessageId);
     }
 
     protected override bool AllowedForMistress => true;

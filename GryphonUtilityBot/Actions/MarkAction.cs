@@ -13,7 +13,7 @@ internal sealed class MarkAction : SupportedAction
         _query = query;
     }
 
-    protected override Task ExecuteAsync() => Bot.RecordsManager.Mark(Message.Chat, _recordMessage, _query);
+    protected override Task ExecuteAsync() => Bot.RecordsManager.MarkAsync(Message.Chat, _recordMessage, _query);
 
     protected override bool AllowedForMistress => true;
 
