@@ -21,6 +21,6 @@ internal sealed class StartCommand : CommandBase<Bot, Config>
             Id = user.Id,
             Type = ChatType.Private
         };
-        return Bot.SendTextMessageAsync(chat, Bot.GetDescriptionFor(user.Id));
+        return Bot.SendTextMessageAsync(chat, Bot.GetDescriptionFor(user.Id), ParseMode.MarkdownV2);
     }
 }
