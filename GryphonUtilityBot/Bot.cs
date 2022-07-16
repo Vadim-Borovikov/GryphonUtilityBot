@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using AbstractBot;
 using GryphonUtilityBot.Actions;
 using GryphonUtilityBot.Records;
+using GryphonUtilityBot.Commands;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -13,9 +15,15 @@ public sealed class Bot : BotBase<Bot, Config>
 {
     public Bot(Config config) : base(config)
     {
-        SaveManager<List<RecordData>, List<JsonRecordData?>> saveManager =
-            new(Config.SavePath, JsonRecordData.Convert, RecordData.Convert);
-        RecordsManager = new Records.Manager(this, saveManager);
+        _saveManager = new SaveManager<List<RecordData>, List<JsonRecordData?>>(Config.SavePath,
+            JsonRecordData.Convert, RecordData.Convert);
+    }
+
+    public override async Task StartAsync(CancellationToken cancellationToken)
+    {
+        Commands.Add(new StartCommand(this));
+
+        await base.StartAsync(cancellationToken);
     }
 
     protected override Task UpdateAsync(Message message, bool fromChat, CommandBase<Bot, Config>? command = null,
@@ -83,8 +91,12 @@ public sealed class Bot : BotBase<Bot, Config>
         return null;
     }
 
-    internal readonly Records.Manager RecordsManager;
-
     internal MarkQuery? CurrentQuery;
     internal DateTime CurrentQueryTime;
+
+    internal Records.Manager RecordsManager => _recordsManager ??= new Records.Manager(this, _saveManager);
+
+    private Records.Manager? _recordsManager;
+
+    private readonly SaveManager<List<RecordData>, List<JsonRecordData?>> _saveManager;
 }
