@@ -1,4 +1,6 @@
-﻿namespace GryphonUtilityBot.Currency;
+﻿using Telegram.Bot.Types.ReplyMarkups;
+
+namespace GryphonUtilityBot.Currency;
 
 internal sealed class Info
 {
@@ -13,12 +15,15 @@ internal sealed class Info
 
     public readonly decimal ToUSD;
     public readonly string Code;
-    public readonly string Description;
+    public readonly InlineKeyboardButton Button;
 
     public Info(decimal toUSD, string code, string description)
     {
         ToUSD = toUSD;
         Code = code;
-        Description = description;
+        Button = new InlineKeyboardButton(description)
+        {
+            CallbackData = code
+        };
     }
 }

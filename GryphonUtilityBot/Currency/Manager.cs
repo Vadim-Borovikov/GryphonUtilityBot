@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -11,39 +11,62 @@ internal sealed class Manager
 {
     private static bool IsRuble(Info.Currecny currecny)
     {
-        return (currecny == Info.Currecny.RURCurrent) || (currecny == Info.Currecny.RURBefore);
+        return currecny is Info.Currecny.RURCurrent or Info.Currecny.RURBefore;
     }
 
     public Manager(Bot bot)
     {
         _bot = bot;
-        _current = Info.Currecny.AED;
-        /*IEnumerable<KeyboardButton> buttons = Enumerable.Range(0, ButtonsTotal).Select(CreateButton);
-        IEnumerable<IEnumerable<KeyboardButton>> keyboard = buttons.Batch(ButtonsPerRaw);
-        _amountKeyboard = new ReplyKeyboardMarkup(keyboard);*/
+        _currentCurrency = Info.Currecny.AED;
     }
 
-    public Task ProcessNumberAsync(ChatId chatId, decimal number)
+    private static IEnumerable<InlineKeyboardButton> GetRow(Info currecny)
     {
-        string message = PrepareResult(number);
-        return _bot.Client.SendTextMessageAsync(chatId, message);
+        return new List<InlineKeyboardButton> { currecny.Button };
     }
 
-    private static KeyboardButton CreateButton(int option) => new KeyboardButton(option.ToString());
+    private static InlineKeyboardMarkup GetKeyboardWithout(Info.Currecny currecny)
+    {
+        IEnumerable<IEnumerable<InlineKeyboardButton>> keyboard =
+            CurrencyInfos.Where(p => p.Key != currecny).Select(p => GetRow(p.Value));
+        return new InlineKeyboardMarkup(keyboard);
+    }
+
+    public async Task ProcessNumberAsync(Chat chat, decimal number)
+    {
+        _currentAmount = number;
+        string message = PrepareResult(_currentAmount);
+        InlineKeyboardMarkup keyboard = GetKeyboardWithout(_currentCurrency);
+        _currentMessage = await _bot.SendTextMessageAsync(chat, message, replyMarkup: keyboard);
+    }
+
+    public Task ChangeCurrency(string code)
+    {
+        if (_currentMessage is null)
+        {
+            return Task.CompletedTask;
+        }
+        _currentCurrency = CurrencyInfos.Single(p => p.Value.Code == code).Key;
+        string message = PrepareResult(_currentAmount);
+        InlineKeyboardMarkup keyboard = GetKeyboardWithout(_currentCurrency);
+        return
+            _bot.EditMessageTextAsync(_currentMessage.Chat, _currentMessage.MessageId, message, replyMarkup: keyboard);
+    }
+
 
     private string PrepareResult(decimal amount)
     {
-        var builder = new StringBuilder();
-        Info info = CurrencyInfos[_current];
+        StringBuilder builder = new();
+        Info info = CurrencyInfos[_currentCurrency];
         builder.AppendLine($"{amount:N0} {info.Code} — это:");
         foreach (Info.Currecny c in CurrencyInfos.Keys)
         {
-            if (c == _current)
+            if (c == _currentCurrency)
             {
-                // continue;
+                continue;
             }
 
-            if (IsRuble(c) && IsRuble(_current))
+            if (IsRuble(c) && IsRuble(_currentCurrency))
             {
                 continue;
             }
@@ -55,13 +78,6 @@ internal sealed class Manager
         return builder.ToString();
     }
 
-    private const int ButtonsTotal = 12;
-    private const int ButtonsPerRaw = 4;
-    private static readonly ReplyKeyboardRemove NoKeyboard = new ReplyKeyboardRemove();
-
-    private readonly ReplyKeyboardMarkup _amountKeyboard;
-
-    private Info.Currecny _current;
     private static readonly Dictionary<Info.Currecny, Info> CurrencyInfos =
         new()
         {
@@ -79,4 +95,7 @@ internal sealed class Manager
         };
 
     private readonly Bot _bot;
+    private decimal _currentAmount;
+    private Info.Currecny _currentCurrency;
+    private Message? _currentMessage;
 }

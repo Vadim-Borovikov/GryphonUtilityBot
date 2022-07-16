@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using AbstractBot;
 using GryphonUtilityBot.Actions;
 using Telegram.Bot.Types;
@@ -19,6 +20,15 @@ public sealed class Bot : BotBase<Bot, Config>
         return action is null
             ? SendStickerAsync(textMessage.Chat, DontUnderstandSticker)
             : action.ExecuteWrapperAsync(ForbiddenSticker);
+    }
+
+    protected override Task ProcessCallbackAsync(CallbackQuery callback)
+    {
+        if (callback.Data is null)
+        {
+            throw new NullReferenceException(nameof(callback.Data));
+        }
+        return CurrencyManager.ChangeCurrency(callback.Data);
     }
 
     private SupportedAction? GetAction(Message message, CommandBase<Bot, Config>? command)
