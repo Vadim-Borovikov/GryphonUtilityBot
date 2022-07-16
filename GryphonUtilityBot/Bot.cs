@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using AbstractBot;
 using GryphonUtilityBot.Actions;
@@ -12,10 +13,15 @@ public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
 {
     public Bot(Config config) : base(config)
     {
-        ArticlesManager = new Articles.Manager(this);
+    }
 
+    public override async Task StartAsync(CancellationToken cancellationToken)
+    {
         Commands.Add(new ArticleCommand(this));
         Commands.Add(new ReadCommand(this));
+        Commands.Add(new StartCommand(this));
+
+        await base.StartAsync(cancellationToken);
     }
 
     protected override Task ProcessTextMessageAsync(Message textMessage, bool fromChat,
@@ -46,5 +52,7 @@ public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
         return null;
     }
 
-    internal readonly Articles.Manager ArticlesManager;
+    internal Articles.Manager ArticlesManager => _articlesManager ??= new Articles.Manager(this);
+
+    private Articles.Manager? _articlesManager;
 }
