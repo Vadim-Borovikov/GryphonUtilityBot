@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using AbstractBot;
 using GryphonUtilityBot.Actions;
+using GryphonUtilityBot.Commands;
 using Telegram.Bot.Types;
 
 namespace GryphonUtilityBot;
@@ -10,7 +12,13 @@ public sealed class Bot : BotBase<Bot, Config>
 {
     public Bot(Config config) : base(config)
     {
-        CurrencyManager = new Currency.Manager(this);
+    }
+
+    public override async Task StartAsync(CancellationToken cancellationToken)
+    {
+        Commands.Add(new StartCommand(this));
+
+        await base.StartAsync(cancellationToken);
     }
 
     protected override Task ProcessTextMessageAsync(Message textMessage, bool fromChat,
@@ -46,5 +54,7 @@ public sealed class Bot : BotBase<Bot, Config>
         return null;
     }
 
-    internal readonly Currency.Manager CurrencyManager;
+    internal Currency.Manager CurrencyManager => _currencyManager ??= new Currency.Manager(this);
+
+    private Currency.Manager? _currencyManager;
 }
