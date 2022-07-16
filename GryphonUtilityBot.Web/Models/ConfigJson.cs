@@ -36,6 +36,8 @@ public sealed class ConfigJson : IConvertibleTo<Config>
     public long? SuperAdminId { get; set; }
 
     [JsonProperty]
+    public string? SavePath { get; set; }
+    [JsonProperty]
     public long? MistressId { get; set; }
 
     [JsonProperty]
@@ -60,6 +62,7 @@ public sealed class ConfigJson : IConvertibleTo<Config>
         double updatesPerSecondLimitGlobal = UpdatesPerSecondLimitGlobal.GetValue(nameof(UpdatesPerSecondLimitGlobal));
         TimeSpan sendMessagePeriodGlobal = TimeSpan.FromSeconds(1.0 / updatesPerSecondLimitGlobal);
 
+        string savePath = SavePath.GetValue(nameof(SavePath));
         long mistressId = MistressId.GetValue(nameof(MistressId));
 
         if (AdminIds is null || (AdminIds.Count == 0))
@@ -69,7 +72,7 @@ public sealed class ConfigJson : IConvertibleTo<Config>
         }
 
         return new Config(token, systemTimeZoneId, dontUnderstandStickerFileId, forbiddenStickerFileId,
-            sendMessagePeriodPrivate, sendMessagePeriodGroup, sendMessagePeriodGlobal, mistressId)
+            sendMessagePeriodPrivate, sendMessagePeriodGroup, sendMessagePeriodGlobal, savePath, mistressId)
         {
             Host = Host,
             About = About is null ? null : string.Join(Environment.NewLine, About),
