@@ -36,6 +36,15 @@ public sealed class ConfigJson : IConvertibleTo<Config>
     public long? SuperAdminId { get; set; }
 
     [JsonProperty]
+    public string? GoogleCredentialJson { get; set; }
+    [JsonProperty]
+    public string? ApplicationName { get; set; }
+    [JsonProperty]
+    public string? GoogleSheetId { get; set; }
+
+    [JsonProperty]
+    public string? GoogleRange { get; set; }
+    [JsonProperty]
     public string? SavePath { get; set; }
     [JsonProperty]
     public long? MistressId { get; set; }
@@ -44,6 +53,8 @@ public sealed class ConfigJson : IConvertibleTo<Config>
     public string? AdminIdsJson { get; set; }
     [JsonProperty]
     public string? CultureInfoName { get; set; }
+    [JsonProperty]
+    public Dictionary<string, string?>? GoogleCredential { get; set; }
 
     public Config Convert()
     {
@@ -62,6 +73,13 @@ public sealed class ConfigJson : IConvertibleTo<Config>
         double updatesPerSecondLimitGlobal = UpdatesPerSecondLimitGlobal.GetValue(nameof(UpdatesPerSecondLimitGlobal));
         TimeSpan sendMessagePeriodGlobal = TimeSpan.FromSeconds(1.0 / updatesPerSecondLimitGlobal);
 
+        string googleCredentialJson = string.IsNullOrWhiteSpace(GoogleCredentialJson)
+            ? JsonConvert.SerializeObject(GoogleCredential)
+            : GoogleCredentialJson;
+        string applicationName = ApplicationName.GetValue(nameof(ApplicationName));
+        string googleSheetId = GoogleSheetId.GetValue(nameof(GoogleSheetId));
+
+        string googleRange = GoogleRange.GetValue(nameof(GoogleRange));
         string savePath = SavePath.GetValue(nameof(SavePath));
         long mistressId = MistressId.GetValue(nameof(MistressId));
 
@@ -72,7 +90,8 @@ public sealed class ConfigJson : IConvertibleTo<Config>
         }
 
         return new Config(token, systemTimeZoneId, dontUnderstandStickerFileId, forbiddenStickerFileId,
-            sendMessagePeriodPrivate, sendMessagePeriodGroup, sendMessagePeriodGlobal, savePath, mistressId)
+            sendMessagePeriodPrivate, sendMessagePeriodGroup, sendMessagePeriodGlobal, googleCredentialJson,
+            applicationName, googleSheetId, googleRange, savePath, mistressId)
         {
             Host = Host,
             About = About is null ? null : string.Join(Environment.NewLine, About),

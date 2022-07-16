@@ -3,20 +3,26 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using AbstractBot;
 using GryphonUtilityBot.Actions;
+using GryphonUtilityBot.Articles;
+using GryphonUtilityBot.Commands;
 using GryphonUtilityBot.Records;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace GryphonUtilityBot;
 
-public sealed class Bot : BotBase<Bot, Config>
+public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
 {
     public Bot(Config config) : base(config)
     {
         SaveManager<List<RecordData>, List<JsonRecordData?>> saveManager =
             new(Config.SavePath, JsonRecordData.Convert, RecordData.Convert);
         RecordsManager = new Records.Manager(this, saveManager);
+        ArticlesManager = new Articles.Manager(this);
         CurrencyManager = new Currency.Manager(this);
+
+        Commands.Add(new ArticleCommand(this));
+        Commands.Add(new ReadCommand(this));
     }
 
     protected override Task UpdateAsync(Message message, bool fromChat, CommandBase<Bot, Config>? command = null,
@@ -63,6 +69,15 @@ public sealed class Bot : BotBase<Bot, Config>
             return null;
         }
 
+        if (Articles.Manager.TryParseArticle(message.Text, out Article? article))
+        {
+            if (article is null)
+            {
+                throw new NullReferenceException(nameof(article));
+            }
+            return new ArticleAction(this, message, article);
+        }
+
         if (decimal.TryParse(message.Text, out decimal number))
         {
             return new NumberAction(this, message, number);
@@ -98,10 +113,11 @@ public sealed class Bot : BotBase<Bot, Config>
         return null;
     }
 
+    internal readonly Articles.Manager ArticlesManager;
     internal readonly Records.Manager RecordsManager;
+    internal readonly Currency.Manager CurrencyManager;
 
     internal MarkQuery? CurrentQuery;
     internal DateTime CurrentQueryTime;
 
-    internal readonly Currency.Manager CurrencyManager;
 }

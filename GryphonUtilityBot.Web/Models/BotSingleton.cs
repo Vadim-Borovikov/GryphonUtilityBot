@@ -1,8 +1,9 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System;
+using Microsoft.Extensions.Options;
 
 namespace GryphonUtilityBot.Web.Models;
 
-public sealed class BotSingleton
+public sealed class BotSingleton : IDisposable
 {
     internal readonly Bot Bot;
 
@@ -12,4 +13,6 @@ public sealed class BotSingleton
         Config config = configJson.Convert();
         Bot = new Bot(config);
     }
+
+    public void Dispose() => Bot.Dispose();
 }
