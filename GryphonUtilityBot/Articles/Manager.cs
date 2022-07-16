@@ -24,7 +24,7 @@ internal sealed class Manager
             return false;
         }
         article = ParseArticle(text);
-        return article is null;
+        return article is not null;
     }
 
     public async Task ProcessNewArticleAsync(Chat chat, Article article)
