@@ -56,6 +56,11 @@ public sealed class ConfigJson : IConvertibleTo<Config>
     [JsonProperty]
     public Dictionary<string, string?>? GoogleCredential { get; set; }
 
+    [JsonProperty]
+    public List<Uri?>? PingUrls { get; set; }
+    [JsonProperty]
+    public string? PingUrlsJson { get; set; }
+
     public Config Convert()
     {
         string token = Token.GetValue(nameof(Token));
