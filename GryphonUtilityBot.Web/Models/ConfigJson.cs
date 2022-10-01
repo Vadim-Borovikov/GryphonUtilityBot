@@ -67,6 +67,8 @@ public sealed class ConfigJson : IConvertibleTo<Config>
             string json = AdminIdsJson.GetValue(nameof(AdminIdsJson));
             AdminIds = JsonConvert.DeserializeObject<List<long?>>(json);
         }
+        IEnumerable<long> adminIds =
+            AdminIds is null ? Enumerable.Empty<long>() : AdminIds.Select(id => id.GetValue("Admin id"));
 
         return new Config(token, systemTimeZoneId, dontUnderstandStickerFileId, forbiddenStickerFileId,
             sendMessagePeriodPrivate, sendMessagePeriodGroup, sendMessagePeriodGlobal, mistressId)
@@ -74,7 +76,7 @@ public sealed class ConfigJson : IConvertibleTo<Config>
             Host = Host,
             About = About is null ? null : string.Join(Environment.NewLine, About),
             ExtraCommands = ExtraCommands is null ? null : string.Join(Environment.NewLine, ExtraCommands),
-            AdminIds = AdminIds?.Select(id => id.GetValue("Admin id")).ToList(),
+            AdminIds = adminIds.ToList(),
             SuperAdminId = SuperAdminId
         };
     }

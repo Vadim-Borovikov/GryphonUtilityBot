@@ -10,28 +10,29 @@ internal abstract class SupportedAction
 {
     protected SupportedAction(Bot bot, Message message)
     {
-        Bot = bot;
+        _bot = bot;
         Message = message;
     }
 
     internal Task ExecuteWrapperAsync(InputOnlineFile forbiddenSticker)
     {
         User user = Message.From.GetValue(nameof(Message.From));
-        bool isMistress = user.Id == Bot.Config.MistressId;
+        bool isMistress = user.Id == _bot.Config.MistressId;
         if (isMistress && !AllowedForMistress)
         {
-            return Bot.SendTextMessageAsync(Message.Chat,
+            return _bot.SendTextMessageAsync(Message.Chat,
                 "Простите, госпожа, но господин заблокировал это действие даже для Вас.");
         }
 
-        bool shouldExecute = Bot.IsAccessSuffice(user.Id, BotBase<Bot, Config>.AccessType.Admins);
-        return shouldExecute ? ExecuteAsync() : Bot.SendStickerAsync(Message.Chat, forbiddenSticker);
+        bool shouldExecute = _bot.IsAccessSuffice(user.Id, BotBase<Bot, Config>.AccessType.Admins);
+        return shouldExecute ? ExecuteAsync() : _bot.SendStickerAsync(Message.Chat, forbiddenSticker);
     }
 
     protected abstract Task ExecuteAsync();
 
-    protected virtual bool AllowedForMistress => false;
-
-    protected readonly Bot Bot;
     protected readonly Message Message;
+
+    private static bool AllowedForMistress => false;
+
+    private readonly Bot _bot;
 }
