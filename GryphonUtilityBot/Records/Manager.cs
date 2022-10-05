@@ -9,7 +9,7 @@ namespace GryphonUtilityBot.Records;
 
 internal sealed class Manager
 {
-    public Manager(Bot bot, SaveManager<List<RecordData>, List<JsonRecordData?>> saveManager)
+    public Manager(Bot bot, SaveManager<List<RecordData>> saveManager)
     {
         _saveManager = saveManager;
         _bot = bot;
@@ -87,9 +87,15 @@ internal sealed class Manager
         }
 
         DateTime dateTime = query?.DateTime ?? _bot.TimeManager.ToLocal(message.ForwardDate.Value);
-        return new RecordData(message.MessageId, message.Chat.Id, dateTime, query?.Tags);
+        return new RecordData
+        {
+            MessageId = message.MessageId,
+            ChatId = message.Chat.Id,
+            DateTime = dateTime,
+            Tags = query?.Tags ?? new HashSet<string>()
+        };
     }
 
-    private readonly SaveManager<List<RecordData>, List<JsonRecordData?>> _saveManager;
+    private readonly SaveManager<List<RecordData>> _saveManager;
     private readonly Bot _bot;
 }

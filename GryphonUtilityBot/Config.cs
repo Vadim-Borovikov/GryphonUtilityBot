@@ -1,19 +1,17 @@
-﻿using System;
+﻿using System.ComponentModel.DataAnnotations;
+using JetBrains.Annotations;
+
+// ReSharper disable NullableWarningSuppressionIsUsed
 
 namespace GryphonUtilityBot;
 
-public sealed class Config : AbstractBot.Config
+[PublicAPI]
+public class Config : AbstractBot.Config
 {
-    internal readonly string SavePath;
-    internal readonly long MistressId;
+    [Required]
+    [MinLength(1)]
+    public string SavePath { get; init; } = null!;
 
-    public Config(string token, string systemTimeZoneId, string dontUnderstandStickerFileId,
-        string forbiddenStickerFileId, TimeSpan sendMessagePeriodPrivate, TimeSpan sendMessagePeriodGroup,
-        TimeSpan sendMessagePeriodGlobal, string savePath, long mistressId)
-        : base(token, systemTimeZoneId, dontUnderstandStickerFileId, forbiddenStickerFileId, sendMessagePeriodPrivate,
-            sendMessagePeriodGroup, sendMessagePeriodGlobal)
-    {
-        SavePath = savePath;
-        MistressId = mistressId;
-    }
+    [Required]
+    public long MistressId { get; init; }
 }
