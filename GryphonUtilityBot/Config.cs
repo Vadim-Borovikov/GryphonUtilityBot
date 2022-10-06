@@ -1,23 +1,22 @@
-﻿using System;
-using AbstractBot;
+﻿using AbstractBot;
+using System.ComponentModel.DataAnnotations;
+using JetBrains.Annotations;
+
+// ReSharper disable NullableWarningSuppressionIsUsed
 
 namespace GryphonUtilityBot;
 
-public sealed class Config : ConfigGoogleSheets
+[PublicAPI]
+public class Config : ConfigGoogleSheets
 {
-    internal readonly string GoogleRange;
-    internal readonly string SavePath;
-    internal readonly long MistressId;
+    [Required]
+    [MinLength(1)]
+    public string SavePath { get; init; } = null!;
 
-    public Config(string token, string systemTimeZoneId, string dontUnderstandStickerFileId,
-        string forbiddenStickerFileId, TimeSpan sendMessagePeriodPrivate, TimeSpan sendMessagePeriodGroup,
-        TimeSpan sendMessagePeriodGlobal, string googleCredentialJson, string applicationName, string googleSheetId,
-        string googleRange, string savePath, long mistressId)
-        : base(token, systemTimeZoneId, dontUnderstandStickerFileId, forbiddenStickerFileId, sendMessagePeriodPrivate,
-            sendMessagePeriodGroup, sendMessagePeriodGlobal, googleCredentialJson, applicationName, googleSheetId)
-    {
-        GoogleRange = googleRange;
-        SavePath = savePath;
-        MistressId = mistressId;
-    }
+    [Required]
+    public long MistressId { get; init; }
+
+    [Required]
+    [MinLength(1)]
+    public string GoogleRange { get; init; } = null!;
 }

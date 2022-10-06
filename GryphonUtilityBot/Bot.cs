@@ -16,8 +16,7 @@ public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
 {
     public Bot(Config config) : base(config)
     {
-        _saveManager = new SaveManager<List<RecordData>, List<JsonRecordData?>>(Config.SavePath,
-            JsonRecordData.Convert, RecordData.Convert);
+        _saveManager = new SaveManager<List<RecordData>>(Config.SavePath);
     }
 
     public override async Task StartAsync(CancellationToken cancellationToken)
@@ -128,5 +127,5 @@ public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
     private Records.Manager? _recordsManager;
     private Currency.Manager? _currencyManager;
 
-    private readonly SaveManager<List<RecordData>, List<JsonRecordData?>> _saveManager;
+    private readonly SaveManager<List<RecordData>> _saveManager;
 }

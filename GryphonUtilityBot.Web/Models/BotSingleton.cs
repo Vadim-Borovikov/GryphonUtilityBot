@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using GryphonUtilities;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace GryphonUtilityBot.Web.Models;
@@ -10,24 +10,32 @@ public sealed class BotSingleton : IDisposable
 {
     internal readonly Bot Bot;
 
-    public BotSingleton(IOptions<ConfigJson> options)
+    public BotSingleton(Config config)
     {
-        ConfigJson configJson = options.Value;
-        Config config = configJson.Convert();
         Bot = new Bot(config);
-
-        if (configJson.PingUrls is null || (configJson.PingUrls.Count == 0))
-        {
-            string json = configJson.PingUrlsJson.GetValue(nameof(configJson.PingUrlsJson));
-            configJson.PingUrls = JsonConvert.DeserializeObject<List<Uri?>>(json);
-        }
-        if (configJson.PingUrls is not null)
-        {
-            PingUrls.AddRange(configJson.PingUrls.RemoveNulls());
-        }
+        PingUrls = GetPingUrls(config).ToList();
     }
 
     public void Dispose() => Bot.Dispose();
 
-    internal readonly List<Uri> PingUrls = new();
+    internal readonly List<Uri> PingUrls;
+
+    private static IEnumerable<Uri> GetPingUrls(Config config)
+    {
+        if (config.PingUrls is not null && (config.PingUrls.Count != 0))
+        {
+            return config.PingUrls.RemoveNulls();
+        }
+
+        if (config.PingUrlsJson is not null)
+        {
+            List<Uri>? deserialized = JsonConvert.DeserializeObject<List<Uri>>(config.PingUrlsJson);
+            if (deserialized is not null)
+            {
+                return deserialized;
+            }
+        }
+
+        return Array.Empty<Uri>();
+    }
 }

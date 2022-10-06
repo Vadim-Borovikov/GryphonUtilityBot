@@ -1,23 +1,46 @@
 ﻿using System;
-using System.Threading.Tasks;
+using System.Globalization;
 using AbstractBot;
-using Microsoft.AspNetCore.Hosting;
+using GryphonUtilities;
+using GryphonUtilityBot.Web.Models;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace GryphonUtilityBot.Web;
 
 internal static class Program
 {
-    public static async Task Main(string[] args)
+    public static void Main(string[] args)
     {
-        Utils.LogManager.SetTimeZone(SystemTimeZoneId);
-        Utils.LogManager.LogMessage();
-
-        Utils.LogManager.LogTimedMessage("Startup");
         Utils.LogManager.DeleteExceptionLog();
         try
         {
-            await CreateWebHostBuilder(args).Build().RunAsync();
+            WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+            Models.Config config = Configure(builder);
+            Utils.StartLogWith(config.SystemTimeZoneId);
+
+            IServiceCollection services = builder.Services;
+            services.AddControllersWithViews().AddNewtonsoftJson();
+
+            AddBotTo(services);
+
+            WebApplication app = builder.Build();
+
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+
+            app.UseRouting();
+            app.UseCors();
+
+            UseUpdateEndpoint(app, config.Token);
+
+            app.Run();
         }
         catch (Exception ex)
         {
@@ -25,11 +48,33 @@ internal static class Program
         }
     }
 
-    private static IHostBuilder CreateWebHostBuilder(string[] args)
+    private static Models.Config Configure(WebApplicationBuilder builder)
     {
-        return Host.CreateDefaultBuilder(args)
-                   .ConfigureWebHostDefaults(builder => builder.UseStartup<Startup>());
+        ConfigurationManager configuration = builder.Configuration;
+        Models.Config config = configuration.Get<Models.Config>();
+
+        builder.Services.AddOptions<Models.Config>().Bind(configuration).ValidateDataAnnotations();
+        builder.Services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<Models.Config>>().Value);
+
+        string cultureInfoName = config.CultureInfoName.GetValue(nameof(config.CultureInfoName));
+        CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(cultureInfoName);
+
+        return config;
     }
 
-    private const string SystemTimeZoneId = "Arabian Standard Time";
+    private static void AddBotTo(IServiceCollection services)
+    {
+        services.AddSingleton<BotSingleton>();
+        services.AddHostedService<BotService>();
+    }
+
+    private static void UseUpdateEndpoint(IApplicationBuilder app, string token)
+    {
+        object defaults = new
+        {
+            controller = "Update",
+            action = "Post"
+        };
+        app.UseEndpoints(endpoints => endpoints.MapControllerRoute("update", token, defaults));
+    }
 }
