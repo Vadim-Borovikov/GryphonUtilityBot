@@ -40,7 +40,7 @@ public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
             return new CommandAction(this, message, command);
         }
 
-        if (Articles.Manager.TryParseArticle(message.Text, out Article? article))
+        if (Manager.TryParseArticle(message.Text, out Article? article))
         {
             if (article is null)
             {
@@ -52,7 +52,7 @@ public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
         return null;
     }
 
-    internal Articles.Manager ArticlesManager => _articlesManager ??= new Articles.Manager(this);
+    internal Manager ArticlesManager => _articlesManager ??= new Manager(this);
 
-    private Articles.Manager? _articlesManager;
+    private Manager? _articlesManager;
 }
