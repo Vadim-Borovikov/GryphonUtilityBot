@@ -118,15 +118,17 @@ internal sealed class Manager
 
     private async Task LoadAsync()
     {
-        IList<Article> articles =
-            await DataManager.GetValuesAsync(_bot.GoogleSheetsProvider, Article.Load, _bot.Config.GoogleRange);
-        _articles = new SortedSet<Article>(articles);
+        SheetData<Article> data =
+            await DataManager.GetValuesAsync<Article>(_bot.GoogleSheetsProvider, _bot.Config.GoogleRange);
+        _articles = new SortedSet<Article>(data.Instances);
+        _titles = data.Titles;
     }
 
     private async Task SaveAsync()
     {
         await _bot.GoogleSheetsProvider.ClearValuesAsync(_bot.Config.GoogleRange);
-        await DataManager.UpdateValuesAsync(_bot.GoogleSheetsProvider, _bot.Config.GoogleRange, _articles.ToList());
+        SheetData<Article> data = new(_articles.ToList(), _titles);
+        await DataManager.UpdateValuesAsync(_bot.GoogleSheetsProvider, _bot.Config.GoogleRange, data);
     }
 
     private static string GetArticleMessageText(Article article)
@@ -136,4 +138,5 @@ internal sealed class Manager
 
     private SortedSet<Article> _articles;
     private readonly Bot _bot;
+    private IList<string> _titles = Array.Empty<string>();
 }
