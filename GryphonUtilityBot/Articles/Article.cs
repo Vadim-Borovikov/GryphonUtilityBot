@@ -1,16 +1,24 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using GoogleSheetsManager;
-using GryphonUtilities;
+using JetBrains.Annotations;
+
+// ReSharper disable NullableWarningSuppressionIsUsed
 
 namespace GryphonUtilityBot.Articles;
 
-internal sealed class Article : IComparable<Article>, ISavable
+internal sealed class Article : IComparable<Article>
 {
-    IList<string> ISavable.Titles => Titles;
+    [UsedImplicitly]
+    [Required]
+    [SheetField("Ссылка")]
+    public Uri Uri = null!;
 
-    public readonly Uri Uri;
-    public readonly DateTime Date;
+    [Required]
+    [SheetField("Дата")]
+    public DateTime Date;
+
+    public Article() { }
 
     public Article(DateTime date, Uri uri)
     {
@@ -35,30 +43,4 @@ internal sealed class Article : IComparable<Article>, ISavable
             ? datesCompare
             : string.Compare(Uri.AbsoluteUri, other.Uri.AbsoluteUri, StringComparison.Ordinal);
     }
-
-    public IDictionary<string, object?> Convert()
-    {
-        return new Dictionary<string, object?>
-        {
-            { DateTitle, Date.ToShortDateString() },
-            { UriTitle, Uri }
-        };
-    }
-
-    public static Article Load(IDictionary<string, object?> valueSet)
-    {
-        Uri uri = valueSet[UriTitle].ToUri().GetValue();
-        DateTime date = valueSet[DateTitle].ToDateTime().GetValue($"Empty date for \"{uri}\"");
-        return new Article(date, uri);
-    }
-
-    private static readonly IList<string> Titles = new List<string>
-    {
-        DateTitle,
-        UriTitle
-    };
-
-    private const string DateTitle = "Дата";
-    private const string UriTitle = "Ссылка";
-
 }

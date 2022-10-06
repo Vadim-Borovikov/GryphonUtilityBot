@@ -1,5 +1,5 @@
-﻿using AbstractBot;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using AbstractBot;
 using JetBrains.Annotations;
 
 // ReSharper disable NullableWarningSuppressionIsUsed
