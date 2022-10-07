@@ -14,6 +14,7 @@ internal sealed class Manager
     {
         _bot = bot;
         _articles = new SortedSet<Article>();
+        Utils.Converters[typeof(Uri)] = ToUri;
     }
 
     public static bool TryParseArticle(string? text, out Article? article)
@@ -134,6 +135,16 @@ internal sealed class Manager
     private static string GetArticleMessageText(Article article)
     {
         return $"{article.Date:d MMMM yyyy}{Environment.NewLine}{article.Uri}";
+    }
+
+    private static Uri? ToUri(object? o)
+    {
+        if (o is Uri uri)
+        {
+            return uri;
+        }
+        string? uriString = o?.ToString();
+        return string.IsNullOrWhiteSpace(uriString) ? null : new Uri(uriString);
     }
 
     private SortedSet<Article> _articles;
