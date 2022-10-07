@@ -16,4 +16,14 @@ internal static class Utils
         parts.RemoveAt(0);
         return dateTime;
     }
+
+    public static Uri? ToUri(object? o)
+    {
+        if (o is Uri uri)
+        {
+            return uri;
+        }
+        string? uriString = o?.ToString();
+        return string.IsNullOrWhiteSpace(uriString) ? null : new Uri(uriString);
+    }
 }

@@ -14,6 +14,7 @@ internal sealed class Manager
     {
         _bot = bot;
         _articles = new SortedSet<Article>();
+        GoogleSheetsManager.Utils.Converters[typeof(Uri)] = Utils.ToUri;
     }
 
     public static bool TryParseArticle(string? text, out Article? article)
