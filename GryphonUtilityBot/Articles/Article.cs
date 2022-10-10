@@ -35,7 +35,7 @@ internal sealed class Article : IComparable<Article>
 
         if (other is null)
         {
-            return 1;
+            return -1;
         }
 
         int datesCompare = Date.CompareTo(other.Date);
