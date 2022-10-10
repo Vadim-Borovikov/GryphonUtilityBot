@@ -14,16 +14,21 @@ internal sealed class Article : IComparable<Article>
     [SheetField("Ссылка")]
     public Uri Uri = null!;
 
+    [UsedImplicitly]
+    [SheetField("Читаю")]
+    public bool Current;
+
     [Required]
     [SheetField("Дата")]
     public DateTime Date;
 
     public Article() { }
 
-    public Article(DateTime date, Uri uri)
+    public Article(DateTime date, Uri uri, bool current = false)
     {
         Date = date;
         Uri = uri;
+        Current = current;
     }
 
     public int CompareTo(Article? other)
@@ -36,6 +41,16 @@ internal sealed class Article : IComparable<Article>
         if (other is null)
         {
             return -1;
+        }
+
+        if (Current)
+        {
+            return -1;
+        }
+
+        if (other.Current)
+        {
+            return 1;
         }
 
         int datesCompare = Date.CompareTo(other.Date);

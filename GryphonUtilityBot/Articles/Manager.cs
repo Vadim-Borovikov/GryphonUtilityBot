@@ -51,7 +51,7 @@ internal sealed class Manager
 
         Article article = _articles.First();
         _articles.Remove(article);
-
+        _articles.First().Current = true;
         await SaveAsync();
 
         string articleText = GetArticleMessageText(article);
