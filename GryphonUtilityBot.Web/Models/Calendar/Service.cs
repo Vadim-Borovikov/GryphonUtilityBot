@@ -64,19 +64,22 @@ internal sealed class Service : IHostedService, IDisposable
             else
             {
                 PageInfo page = await _notionHelper.GetPage(id);
-                if (!page.IsDeleted)
+                if (page.IsDeleted || page.Dates is null)
                 {
-                    continue;
-                }
-                if (!string.IsNullOrWhiteSpace(page.GoogleEventId))
-                {
-                    Event? calendarEvent = await GetEventAsync(page);
-                    if (calendarEvent is not null)
+                    if (!string.IsNullOrWhiteSpace(page.GoogleEventId))
                     {
-                        await DeleteEventAsync(calendarEvent, page);
+                        Event? calendarEvent = await GetEventAsync(page);
+                        if (calendarEvent is not null)
+                        {
+                            await DeleteEventAsync(calendarEvent, page);
+                        }
                     }
+                    toRemove.Add(id);
                 }
-                toRemove.Add(id);
+                if (!page.IsDeleted && page.Dates is null)
+                {
+                    await ClearPageAsync(page);
+                }
             }
         }
         foreach (string id in toRemove)
@@ -91,7 +94,7 @@ internal sealed class Service : IHostedService, IDisposable
         List<PageInfo> pages = await _notionHelper.GetPages(_saveManager.Data.LastUpdated.Value);
         foreach (PageInfo page in pages)
         {
-            if (page.Date.Start is null || page.Date.End is null)
+            if (page.Dates is null)
             {
                 continue;
             }
@@ -105,8 +108,8 @@ internal sealed class Service : IHostedService, IDisposable
                 }
                 else
                 {
-                    calendarEvent = await CreateEventAsync(page, page.Date.Start.Value, page.Date.End.Value);
-                    await UpdatePageAsync(page, calendarEvent, page.Date.End.Value);
+                    calendarEvent = await CreateEventAsync(page, page.Dates.Value.Start, page.Dates.Value.End);
+                    await UpdatePageAsync(page, calendarEvent, page.Dates.Value.End);
                 }
             }
             else if (page.IsCancelled)
@@ -116,7 +119,7 @@ internal sealed class Service : IHostedService, IDisposable
             }
             else
             {
-                await UpdateEventAsync(calendarEvent, page, page.Date.Start.Value, page.Date.End.Value);
+                await UpdateEventAsync(calendarEvent, page, page.Dates.Value.Start, page.Dates.Value.End);
             }
         }
     }
