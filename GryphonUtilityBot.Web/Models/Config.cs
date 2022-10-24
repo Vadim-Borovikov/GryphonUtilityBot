@@ -44,6 +44,10 @@ public sealed class Config : GryphonUtilityBot.Config
     [MinLength(1)]
     public string GoogleCalendarColorId { get; init; } = null!;
 
+    [Required]
+    [MinLength(1)]
+    public string SavePath { get; init; } = null!;
+
     public Dictionary<string, string>? GoogleCredential { get; init; }
     public string? GoogleCredentialJson { get; init; }
 }

@@ -15,7 +15,7 @@ internal sealed class Service : IHostedService, IDisposable
         _notionHelper = notionHelper;
         _googleCalendarHelper = googleCalendarHelper;
         _config = config;
-        _lastUpdated = config.NotionStartWatchingDate.ToUniversalTime();
+        _saveManager = new SaveManager<Data>(config.SavePath);
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -42,17 +42,22 @@ internal sealed class Service : IHostedService, IDisposable
     {
         Utils.LogManager.LogTimedMessage("Calendar sync tick");
         DateTime now = DateTime.UtcNow;
+
+        _saveManager.Load();
+
         await ProcessOutdatedAndDeletedPages(now);
         await ApplyUpdatesAsync();
-        _lastUpdated = now;
+
+        _saveManager.Data.LastUpdated = now;
+        _saveManager.Save();
     }
 
     private async Task ProcessOutdatedAndDeletedPages(DateTime now)
     {
         List<string> toRemove = new();
-        foreach (string id in _meetings.Keys)
+        foreach (string id in _saveManager.Data.Meetings.Keys)
         {
-            if (_meetings[id] < now)
+            if (_saveManager.Data.Meetings[id] < now)
             {
                 toRemove.Add(id);
             }
@@ -73,13 +78,14 @@ internal sealed class Service : IHostedService, IDisposable
         }
         foreach (string id in toRemove)
         {
-            _meetings.Remove(id);
+            _saveManager.Data.Meetings.Remove(id);
         }
     }
 
     private async Task ApplyUpdatesAsync()
     {
-        List<PageInfo> pages = await _notionHelper.GetPages(_lastUpdated);
+        _saveManager.Data.LastUpdated ??= _config.NotionStartWatchingDate.ToUniversalTime();
+        List<PageInfo> pages = await _notionHelper.GetPages(_saveManager.Data.LastUpdated.Value);
         foreach (PageInfo page in pages)
         {
             if (page.Date.Start is null || page.Date.End is null)
@@ -96,18 +102,18 @@ internal sealed class Service : IHostedService, IDisposable
 
                 Event calendarEvent = await CreateEventAsync(page, page.Date.Start.Value, page.Date.End.Value);
                 await UpdatePageAsync(page, calendarEvent);
-                _meetings[page.Page.Id] = page.Date.End.Value.ToUniversalTime();
+                _saveManager.Data.Meetings[page.Page.Id] = page.Date.End.Value.ToUniversalTime();
             }
             else if (page.IsCancelled)
             {
                 await DeleteEventAsync(page);
                 await ClearPageAsync(page);
-                _meetings.Remove(page.Page.Id);
+                _saveManager.Data.Meetings.Remove(page.Page.Id);
             }
             else
             {
                 await UpdateEventAsync(page, page.Date.Start.Value, page.Date.End.Value);
-                _meetings[page.Page.Id] = page.Date.End.Value.ToUniversalTime();
+                _saveManager.Data.Meetings[page.Page.Id] = page.Date.End.Value.ToUniversalTime();
             }
         }
     }
@@ -148,6 +154,5 @@ internal sealed class Service : IHostedService, IDisposable
     private readonly GoogleCalendarHelper _googleCalendarHelper;
     private readonly Config _config;
     private CancellationTokenSource? _cancellationTokenSource;
-    private DateTime _lastUpdated;
-    private readonly Dictionary<string, DateTime> _meetings = new();
+    private readonly SaveManager<Data> _saveManager;
 }
