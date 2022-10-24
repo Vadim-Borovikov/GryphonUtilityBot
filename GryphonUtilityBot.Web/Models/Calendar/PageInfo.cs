@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace GryphonUtilityBot.Web.Models.Calendar;
 
-public class PageInfo
+internal sealed class PageInfo
 {
     public readonly Page Page;
     public readonly string Title;
