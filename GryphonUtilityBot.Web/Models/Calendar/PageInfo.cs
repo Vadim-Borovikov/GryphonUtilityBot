@@ -9,8 +9,9 @@ internal sealed class PageInfo
 {
     public readonly Page Page;
     public readonly string Title;
-    public readonly Date Date;
+    public readonly (DateTime Start, DateTime End)? Dates;
     public readonly string GoogleEventId;
+    public readonly Uri? GoogleEvent;
     public readonly bool IsCancelled;
     public readonly bool IsDeleted;
 
@@ -18,8 +19,9 @@ internal sealed class PageInfo
     {
         Page = page;
         Title = GetTitle(page);
-        Date = GetDate(page);
+        Dates = GetDates(page);
         GoogleEventId = GetGoogleEventId(page);
+        GoogleEvent = GetGoogleEvent(page);
         IsCancelled = GetStatus(page) == "Отменена";
         IsDeleted = Page.IsArchived;
     }
@@ -34,14 +36,16 @@ internal sealed class PageInfo
         return JoinRichTextPart(title.Title);
     }
 
-    private static Date GetDate(Page page)
+    private static (DateTime, DateTime)? GetDates(Page page)
     {
         if (page.Properties["Дата"] is not DatePropertyValue date)
         {
             throw new NullReferenceException("\"Дата\" does not contain DatePropertyValue.");
         }
 
-        return date.Date;
+        return date.Date?.Start is null || date.Date.End is null
+            ? null
+            : (date.Date.Start.Value, date.Date.End.Value);
     }
 
     private static string GetGoogleEventId(Page page)
@@ -54,18 +58,28 @@ internal sealed class PageInfo
         return JoinRichTextPart(eventId.RichText);
     }
 
+    private static Uri? GetGoogleEvent(Page page)
+    {
+        if (page.Properties["Google Event"] is not UrlPropertyValue eventUrl)
+        {
+            throw new NullReferenceException("\"Google Event\" does not contain UrlPropertyValue.");
+        }
+
+        return string.IsNullOrWhiteSpace(eventUrl.Url) ? null : new Uri(eventUrl.Url);
+    }
+
     private static string JoinRichTextPart(IEnumerable<RichTextBase> parts)
     {
         return string.Join("", parts.Select(r => r.PlainText));
     }
 
-    private static string GetStatus(Page page)
+    private static string? GetStatus(Page page)
     {
         if (page.Properties["Статус"] is not SelectPropertyValue status)
         {
             throw new NullReferenceException("\"Статус\" does not contain SelectPropertyValue.");
         }
 
-        return status.Select.Name;
+        return status.Select?.Name;
     }
 }

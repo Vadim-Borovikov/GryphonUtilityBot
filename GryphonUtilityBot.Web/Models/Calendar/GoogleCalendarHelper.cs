@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Net;
 using System.Threading.Tasks;
+using Google;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Calendar.v3;
 using Google.Apis.Calendar.v3.Data;
@@ -37,10 +39,18 @@ internal sealed class GoogleCalendarHelper : IDisposable
         return request.ExecuteAsync();
     }
 
-    public Task<Event> GetEventAsync(string id)
+    public async Task<Event?> GetEventAsync(string id)
     {
-        EventsResource.GetRequest request = _service.Events.Get(_calendarId, id);
-        return request.ExecuteAsync();
+        try
+        {
+            EventsResource.GetRequest request = _service.Events.Get(_calendarId, id);
+            Event result = await request.ExecuteAsync();
+            return IsDeleted(result) ? null : result;
+        }
+        catch (GoogleApiException e) when (e.HttpStatusCode is HttpStatusCode.NotFound)
+        {
+            return null;
+        }
     }
 
     public Task UpdateEventAsync(string id, Event body, string summary, DateTime start, DateTime end,
@@ -54,11 +64,17 @@ internal sealed class GoogleCalendarHelper : IDisposable
         return request.ExecuteAsync();
     }
 
-    public Task DeleteEventAsync(string id)
+    public Task DeleteEventAsync(Event calendarEvent)
     {
-        EventsResource.DeleteRequest request = _service.Events.Delete(_calendarId, id);
+        if (IsDeleted(calendarEvent))
+        {
+            return Task.CompletedTask;
+        }
+        EventsResource.DeleteRequest request = _service.Events.Delete(_calendarId, calendarEvent.Id);
         return request.ExecuteAsync();
     }
+
+    private static bool IsDeleted(Event calendarEvent) => calendarEvent.Status == "cancelled";
 
     private static BaseClientService.Initializer CreateInitializer(string credentialJson, string applicationName)
     {
