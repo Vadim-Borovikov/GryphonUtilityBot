@@ -9,7 +9,7 @@ namespace GryphonUtilityBot.Records;
 
 internal sealed class Manager
 {
-    public Manager(Bot bot, SaveManager<List<RecordData>> saveManager)
+    public Manager(Bot bot, SaveManager<Data> saveManager)
     {
         _saveManager = saveManager;
         _bot = bot;
@@ -22,7 +22,7 @@ internal sealed class Manager
         RecordData? record = GetRecord(message, query);
         if (record is not null)
         {
-            _saveManager.Data.Add(record);
+            _saveManager.Data.Records.Add(record);
         }
 
         _saveManager.Save();
@@ -35,6 +35,7 @@ internal sealed class Manager
         _saveManager.Load();
 
         List<RecordData> records = _saveManager.Data
+                                               .Records
                                                .Where(r => r.DateTime.Date >= query.From)
                                                .Where(r => r.DateTime.Date <= query.To)
                                                .ToList();
@@ -61,7 +62,7 @@ internal sealed class Manager
     {
         _saveManager.Load();
 
-        RecordData? record = _saveManager.Data.FirstOrDefault(r =>
+        RecordData? record = _saveManager.Data.Records.FirstOrDefault(r =>
             (r.ChatId == recordMessage.Chat.Id) && (r.MessageId == recordMessage.MessageId));
 
         if (record is null)
@@ -96,6 +97,6 @@ internal sealed class Manager
         };
     }
 
-    private readonly SaveManager<List<RecordData>> _saveManager;
+    private readonly SaveManager<Data> _saveManager;
     private readonly Bot _bot;
 }

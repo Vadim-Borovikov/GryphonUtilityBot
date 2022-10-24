@@ -5,8 +5,8 @@ namespace GryphonUtilityBot.Records;
 
 internal sealed class RecordData
 {
-    public int MessageId { get; init; }
-    public long ChatId { get; init; }
-    public DateTime DateTime { get; set; }
-    public HashSet<string> Tags { get; set; } = new();
+    internal int MessageId { get; init; }
+    internal long ChatId { get; init; }
+    internal DateTime DateTime { get; set; }
+    internal HashSet<string> Tags { get; set; } = new();
 }

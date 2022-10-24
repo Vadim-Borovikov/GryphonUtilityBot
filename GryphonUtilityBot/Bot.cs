@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using AbstractBot;
@@ -16,7 +15,7 @@ public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
 {
     public Bot(Config config) : base(config)
     {
-        _saveManager = new SaveManager<List<RecordData>>(Config.SavePath);
+        _saveManager = new SaveManager<Data>(Config.SavePath);
     }
 
     public override async Task StartAsync(CancellationToken cancellationToken)
@@ -127,5 +126,5 @@ public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
     private Records.Manager? _recordsManager;
     private Currency.Manager? _currencyManager;
 
-    private readonly SaveManager<List<RecordData>> _saveManager;
+    private readonly SaveManager<Data> _saveManager;
 }

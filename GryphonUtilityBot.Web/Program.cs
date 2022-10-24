@@ -2,6 +2,7 @@
 using System.Globalization;
 using AbstractBot;
 using GryphonUtilityBot.Web.Models;
+using GryphonUtilityBot.Web.Models.Calendar;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +27,7 @@ internal static class Program
             services.AddControllersWithViews().AddNewtonsoftJson();
 
             AddBotTo(services);
+            AddCalendarTo(services, config);
 
             WebApplication app = builder.Build();
 
@@ -64,6 +66,14 @@ internal static class Program
     {
         services.AddSingleton<BotSingleton>();
         services.AddHostedService<BotService>();
+    }
+
+    private static void AddCalendarTo(IServiceCollection services, Models.Config config)
+    {
+        services.AddNotionClient(options => options.AuthToken = config.NotionToken);
+        services.AddSingleton<NotionHelper>();
+        services.AddSingleton<GoogleCalendarHelper>();
+        services.AddHostedService<Service>();
     }
 
     private static void UseUpdateEndpoint(IApplicationBuilder app, string token)
