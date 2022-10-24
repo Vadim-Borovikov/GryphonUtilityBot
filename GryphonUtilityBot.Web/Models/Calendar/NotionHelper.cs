@@ -92,8 +92,7 @@ internal sealed class NotionHelper
     private static Filter GetQueryFilter(DateTime updatedSince)
     {
         LastEditedTimeFilter lastEditedFilter = new(onOrAfter: updatedSince);
-        // CheckboxFilter meetingFilter = new("Встреча", true);
-        CheckboxFilter meetingFilter = new("Test", true);
+        CheckboxFilter meetingFilter = new("Встреча", true);
         DateFilter dateFilter = new("Дата", onOrAfter: updatedSince);
         List<Filter> filters = new()
         {
