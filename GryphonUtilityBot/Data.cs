@@ -8,7 +8,7 @@ namespace GryphonUtilityBot;
 public sealed class Data
 {
     [UsedImplicitly]
-    internal List<RecordData> Records { get; set; } = new();
+    public List<RecordData> Records { get; set; } = new();
 
     public DateTime? LastUpdated { get; set; }
 

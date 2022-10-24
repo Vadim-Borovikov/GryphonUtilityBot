@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace GryphonUtilityBot.Records;
 
-internal sealed class RecordData
+[PublicAPI]
+public sealed class RecordData
 {
-    internal int MessageId { get; init; }
-    internal long ChatId { get; init; }
-    internal DateTime DateTime { get; set; }
-    internal HashSet<string> Tags { get; set; } = new();
+    public int MessageId { get; init; }
+    public long ChatId { get; init; }
+    public DateTime DateTime { get; set; }
+    public HashSet<string> Tags { get; set; } = new();
 }
