@@ -13,9 +13,6 @@ public sealed class Config : GryphonUtilityBot.Config
     [MinLength(1)]
     public string CultureInfoName { get; init; } = null!;
 
-    public List<Uri>? PingUrls { get; init; }
-    public string? PingUrlsJson { get; init; }
-
     [Required]
     [MinLength(1)]
     public string NotionToken { get; init; } = null!;
