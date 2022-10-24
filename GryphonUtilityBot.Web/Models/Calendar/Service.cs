@@ -70,8 +70,11 @@ internal sealed class Service : IHostedService, IDisposable
                 }
                 if (!string.IsNullOrWhiteSpace(page.GoogleEventId))
                 {
-                    await DeleteEventAsync(page);
-                    await ClearPageAsync(page);
+                    Event? calendarEvent = await GetEventAsync(page);
+                    if (calendarEvent is not null)
+                    {
+                        await DeleteEventAsync(calendarEvent, page);
+                    }
                 }
                 toRemove.Add(id);
             }
@@ -93,27 +96,27 @@ internal sealed class Service : IHostedService, IDisposable
                 continue;
             }
 
-            if (string.IsNullOrWhiteSpace(page.GoogleEventId))
+            Event? calendarEvent = await GetEventAsync(page);
+            if (calendarEvent is null)
             {
                 if (page.IsCancelled)
                 {
-                    continue;
+                    await ClearPageAsync(page);
                 }
-
-                Event calendarEvent = await CreateEventAsync(page, page.Date.Start.Value, page.Date.End.Value);
-                await UpdatePageAsync(page, calendarEvent);
-                _saveManager.Data.Meetings[page.Page.Id] = page.Date.End.Value.ToUniversalTime();
+                else
+                {
+                    calendarEvent = await CreateEventAsync(page, page.Date.Start.Value, page.Date.End.Value);
+                    await UpdatePageAsync(page, calendarEvent, page.Date.End.Value);
+                }
             }
             else if (page.IsCancelled)
             {
-                await DeleteEventAsync(page);
+                await DeleteEventAsync(calendarEvent, page);
                 await ClearPageAsync(page);
-                _saveManager.Data.Meetings.Remove(page.Page.Id);
             }
             else
             {
-                await UpdateEventAsync(page, page.Date.Start.Value, page.Date.End.Value);
-                _saveManager.Data.Meetings[page.Page.Id] = page.Date.End.Value.ToUniversalTime();
+                await UpdateEventAsync(calendarEvent, page, page.Date.Start.Value, page.Date.End.Value);
             }
         }
     }
@@ -124,30 +127,40 @@ internal sealed class Service : IHostedService, IDisposable
         return _googleCalendarHelper.CreateEventAsync(page.Title, start, end, page.Page.Url);
     }
 
-    private async Task UpdateEventAsync(PageInfo page, DateTime start, DateTime end)
+    private async Task<Event?> GetEventAsync(PageInfo page)
     {
-        Event calendarEvent = await _googleCalendarHelper.GetEventAsync(page.GoogleEventId);
+        Utils.LogManager.LogTimedMessage($"Acquiring event for page \"{page.Title}\".");
+        return string.IsNullOrWhiteSpace(page.GoogleEventId)
+            ? null
+            : await _googleCalendarHelper.GetEventAsync(page.GoogleEventId);
+    }
+
+    private async Task UpdateEventAsync(Event calendarEvent, PageInfo page, DateTime start, DateTime end)
+    {
         Utils.LogManager.LogTimedMessage($"Updating event \"{calendarEvent.Id}\" for page \"{page.Title}\".");
         await _googleCalendarHelper.UpdateEventAsync(page.GoogleEventId, calendarEvent, page.Title, start, end,
             page.Page.Url);
+        _saveManager.Data.Meetings[page.Page.Id] = end.ToUniversalTime();
     }
 
-    private Task UpdatePageAsync(PageInfo page, Event calendarEvent)
+    private async Task UpdatePageAsync(PageInfo page, Event calendarEvent, DateTime end)
     {
         Utils.LogManager.LogTimedMessage($"Updating page \"{page.Title}\" for event \"{calendarEvent.Id}\"");
-        return _notionHelper.UpdateAsync(page.Page.Id, calendarEvent.Id, new Uri(calendarEvent.HtmlLink));
+        await _notionHelper.UpdateAsync(page, calendarEvent.Id, new Uri(calendarEvent.HtmlLink));
+        _saveManager.Data.Meetings[page.Page.Id] = end.ToUniversalTime();
     }
 
-    private Task ClearPageAsync(PageInfo page)
+    private async Task ClearPageAsync(PageInfo page)
     {
         Utils.LogManager.LogTimedMessage($"Clearing page \"{page.Title}\" of event \"{page.GoogleEventId}\"");
-        return _notionHelper.UpdateAsync(page.Page.Id, null, null);
+        await _notionHelper.ClearAsync(page);
+        _saveManager.Data.Meetings.Remove(page.Page.Id);
     }
 
-    private Task DeleteEventAsync(PageInfo page)
+    private async Task DeleteEventAsync(Event calendarEvent, PageInfo page)
     {
         Utils.LogManager.LogTimedMessage($"Deleting event \"{page.GoogleEventId}\" for page \"{page.Title}\".");
-        return _googleCalendarHelper.DeleteEventAsync(page.GoogleEventId);
+        await _googleCalendarHelper.DeleteEventAsync(calendarEvent);
     }
 
     private readonly NotionHelper _notionHelper;

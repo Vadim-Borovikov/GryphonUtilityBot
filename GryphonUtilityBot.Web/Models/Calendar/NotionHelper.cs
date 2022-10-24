@@ -43,7 +43,33 @@ internal sealed class NotionHelper
         return result;
     }
 
-    public async Task UpdateAsync(string pageId, string? eventId, Uri? eventUri)
+    public async Task UpdateAsync(PageInfo page, string eventId, Uri eventUri)
+    {
+        if (page.GoogleEventId != eventId)
+        {
+            await UpdateEventIdAsync(page.Page.Id, eventId);
+        }
+
+        if (page.GoogleEvent != eventUri)
+        {
+            await UpdateEventUriAsync(page.Page.Id, eventUri);
+        }
+    }
+
+    public async Task ClearAsync(PageInfo page)
+    {
+        if (!string.IsNullOrWhiteSpace(page.GoogleEventId))
+        {
+            await UpdateEventIdAsync(page.Page.Id);
+        }
+
+        if (page.GoogleEvent is not null)
+        {
+            await UpdateEventUriAsync(page.Page.Id);
+        }
+    }
+
+    private async Task UpdateEventIdAsync(string pageId, string? eventId = null)
     {
         Dictionary<string, PropertyValue> eventIdProperty = new()
         {
@@ -51,7 +77,10 @@ internal sealed class NotionHelper
         };
         DelayIfNeeded();
         await _client.Pages.UpdatePropertiesAsync(pageId, eventIdProperty);
+    }
 
+    private async Task UpdateEventUriAsync(string pageId, Uri? eventUri = null)
+    {
         Dictionary<string, PropertyValue?> eventProperty = new()
         {
             { "Google Event", eventUri is null ? null : new UrlPropertyValue { Url = eventUri.AbsoluteUri } }
@@ -63,7 +92,8 @@ internal sealed class NotionHelper
     private static Filter GetQueryFilter(DateTime updatedSince)
     {
         LastEditedTimeFilter lastEditedFilter = new(onOrAfter: updatedSince);
-        CheckboxFilter meetingFilter = new("Встреча", true);
+        // CheckboxFilter meetingFilter = new("Встреча", true);
+        CheckboxFilter meetingFilter = new("Test", true);
         DateFilter dateFilter = new("Дата", onOrAfter: updatedSince);
         List<Filter> filters = new()
         {
