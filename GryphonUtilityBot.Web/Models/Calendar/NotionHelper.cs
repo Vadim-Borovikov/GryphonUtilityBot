@@ -90,43 +90,6 @@ internal sealed class NotionHelper
         }
     }
 
-    /*public async Task TestAsync(string pageId)
-    {
-        await TestUpdate(pageId, null, "https://github.com");
-        await TestUpdate(pageId, "text 1", null);
-        await TestUpdate(pageId, null, "https://github.com");
-        await TestUpdate(pageId, "text 2", null);
-        await TestUpdate(pageId, null, "https://github.com");
-    }
-
-    private async Task TestUpdate(string pageId, string? text, string? url)
-    {
-        Dictionary<string, PropertyValue?> properties = new()
-        {
-            { "Text", CreateTextValue(text) },
-            { "URL", url is null ? null : new UrlPropertyValue { Url = url } }
-        };
-        DelayIfNeeded();
-        await _client.Pages.UpdatePropertiesAsync(pageId, properties);
-    }
-
-    private async Task TestUpdate1(string pageId, string? text, string? url)
-    {
-        Dictionary<string, PropertyValue?> properties = new()
-        {
-            { "Text", CreateTextValue(text) },
-        };
-        DelayIfNeeded();
-        await _client.Pages.UpdatePropertiesAsync(pageId, properties);
-
-        properties = new Dictionary<string, PropertyValue?>
-        {
-            { "URL", url is null ? null : new UrlPropertyValue { Url = url } }
-        };
-        DelayIfNeeded();
-        await _client.Pages.UpdatePropertiesAsync(pageId, properties);
-    }*/
-
     private static RichTextPropertyValue CreateTextValue(string? content)
     {
         RichTextPropertyValue result = new()
