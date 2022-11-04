@@ -16,11 +16,18 @@ internal sealed class NotionHelper
         _updatePeriod = TimeSpan.FromSeconds(config.NotionUpdatesPerSecondLimit);
     }
 
-    public async Task<PageInfo> GetPage(string id)
+    public async Task<PageInfo?> GetPage(string id)
     {
         DelayIfNeeded();
-        Page page = await _client.Pages.RetrieveAsync(id);
-        return new PageInfo(page);
+        try
+        {
+            Page page = await _client.Pages.RetrieveAsync(id);
+            return new PageInfo(page);
+        }
+        catch (NotionApiException ex) when (ex.NotionAPIErrorCode == NotionAPIErrorCode.ObjectNotFound)
+        {
+            return null;
+        }
     }
 
     public async Task<List<PageInfo>> GetPages(DateTime updatedSince)
