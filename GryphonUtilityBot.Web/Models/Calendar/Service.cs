@@ -63,10 +63,10 @@ internal sealed class Service : IHostedService, IDisposable
             }
             else
             {
-                PageInfo page = await _notionHelper.GetPage(id);
-                if (page.IsDeleted || page.Dates is null)
+                PageInfo? page = await _notionHelper.GetPage(id);
+                if (page?.Dates is null || page.IsDeleted)
                 {
-                    if (!string.IsNullOrWhiteSpace(page.GoogleEventId))
+                    if (!string.IsNullOrWhiteSpace(page?.GoogleEventId))
                     {
                         Event? calendarEvent = await GetEventAsync(page);
                         if (calendarEvent is not null)
@@ -76,7 +76,7 @@ internal sealed class Service : IHostedService, IDisposable
                     }
                     toRemove.Add(id);
                 }
-                if (!page.IsDeleted && page.Dates is null)
+                if (page is { IsDeleted: false, Dates: null })
                 {
                     await ClearPageAsync(page);
                 }
