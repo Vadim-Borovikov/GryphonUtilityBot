@@ -14,7 +14,6 @@ internal sealed class Manager
     {
         _bot = bot;
         _articles = new SortedSet<Article>();
-        Utils.Converters[typeof(Uri)] = ToUri;
     }
 
     public static bool TryParseArticle(string? text, out Article? article)
@@ -119,8 +118,8 @@ internal sealed class Manager
 
     private async Task LoadAsync()
     {
-        SheetData<Article> data =
-            await DataManager.GetValuesAsync<Article>(_bot.GoogleSheetsProvider, _bot.Config.GoogleRange);
+        SheetData<Article> data = await DataManager<Article>.LoadAsync(_bot.GoogleSheetsProvider,
+            _bot.Config.GoogleRange, additionalConverters: AdditionalConverters);
         _articles = new SortedSet<Article>(data.Instances);
         _titles = data.Titles;
     }
@@ -129,7 +128,7 @@ internal sealed class Manager
     {
         await _bot.GoogleSheetsProvider.ClearValuesAsync(_bot.Config.GoogleRange);
         SheetData<Article> data = new(_articles.ToList(), _titles);
-        await DataManager.UpdateValuesAsync(_bot.GoogleSheetsProvider, _bot.Config.GoogleRange, data);
+        await DataManager<Article>.SaveAsync(_bot.GoogleSheetsProvider, _bot.Config.GoogleRange, data);
     }
 
     private static string GetArticleMessageText(Article article)
@@ -146,6 +145,11 @@ internal sealed class Manager
         string? uriString = o?.ToString();
         return string.IsNullOrWhiteSpace(uriString) ? null : new Uri(uriString);
     }
+
+    private static readonly Dictionary<Type, Func<object?, object?>> AdditionalConverters = new()
+    {
+        { typeof(Uri), ToUri }
+    };
 
     private SortedSet<Article> _articles;
     private readonly Bot _bot;
