@@ -30,7 +30,7 @@ internal abstract class SupportedAction
 
     protected abstract Task ExecuteAsync();
 
-    protected virtual bool AllowedForMistress => false;
+    private static bool AllowedForMistress => false;
 
     protected readonly Bot Bot;
     protected readonly Message Message;

@@ -53,7 +53,6 @@ internal sealed class Manager
             _bot.EditMessageTextAsync(_currentMessage.Chat, _currentMessage.MessageId, message, replyMarkup: keyboard);
     }
 
-
     private string PrepareResult(decimal amount)
     {
         StringBuilder builder = new();

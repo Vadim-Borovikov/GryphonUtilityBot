@@ -1,13 +1,12 @@
 ﻿using System.Threading.Tasks;
-using AbstractBot;
+using AbstractBot.Commands;
 using Telegram.Bot.Types;
 
 namespace GryphonUtilityBot.Actions;
 
 internal sealed class CommandAction : SupportedAction
 {
-    public CommandAction(Bot bot, Message message, CommandBase<Bot, Config> command)
-        : base(bot, message)
+    public CommandAction(Bot bot, Message message, CommandBase<Bot, Config> command) : base(bot, message)
     {
         _command = command;
     }
