@@ -14,10 +14,7 @@ namespace GryphonUtilityBot;
 
 public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
 {
-    public Bot(Config config) : base(config)
-    {
-        _saveManager = new SaveManager<Data>(Config.SavePath);
-    }
+    public Bot(Config config) : base(config) => _saveManager = new SaveManager<Data>(Config.SavePath);
 
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
