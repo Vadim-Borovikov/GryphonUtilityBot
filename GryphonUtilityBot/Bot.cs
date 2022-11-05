@@ -1,24 +1,14 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using AbstractBot;
+using AbstractBot.Commands;
 using GryphonUtilityBot.Actions;
-using GryphonUtilityBot.Commands;
 using Telegram.Bot.Types;
 
 namespace GryphonUtilityBot;
 
 public sealed class Bot : BotBase<Bot, Config>
 {
-    public Bot(Config config) : base(config)
-    {
-    }
-
-    public override async Task StartAsync(CancellationToken cancellationToken)
-    {
-        Commands.Add(new StartCommand(this));
-
-        await base.StartAsync(cancellationToken);
-    }
+    public Bot(Config config) : base(config) { }
 
     protected override Task ProcessTextMessageAsync(Message textMessage, bool fromChat,
         CommandBase<Bot, Config>? command = null, string? payload = null)
