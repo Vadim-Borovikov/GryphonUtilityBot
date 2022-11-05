@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using AbstractBot;
+using AbstractBot.Commands;
 using GryphonUtilityBot.Actions;
 using GryphonUtilityBot.Articles;
 using GryphonUtilityBot.Commands;
@@ -20,7 +21,6 @@ public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
 
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
-        Commands.Add(new StartCommand(this));
         Commands.Add(new ArticleCommand(this));
         Commands.Add(new ReadCommand(this));
 
