@@ -1,15 +1,12 @@
 ﻿using System.Threading.Tasks;
-using AbstractBot;
+using AbstractBot.Commands;
 using Telegram.Bot.Types;
 
 namespace GryphonUtilityBot.Commands;
 
 internal sealed class ArticleCommand : CommandBase<Bot, Config>
 {
-    protected override string Name => "article";
-    protected override string Description => "Первая статья";
-
-    public ArticleCommand(Bot bot) : base(bot) { }
+    public ArticleCommand(Bot bot) : base(bot, "article", "первая статья") { }
 
     public override Task ExecuteAsync(Message message, bool fromChat, string? payload)
     {

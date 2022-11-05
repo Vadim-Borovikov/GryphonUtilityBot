@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using AbstractBot;
-using GryphonUtilities;
 using GryphonUtilityBot.Web.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -56,8 +55,7 @@ internal static class Program
         builder.Services.AddOptions<Models.Config>().Bind(configuration).ValidateDataAnnotations();
         builder.Services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<Models.Config>>().Value);
 
-        string cultureInfoName = config.CultureInfoName.GetValue(nameof(config.CultureInfoName));
-        CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(cultureInfoName);
+        CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(config.CultureInfoName);
 
         return config;
     }
