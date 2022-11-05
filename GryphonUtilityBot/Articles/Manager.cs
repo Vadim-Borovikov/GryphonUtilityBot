@@ -136,19 +136,9 @@ internal sealed class Manager
         return $"{article.Date:d MMMM yyyy}{Environment.NewLine}{article.Uri}";
     }
 
-    private static Uri? ToUri(object? o)
-    {
-        if (o is Uri uri)
-        {
-            return uri;
-        }
-        string? uriString = o?.ToString();
-        return string.IsNullOrWhiteSpace(uriString) ? null : new Uri(uriString);
-    }
-
     private static readonly Dictionary<Type, Func<object?, object?>> AdditionalConverters = new()
     {
-        { typeof(Uri), ToUri }
+        { typeof(Uri), Utils.ToUri }
     };
 
     private SortedSet<Article> _articles;
