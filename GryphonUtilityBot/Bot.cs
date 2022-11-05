@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using AbstractBot;
+using AbstractBot.Commands;
 using GryphonUtilityBot.Actions;
 using GryphonUtilityBot.Records;
-using GryphonUtilityBot.Commands;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -13,17 +12,7 @@ namespace GryphonUtilityBot;
 
 public sealed class Bot : BotBase<Bot, Config>
 {
-    public Bot(Config config) : base(config)
-    {
-        _saveManager = new SaveManager<List<RecordData>>(Config.SavePath);
-    }
-
-    public override async Task StartAsync(CancellationToken cancellationToken)
-    {
-        Commands.Add(new StartCommand(this));
-
-        await base.StartAsync(cancellationToken);
-    }
+    public Bot(Config config) : base(config) => _saveManager = new SaveManager<List<RecordData>>(Config.SavePath);
 
     protected override Task UpdateAsync(Message message, bool fromChat, CommandBase<Bot, Config>? command = null,
         string? payload = null)
