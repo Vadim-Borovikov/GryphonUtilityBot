@@ -28,6 +28,12 @@ internal sealed class NotionHelper
         {
             return null;
         }
+        catch (NotionApiException ex)
+        {
+            string code = ex.NotionAPIErrorCode?.ToString() ?? "null";
+            Utils.LogManager.LogTimedMessage($"GetPage({id}) resulted with NotionApiException (code {code}, message {ex.Message})");
+            throw;
+        }
     }
 
     public async Task<List<PageInfo>> GetPages(DateTime updatedSince)
