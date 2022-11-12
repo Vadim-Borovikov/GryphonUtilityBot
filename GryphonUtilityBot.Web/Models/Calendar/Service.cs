@@ -63,22 +63,26 @@ internal sealed class Service : IHostedService, IDisposable
             }
             else
             {
-                PageInfo? page = await _notionHelper.GetPage(id);
-                if (page?.Dates is null || page.IsDeleted)
+                GetPageResult result = await _notionHelper.GetPage(id);
+                if (!result.Successfull)
                 {
-                    if (!string.IsNullOrWhiteSpace(page?.GoogleEventId))
+                    continue;
+                }
+                if (result.Page?.Dates is null || result.Page.IsDeleted)
+                {
+                    if (!string.IsNullOrWhiteSpace(result.Page?.GoogleEventId))
                     {
-                        Event? calendarEvent = await GetEventAsync(page);
+                        Event? calendarEvent = await GetEventAsync(result.Page);
                         if (calendarEvent is not null)
                         {
-                            await DeleteEventAsync(calendarEvent, page);
+                            await DeleteEventAsync(calendarEvent, result.Page);
                         }
                     }
                     toRemove.Add(id);
                 }
-                if (page is { IsDeleted: false, Dates: null })
+                if (result.Page is { IsDeleted: false, Dates: null })
                 {
-                    await ClearPageAsync(page);
+                    await ClearPageAsync(result.Page);
                 }
             }
         }
