@@ -16,23 +16,25 @@ internal sealed class NotionHelper
         _updatePeriod = TimeSpan.FromSeconds(config.NotionUpdatesPerSecondLimit);
     }
 
-    public async Task<PageInfo?> GetPage(string id)
+    public async Task<GetPageResult> GetPage(string id)
     {
         DelayIfNeeded();
         try
         {
             Page page = await _client.Pages.RetrieveAsync(id);
-            return new PageInfo(page);
+            return new GetPageResult(page);
         }
         catch (NotionApiException ex) when (ex.NotionAPIErrorCode == NotionAPIErrorCode.ObjectNotFound)
         {
-            return null;
+            Utils.LogManager.LogError($"GetPage({id}) resulted with ObjectNotFound");
+            Utils.LogManager.LogException(ex);
+            return new GetPageResult(true);
         }
         catch (NotionApiException ex)
         {
-            string code = ex.NotionAPIErrorCode?.ToString() ?? "null";
-            Utils.LogManager.LogTimedMessage($"GetPage({id}) resulted with NotionApiException (code {code}, message {ex.Message})");
-            throw;
+            Utils.LogManager.LogError($"GetPage({id}) resulted with unspecified NotionApiException");
+            Utils.LogManager.LogException(ex);
+            return new GetPageResult(false);
         }
     }
 
