@@ -5,10 +5,10 @@ namespace GryphonUtilityBot.Records;
 
 internal sealed class FindQuery : MarkQuery
 {
-    public readonly DateTime From;
-    public readonly DateTime To;
+    public readonly DateOnly From;
+    public readonly DateOnly To;
 
-    private FindQuery(DateTime from, DateTime to, IEnumerable<string> tags) : base(null, tags)
+    private FindQuery(DateOnly from, DateOnly to, IEnumerable<string> tags) : base(null, tags)
     {
         From = from;
         To = to;
@@ -28,13 +28,13 @@ internal sealed class FindQuery : MarkQuery
             return null;
         }
 
-        DateTime? from = Utils.ParseFirstDateTime(parts);
+        DateOnly? from = Utils.ParseFirstDate(parts);
         if (!from.HasValue)
         {
             return null;
         }
 
-        DateTime? to = Utils.ParseFirstDateTime(parts);
+        DateOnly? to = Utils.ParseFirstDate(parts);
         if (!to.HasValue)
         {
             return null;

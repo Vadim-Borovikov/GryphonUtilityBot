@@ -24,7 +24,7 @@ internal abstract class SupportedAction
                 "Простите, госпожа, но господин заблокировал это действие даже для Вас.");
         }
 
-        bool shouldExecute = Bot.IsAccessSuffice(user.Id, BotBase<Bot, Config>.AccessType.Admins);
+        bool shouldExecute = Bot.IsAccessSuffice(user.Id, BotBase.AccessType.Admins);
         return shouldExecute ? ExecuteAsync() : Bot.SendStickerAsync(Message.Chat, forbiddenSticker);
     }
 

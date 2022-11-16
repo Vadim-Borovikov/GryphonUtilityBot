@@ -4,7 +4,7 @@ using Telegram.Bot.Types;
 
 namespace GryphonUtilityBot.Commands;
 
-internal sealed class ArticleCommand : CommandBase<Bot, Config>
+internal sealed class ArticleCommand : CommandBaseCustom<Bot, Config>
 {
     public ArticleCommand(Bot bot) : base(bot, "article", "первая статья") { }
 

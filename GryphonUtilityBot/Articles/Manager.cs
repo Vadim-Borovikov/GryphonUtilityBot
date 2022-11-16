@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GoogleSheetsManager;
+using GryphonUtilities;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -67,9 +68,9 @@ internal sealed class Manager
         {
             case 1:
                 uri = CreateUri(parts[0]);
-                return uri is null ? null : new Article(DateTime.Today, uri);
+                return uri is null ? null : new Article(DateTimeOffset.Now.DateOnly(), uri);
             case 2:
-                DateTime? date = ParseDate(parts[0]);
+                DateOnly? date = ParseDate(parts[0]);
                 if (!date.HasValue)
                 {
                     return null;
@@ -80,9 +81,9 @@ internal sealed class Manager
         }
     }
 
-    private static DateTime? ParseDate(string dateString)
+    private static DateOnly? ParseDate(string dateString)
     {
-        if (DateTime.TryParse(dateString, out DateTime date))
+        if (DateOnly.TryParse(dateString, out DateOnly date))
         {
             return date;
         }
@@ -94,7 +95,8 @@ internal sealed class Manager
 
         try
         {
-            return new DateTime(DateTime.Today.Year, DateTime.Today.Month, day);
+            DateTimeOffset now = DateTimeOffset.Now;
+            return new DateOnly(now.Year, now.Month, day);
         }
         catch (ArgumentOutOfRangeException)
         {
@@ -138,7 +140,9 @@ internal sealed class Manager
 
     private static readonly Dictionary<Type, Func<object?, object?>> AdditionalConverters = new()
     {
-        { typeof(Uri), Utils.ToUri }
+        { typeof(Uri), Utils.ToUri },
+        { typeof(DateOnly), o => Utils.ToDateOnly(o) },
+        { typeof(DateOnly?), o => Utils.ToDateOnly(o) }
     };
 
     private SortedSet<Article> _articles;

@@ -1,20 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using GoogleSheetsManager;
+using GryphonUtilities;
 
 namespace GryphonUtilityBot;
 
 internal static class Utils
 {
-    public static DateTime? ParseFirstDateTime(List<string> parts)
+    public static DateOnly? ParseFirstDate(List<string> parts)
     {
-        if ((parts.Count == 0) || !DateTime.TryParse(parts.First(), out DateTime dateTime))
+        if ((parts.Count == 0) || !DateOnly.TryParse(parts.First(), out DateOnly date))
         {
             return null;
         }
 
         parts.RemoveAt(0);
-        return dateTime;
+        return date;
+    }
+
+    public static DateOnly? ToDateOnly(object? o)
+    {
+        if (o is DateOnly d)
+        {
+            return d;
+        }
+
+        return o.ToDateTimeOffset()?.DateOnly();
     }
 
     public static Uri? ToUri(object? o)

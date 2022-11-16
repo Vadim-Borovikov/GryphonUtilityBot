@@ -24,7 +24,7 @@ public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
         await base.StartAsync(cancellationToken);
     }
 
-    protected override Task UpdateAsync(Message message, bool fromChat, CommandBase<Bot, Config>? command = null,
+    protected override Task UpdateAsync(Message message, bool fromChat, CommandBase? command = null,
         string? payload = null)
     {
         SupportedAction? action = GetAction(message, command);
@@ -42,7 +42,7 @@ public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
         return CurrencyManager.ChangeCurrency(callback.Data);
     }
 
-    private SupportedAction? GetAction(Message message, CommandBase<Bot, Config>? command)
+    private SupportedAction? GetAction(Message message, CommandBase? command)
     {
         if (message.ForwardFrom is not null)
         {
@@ -113,7 +113,7 @@ public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
     }
 
     internal MarkQuery? CurrentQuery;
-    internal DateTime CurrentQueryTime;
+    internal DateTimeOffset CurrentQueryTime;
 
     internal Articles.Manager ArticlesManager => _articlesManager ??= new Articles.Manager(this);
     internal Records.Manager RecordsManager => _recordsManager ??= new Records.Manager(this, _saveManager);

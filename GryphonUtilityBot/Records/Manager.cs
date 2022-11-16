@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AbstractBot;
+using GryphonUtilities;
 using Telegram.Bot.Types;
 
 namespace GryphonUtilityBot.Records;
@@ -36,8 +37,8 @@ internal sealed class Manager
 
         List<RecordData> records = _saveManager.Data
                                                .Records
-                                               .Where(r => r.DateTime.Date >= query.From)
-                                               .Where(r => r.DateTime.Date <= query.To)
+                                               .Where(r => r.DateTime.DateOnly() >= query.From)
+                                               .Where(r => r.DateTime.DateOnly() <= query.To)
                                                .ToList();
 
         if (query.Tags.Any())
@@ -70,9 +71,9 @@ internal sealed class Manager
             return _bot.SendTextMessageAsync(chat, "Я не нашёл нужной записи.");
         }
 
-        if (query.DateTime.HasValue)
+        if (query.DateOnly.HasValue)
         {
-            record.DateTime = query.DateTime.Value;
+            record.DateTime = DateTimeOffsetHelper.FromDateOnly(query.DateOnly.Value);
         }
 
         record.Tags = query.Tags;
@@ -87,7 +88,9 @@ internal sealed class Manager
             return null;
         }
 
-        DateTime dateTime = query?.DateTime ?? _bot.TimeManager.ToLocal(message.ForwardDate.Value);
+        DateTimeOffset dateTime = query?.DateOnly is null
+            ? _bot.TimeManager.ToLocal(message.ForwardDate.Value)
+            : DateTimeOffsetHelper.FromDateOnly(query.DateOnly.Value);
         return new RecordData
         {
             MessageId = message.MessageId,

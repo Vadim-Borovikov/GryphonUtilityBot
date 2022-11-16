@@ -14,11 +14,11 @@ public sealed class LastEditedTimeFilter : Filter
     public DateFilter.Condition LastEditedTime { get; set; }
 
     public LastEditedTimeFilter(
-        DateTime? equal = null,
-        DateTime? before = null,
-        DateTime? after = null,
-        DateTime? onOrBefore = null,
-        DateTime? onOrAfter = null,
+        DateTimeOffset? equal = null,
+        DateTimeOffset? before = null,
+        DateTimeOffset? after = null,
+        DateTimeOffset? onOrBefore = null,
+        DateTimeOffset? onOrAfter = null,
         Dictionary<string, object>? pastWeek = null,
         Dictionary<string, object>? pastMonth = null,
         Dictionary<string, object>? pastYear = null,
@@ -29,11 +29,11 @@ public sealed class LastEditedTimeFilter : Filter
         bool? isNotEmpty = null)
     {
         LastEditedTime = new DateFilter.Condition(
-            equal,
-            before,
-            after,
-            onOrBefore,
-            onOrAfter,
+            equal?.UtcDateTime,
+            before?.UtcDateTime,
+            after?.UtcDateTime,
+            onOrBefore?.UtcDateTime,
+            onOrAfter?.UtcDateTime,
             pastWeek,
             pastMonth,
             pastYear,

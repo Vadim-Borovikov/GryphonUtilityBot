@@ -27,7 +27,7 @@ public sealed class Config : GryphonUtilityBot.Config
     public string NotionDatabaseId { get; init; } = null!;
 
     [Required]
-    public DateTime NotionStartWatchingDate { get; init; }
+    public DateOnly NotionStartWatchingDate { get; init; }
 
     [Required]
     [Range(double.Epsilon, double.MaxValue)]

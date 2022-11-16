@@ -10,8 +10,8 @@ public sealed class Data
     [UsedImplicitly]
     public List<RecordData> Records { get; set; } = new();
 
-    public DateTime? LastUpdated { get; set; }
+    public DateTimeOffset? LastUpdated { get; set; }
 
     [UsedImplicitly]
-    public Dictionary<string, DateTime> Meetings { get; set; } = new();
+    public Dictionary<string, DateTimeOffset> Meetings { get; set; } = new();
 }

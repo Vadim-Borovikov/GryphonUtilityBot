@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AbstractBot;
 using Google.Apis.Calendar.v3.Data;
+using GryphonUtilities;
 using Microsoft.Extensions.Hosting;
 
 namespace GryphonUtilityBot.Web.Models.Calendar;
@@ -41,7 +42,7 @@ internal sealed class Service : IHostedService, IDisposable
     private async Task TickAsync(CancellationToken cancellationToken)
     {
         Utils.LogManager.LogTimedMessage("Calendar sync tick");
-        DateTime now = DateTime.UtcNow;
+        DateTimeOffset now = DateTimeOffset.UtcNow;
 
         _saveManager.Load();
 
@@ -52,7 +53,7 @@ internal sealed class Service : IHostedService, IDisposable
         _saveManager.Save();
     }
 
-    private async Task ProcessOutdatedAndDeletedPages(DateTime now)
+    private async Task ProcessOutdatedAndDeletedPages(DateTimeOffset now)
     {
         List<string> toRemove = new();
         foreach (string id in _saveManager.Data.Meetings.Keys)
@@ -96,7 +97,7 @@ internal sealed class Service : IHostedService, IDisposable
 
     private async Task ApplyUpdatesAsync()
     {
-        _saveManager.Data.LastUpdated ??= _config.NotionStartWatchingDate.ToUniversalTime();
+        _saveManager.Data.LastUpdated ??= DateTimeOffsetHelper.FromDateOnly(_config.NotionStartWatchingDate);
         NotionRequestResult<List<PageInfo>> result =
             await _notionHelper.TryGetPagesAsync(_saveManager.Data.LastUpdated.Value);
 
@@ -137,7 +138,7 @@ internal sealed class Service : IHostedService, IDisposable
         }
     }
 
-    private Task<Event> CreateEventAsync(PageInfo page, DateTime start, DateTime end)
+    private Task<Event> CreateEventAsync(PageInfo page, DateTimeOffset start, DateTimeOffset end)
     {
         Utils.LogManager.LogTimedMessage($"Creating event for page \"{page.Title}\".");
         return _googleCalendarHelper.CreateEventAsync(page.Title, start, end, page.Page.Url);
@@ -151,7 +152,7 @@ internal sealed class Service : IHostedService, IDisposable
             : await _googleCalendarHelper.GetEventAsync(page.GoogleEventId);
     }
 
-    private async Task UpdateEventAsync(Event calendarEvent, PageInfo page, DateTime start, DateTime end)
+    private async Task UpdateEventAsync(Event calendarEvent, PageInfo page, DateTimeOffset start, DateTimeOffset end)
     {
         Utils.LogManager.LogTimedMessage($"Updating event \"{calendarEvent.Id}\" for page \"{page.Title}\".");
         await _googleCalendarHelper.UpdateEventAsync(page.GoogleEventId, calendarEvent, page.Title, start, end,
@@ -159,7 +160,7 @@ internal sealed class Service : IHostedService, IDisposable
         _saveManager.Data.Meetings[page.Page.Id] = end.ToUniversalTime();
     }
 
-    private async Task UpdatePageAsync(PageInfo page, Event calendarEvent, DateTime end)
+    private async Task UpdatePageAsync(PageInfo page, Event calendarEvent, DateTimeOffset end)
     {
         Utils.LogManager.LogTimedMessage($"Updating page \"{page.Title}\" for event \"{calendarEvent.Id}\"");
         await _notionHelper.UpdateAsync(page, calendarEvent.Id, new Uri(calendarEvent.HtmlLink));

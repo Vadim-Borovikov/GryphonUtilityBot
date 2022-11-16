@@ -25,13 +25,13 @@ internal sealed class GoogleCalendarHelper : IDisposable
 
     public void Dispose() => _service.Dispose();
 
-    public Task<Event> CreateEventAsync(string summary, DateTime start, DateTime end, string description)
+    public Task<Event> CreateEventAsync(string summary, DateTimeOffset start, DateTimeOffset end, string description)
     {
         Event body = new()
         {
             Summary = summary,
-            Start = new EventDateTime { DateTime = start },
-            End = new EventDateTime { DateTime = end },
+            Start = new EventDateTime { DateTime = start.UtcDateTime },
+            End = new EventDateTime { DateTime = end.UtcDateTime },
             Description = description,
             ColorId = _colorId
         };
@@ -53,12 +53,12 @@ internal sealed class GoogleCalendarHelper : IDisposable
         }
     }
 
-    public Task UpdateEventAsync(string id, Event body, string summary, DateTime start, DateTime end,
+    public Task UpdateEventAsync(string id, Event body, string summary, DateTimeOffset start, DateTimeOffset end,
         string description)
     {
         body.Summary = summary;
-        body.Start = new EventDateTime { DateTime = start };
-        body.End = new EventDateTime { DateTime = end };
+        body.Start = new EventDateTime { DateTime = start.UtcDateTime };
+        body.End = new EventDateTime { DateTime = end.UtcDateTime };
         body.Description = description;
         EventsResource.UpdateRequest request = _service.Events.Update(body, _calendarId, id);
         return request.ExecuteAsync();

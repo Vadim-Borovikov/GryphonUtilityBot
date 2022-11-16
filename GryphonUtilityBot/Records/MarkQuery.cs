@@ -5,12 +5,12 @@ namespace GryphonUtilityBot.Records;
 
 internal class MarkQuery
 {
-    public readonly DateTime? DateTime;
+    public readonly DateOnly? DateOnly;
     public readonly HashSet<string> Tags;
 
-    protected MarkQuery(DateTime? dateTime, IEnumerable<string> tags)
+    protected MarkQuery(DateOnly? dateOnly, IEnumerable<string> tags)
     {
-        DateTime = dateTime;
+        DateOnly = dateOnly;
         Tags = new HashSet<string>(tags);
     }
 
@@ -28,7 +28,7 @@ internal class MarkQuery
             return null;
         }
 
-        DateTime? dateTime = Utils.ParseFirstDateTime(parts);
+        DateOnly? dateTime = Utils.ParseFirstDate(parts);
 
         return new MarkQuery(dateTime, parts);
     }

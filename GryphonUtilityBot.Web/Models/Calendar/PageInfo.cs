@@ -9,7 +9,7 @@ internal sealed class PageInfo
 {
     public readonly Page Page;
     public readonly string Title;
-    public readonly (DateTime Start, DateTime End)? Dates;
+    public readonly (DateTimeOffset Start, DateTimeOffset End)? Dates;
     public readonly string GoogleEventId;
     public readonly Uri? GoogleEvent;
     public readonly bool IsCancelled;
@@ -36,7 +36,7 @@ internal sealed class PageInfo
         return JoinRichTextPart(title.Title);
     }
 
-    private static (DateTime, DateTime)? GetDates(Page page)
+    private static (DateTimeOffset, DateTimeOffset)? GetDates(Page page)
     {
         if (page.Properties["Дата"] is not DatePropertyValue date)
         {
@@ -45,7 +45,7 @@ internal sealed class PageInfo
 
         return date.Date?.Start is null || date.Date.End is null
             ? null
-            : (date.Date.Start.Value, date.Date.End.Value);
+            : (new DateTimeOffset(date.Date.Start.Value), new DateTimeOffset(date.Date.End.Value));
     }
 
     private static string GetGoogleEventId(Page page)

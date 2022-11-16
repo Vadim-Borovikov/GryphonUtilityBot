@@ -20,11 +20,11 @@ internal sealed class Article : IComparable<Article>
 
     [Required]
     [SheetField("Дата")]
-    public DateTime Date;
+    public DateOnly Date;
 
     public Article() { }
 
-    public Article(DateTime date, Uri uri, bool current = false)
+    public Article(DateOnly date, Uri uri, bool current = false)
     {
         Date = date;
         Uri = uri;

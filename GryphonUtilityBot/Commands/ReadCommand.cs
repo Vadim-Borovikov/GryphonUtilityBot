@@ -4,7 +4,7 @@ using Telegram.Bot.Types;
 
 namespace GryphonUtilityBot.Commands;
 
-internal sealed class ReadCommand : CommandBase<Bot, Config>
+internal sealed class ReadCommand : CommandBaseCustom<Bot, Config>
 {
     public ReadCommand(Bot bot) : base(bot, "read", "удалить статью и выдать следующую") { }
 

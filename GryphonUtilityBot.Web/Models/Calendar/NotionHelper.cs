@@ -18,7 +18,7 @@ internal sealed class NotionHelper
 
     public Task<NotionRequestResult<PageInfo>> TryGetPageAsync(string id) => Wrapper(GetPageAsync, id);
 
-    public Task<NotionRequestResult<List<PageInfo>>> TryGetPagesAsync(DateTime updatedSince)
+    public Task<NotionRequestResult<List<PageInfo>>> TryGetPagesAsync(DateTimeOffset updatedSince)
     {
         return Wrapper(GetPagesAsync, updatedSince);
     }
@@ -79,9 +79,9 @@ internal sealed class NotionHelper
         }
     }
 
-    private async Task<List<PageInfo>> GetPagesAsync(DateTime updatedSince)
+    private async Task<List<PageInfo>> GetPagesAsync(DateTimeOffset updatedSince)
     {
-        DatabasesQueryParameters query = new() { Filter = GetQueryFilter(updatedSince.ToUniversalTime()) };
+        DatabasesQueryParameters query = new() { Filter = GetQueryFilter(updatedSince) };
         List<PageInfo> result = new();
         do
         {
@@ -119,11 +119,11 @@ internal sealed class NotionHelper
         await _client.Pages.UpdatePropertiesAsync(pageId, eventProperty);
     }
 
-    private static Filter GetQueryFilter(DateTime updatedSince)
+    private static Filter GetQueryFilter(DateTimeOffset updatedSince)
     {
         LastEditedTimeFilter lastEditedFilter = new(onOrAfter: updatedSince);
         CheckboxFilter meetingFilter = new("Встреча", true);
-        DateFilter dateFilter = new("Дата", onOrAfter: updatedSince);
+        DateFilter dateFilter = new("Дата", onOrAfter: updatedSince.UtcDateTime);
         List<Filter> filters = new()
         {
             lastEditedFilter,
@@ -137,7 +137,7 @@ internal sealed class NotionHelper
     {
         lock (_delayLocker)
         {
-            DateTime now = DateTime.UtcNow;
+            DateTimeOffset now = DateTimeOffset.UtcNow;
 
             TimeSpan? beforeUpdate = TimeManager.GetDelayUntil(_lastUpdate, _updatePeriod, now);
             if (beforeUpdate.HasValue)
@@ -165,5 +165,5 @@ internal sealed class NotionHelper
     private readonly string _databaseId;
     private readonly object _delayLocker = new();
     private readonly TimeSpan _updatePeriod;
-    private DateTime? _lastUpdate;
+    private DateTimeOffset? _lastUpdate;
 }
