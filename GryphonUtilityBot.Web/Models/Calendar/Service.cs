@@ -63,26 +63,28 @@ internal sealed class Service : IHostedService, IDisposable
             }
             else
             {
-                GetPageResult result = await _notionHelper.GetPage(id);
+                NotionRequestResult<PageInfo> result = await _notionHelper.TryGetPageAsync(id);
                 if (!result.Successfull)
                 {
                     continue;
                 }
-                if (result.Page?.Dates is null || result.Page.IsDeleted)
+
+                PageInfo? info = result.Instance;
+                if (info?.Dates is null || info.IsDeleted)
                 {
-                    if (!string.IsNullOrWhiteSpace(result.Page?.GoogleEventId))
+                    if (!string.IsNullOrWhiteSpace(info?.GoogleEventId))
                     {
-                        Event? calendarEvent = await GetEventAsync(result.Page);
+                        Event? calendarEvent = await GetEventAsync(info);
                         if (calendarEvent is not null)
                         {
-                            await DeleteEventAsync(calendarEvent, result.Page);
+                            await DeleteEventAsync(calendarEvent, info);
                         }
                     }
                     toRemove.Add(id);
                 }
-                if (result.Page is { IsDeleted: false, Dates: null })
+                if (info is { IsDeleted: false, Dates: null })
                 {
-                    await ClearPageAsync(result.Page);
+                    await ClearPageAsync(info);
                 }
             }
         }
@@ -95,8 +97,15 @@ internal sealed class Service : IHostedService, IDisposable
     private async Task ApplyUpdatesAsync()
     {
         _saveManager.Data.LastUpdated ??= _config.NotionStartWatchingDate.ToUniversalTime();
-        List<PageInfo> pages = await _notionHelper.GetPages(_saveManager.Data.LastUpdated.Value);
-        foreach (PageInfo page in pages)
+        NotionRequestResult<List<PageInfo>> result =
+            await _notionHelper.TryGetPagesAsync(_saveManager.Data.LastUpdated.Value);
+
+        if (result.Instance is null)
+        {
+            return;
+        }
+
+        foreach (PageInfo page in result.Instance)
         {
             if (page.Dates is null)
             {

@@ -16,46 +16,11 @@ internal sealed class NotionHelper
         _updatePeriod = TimeSpan.FromSeconds(config.NotionUpdatesPerSecondLimit);
     }
 
-    public async Task<GetPageResult> GetPage(string id)
-    {
-        DelayIfNeeded();
-        try
-        {
-            Page page = await _client.Pages.RetrieveAsync(id);
-            return new GetPageResult(page);
-        }
-        catch (NotionApiException ex) when (ex.NotionAPIErrorCode == NotionAPIErrorCode.ObjectNotFound)
-        {
-            Utils.LogManager.LogError($"GetPage({id}) resulted with ObjectNotFound");
-            Utils.LogManager.LogException(ex);
-            return new GetPageResult(true);
-        }
-        catch (NotionApiException ex)
-        {
-            Utils.LogManager.LogError($"GetPage({id}) resulted with unspecified NotionApiException");
-            Utils.LogManager.LogException(ex);
-            return new GetPageResult(false);
-        }
-    }
+    public Task<NotionRequestResult<PageInfo>> TryGetPageAsync(string id) => Wrapper(GetPageAsync, id);
 
-    public async Task<List<PageInfo>> GetPages(DateTime updatedSince)
+    public Task<NotionRequestResult<List<PageInfo>>> TryGetPagesAsync(DateTime updatedSince)
     {
-        DatabasesQueryParameters query = new() { Filter = GetQueryFilter(updatedSince.ToUniversalTime()) };
-        List<PageInfo> result = new();
-        do
-        {
-            DelayIfNeeded();
-            PaginatedList<Page>? chunk = await _client.Databases.QueryAsync(_databaseId, query);
-            if (chunk is null)
-            {
-                break;
-            }
-            result.AddRange(chunk.Results.Select(p => new PageInfo(p)));
-            query.StartCursor = chunk.HasMore ? chunk.NextCursor : null;
-        }
-        while (query.StartCursor is not null);
-
-        return result;
+        return Wrapper(GetPagesAsync, updatedSince);
     }
 
     public async Task UpdateAsync(PageInfo page, string eventId, Uri eventUri)
@@ -82,6 +47,56 @@ internal sealed class NotionHelper
         {
             await UpdateEventUriAsync(page.Page.Id);
         }
+    }
+
+    private async Task<PageInfo> GetPageAsync(string id)
+    {
+        DelayIfNeeded();
+        Page page = await _client.Pages.RetrieveAsync(id);
+        return new PageInfo(page);
+    }
+
+    private static async Task<NotionRequestResult<TResult>> Wrapper<TParam, TResult>(Func<TParam,
+        Task<TResult>> method, TParam param)
+        where TResult : class
+    {
+        try
+        {
+            TResult result = await method(param);
+            return new NotionRequestResult<TResult>(result);
+        }
+        catch (NotionApiException ex) when (ex.NotionAPIErrorCode == NotionAPIErrorCode.ObjectNotFound)
+        {
+            Utils.LogManager.LogError($"Method with parameter {param} resulted with ObjectNotFound");
+            Utils.LogManager.LogException(ex);
+            return new NotionRequestResult<TResult>(true);
+        }
+        catch (NotionApiException ex)
+        {
+            Utils.LogManager.LogError($"Method with parameter {param} resulted with unspecified NotionApiException");
+            Utils.LogManager.LogException(ex);
+            return new NotionRequestResult<TResult>(false);
+        }
+    }
+
+    private async Task<List<PageInfo>> GetPagesAsync(DateTime updatedSince)
+    {
+        DatabasesQueryParameters query = new() { Filter = GetQueryFilter(updatedSince.ToUniversalTime()) };
+        List<PageInfo> result = new();
+        do
+        {
+            DelayIfNeeded();
+            PaginatedList<Page>? chunk = await _client.Databases.QueryAsync(_databaseId, query);
+            if (chunk is null)
+            {
+                break;
+            }
+            result.AddRange(chunk.Results.Select(p => new PageInfo(p)));
+            query.StartCursor = chunk.HasMore ? chunk.NextCursor : null;
+        }
+        while (query.StartCursor is not null);
+
+        return result;
     }
 
     private async Task UpdateEventIdAsync(string pageId, string? eventId = null)
