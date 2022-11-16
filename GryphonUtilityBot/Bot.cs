@@ -6,12 +6,12 @@ using Telegram.Bot.Types;
 
 namespace GryphonUtilityBot;
 
-public sealed class Bot : BotBase<Bot, Config>
+public sealed class Bot : BotBaseCustom<Config>
 {
     public Bot(Config config) : base(config) { }
 
     protected override Task ProcessTextMessageAsync(Message textMessage, bool fromChat,
-        CommandBase<Bot, Config>? command = null, string? payload = null)
+        CommandBase? command = null, string? payload = null)
     {
         SupportedAction? action = GetAction(textMessage, command);
         return action is null
@@ -19,7 +19,7 @@ public sealed class Bot : BotBase<Bot, Config>
             : action.ExecuteWrapperAsync(ForbiddenSticker);
     }
 
-    private SupportedAction? GetAction(Message message, CommandBase<Bot, Config>? command)
+    private SupportedAction? GetAction(Message message, CommandBase? command)
     {
         if (command is not null)
         {
