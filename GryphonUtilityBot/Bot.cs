@@ -63,8 +63,7 @@ public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
     {
         if (message.ForwardFrom is not null)
         {
-            if (CurrentQuery is not null
-                && (TimeManager.GetDateTimeFull(message.Date).ToDateTimeOffset() > CurrentQueryTime.ToDateTimeOffset()))
+            if (CurrentQuery is not null && (TimeManager.GetDateTimeFull(message.Date) > CurrentQueryTime))
             {
                 CurrentQuery = null;
             }

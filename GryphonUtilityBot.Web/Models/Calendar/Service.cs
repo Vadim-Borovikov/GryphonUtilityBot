@@ -59,7 +59,7 @@ internal sealed class Service : IHostedService, IDisposable
         List<string> toRemove = new();
         foreach (string id in _saveManager.Data.Meetings.Keys)
         {
-            if (_saveManager.Data.Meetings[id].ToDateTimeOffset() < now.ToDateTimeOffset())
+            if (_saveManager.Data.Meetings[id] < now)
             {
                 toRemove.Add(id);
             }

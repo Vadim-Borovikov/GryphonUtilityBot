@@ -145,7 +145,7 @@ internal sealed class NotionHelper
             if (beforeUpdate.HasValue)
             {
                 Task.Delay(beforeUpdate.Value).Wait();
-                now = DateTimeFull.CreateUtc(now.ToDateTimeOffset() + beforeUpdate.Value);
+                now += beforeUpdate.Value;
             }
             _lastUpdate = now;
         }
