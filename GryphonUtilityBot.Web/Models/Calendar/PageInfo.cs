@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using GryphonUtilities;
 
 namespace GryphonUtilityBot.Web.Models.Calendar;
 
@@ -9,15 +10,16 @@ internal sealed class PageInfo
 {
     public readonly Page Page;
     public readonly string Title;
-    public readonly (DateTimeOffset Start, DateTimeOffset End)? Dates;
+    public readonly (DateTimeFull Start, DateTimeFull End)? Dates;
     public readonly string GoogleEventId;
     public readonly Uri? GoogleEvent;
     public readonly bool IsCancelled;
     public readonly bool IsDeleted;
 
-    public PageInfo(Page page)
+    public PageInfo(Page page, TimeManager timeManager)
     {
         Page = page;
+        _timeManager = timeManager;
         Title = GetTitle(page);
         Dates = GetDates(page);
         GoogleEventId = GetGoogleEventId(page);
@@ -36,7 +38,7 @@ internal sealed class PageInfo
         return JoinRichTextPart(title.Title);
     }
 
-    private static (DateTimeOffset, DateTimeOffset)? GetDates(Page page)
+    private (DateTimeFull, DateTimeFull)? GetDates(Page page)
     {
         if (page.Properties["Дата"] is not DatePropertyValue date)
         {
@@ -45,7 +47,7 @@ internal sealed class PageInfo
 
         return date.Date?.Start is null || date.Date.End is null
             ? null
-            : (new DateTimeOffset(date.Date.Start.Value), new DateTimeOffset(date.Date.End.Value));
+            : (_timeManager.GetDateTimeFull(date.Date.Start.Value), _timeManager.GetDateTimeFull(date.Date.End.Value));
     }
 
     private static string GetGoogleEventId(Page page)
@@ -82,4 +84,6 @@ internal sealed class PageInfo
 
         return status.Select?.Name;
     }
+
+    private readonly TimeManager _timeManager;
 }

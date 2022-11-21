@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using GoogleSheetsManager;
-using GryphonUtilities;
 
 namespace GryphonUtilityBot;
 
@@ -17,16 +15,6 @@ internal static class Utils
 
         parts.RemoveAt(0);
         return date;
-    }
-
-    public static DateOnly? ToDateOnly(object? o)
-    {
-        if (o is DateOnly d)
-        {
-            return d;
-        }
-
-        return o.ToDateTimeOffset()?.DateOnly();
     }
 
     public static Uri? ToUri(object? o)

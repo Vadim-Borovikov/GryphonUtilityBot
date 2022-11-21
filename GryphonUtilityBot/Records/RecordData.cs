@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using GryphonUtilities;
 using JetBrains.Annotations;
 
 namespace GryphonUtilityBot.Records;
@@ -9,6 +9,6 @@ public sealed class RecordData
 {
     public int MessageId { get; init; }
     public long ChatId { get; init; }
-    public DateTimeOffset DateTime { get; set; }
+    public DateTimeFull DateTime { get; set; }
     public HashSet<string> Tags { get; set; } = new();
 }

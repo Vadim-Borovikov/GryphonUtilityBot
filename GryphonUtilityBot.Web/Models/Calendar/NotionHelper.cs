@@ -3,22 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AbstractBot;
+using GryphonUtilities;
 using Notion.Client;
 
 namespace GryphonUtilityBot.Web.Models.Calendar;
 
 internal sealed class NotionHelper
 {
-    public NotionHelper(INotionClient client, Config config)
+    public NotionHelper(INotionClient client, Config config, BotSingleton botSingleton)
     {
         _client = client;
+        _timeManager = botSingleton.Bot.TimeManager;
         _databaseId = config.NotionDatabaseId;
         _updatePeriod = TimeSpan.FromSeconds(config.NotionUpdatesPerSecondLimit);
     }
 
     public Task<NotionRequestResult<PageInfo>> TryGetPageAsync(string id) => Wrapper(GetPageAsync, id);
 
-    public Task<NotionRequestResult<List<PageInfo>>> TryGetPagesAsync(DateTimeOffset updatedSince)
+    public Task<NotionRequestResult<List<PageInfo>>> TryGetPagesAsync(DateTimeFull updatedSince)
     {
         return Wrapper(GetPagesAsync, updatedSince);
     }
@@ -53,7 +55,7 @@ internal sealed class NotionHelper
     {
         DelayIfNeeded();
         Page page = await _client.Pages.RetrieveAsync(id);
-        return new PageInfo(page);
+        return new PageInfo(page, _timeManager);
     }
 
     private static async Task<NotionRequestResult<TResult>> Wrapper<TParam, TResult>(Func<TParam,
@@ -79,7 +81,7 @@ internal sealed class NotionHelper
         }
     }
 
-    private async Task<List<PageInfo>> GetPagesAsync(DateTimeOffset updatedSince)
+    private async Task<List<PageInfo>> GetPagesAsync(DateTimeFull updatedSince)
     {
         DatabasesQueryParameters query = new() { Filter = GetQueryFilter(updatedSince) };
         List<PageInfo> result = new();
@@ -91,7 +93,7 @@ internal sealed class NotionHelper
             {
                 break;
             }
-            result.AddRange(chunk.Results.Select(p => new PageInfo(p)));
+            result.AddRange(chunk.Results.Select(p => new PageInfo(p, _timeManager)));
             query.StartCursor = chunk.HasMore ? chunk.NextCursor : null;
         }
         while (query.StartCursor is not null);
@@ -119,11 +121,11 @@ internal sealed class NotionHelper
         await _client.Pages.UpdatePropertiesAsync(pageId, eventProperty);
     }
 
-    private static Filter GetQueryFilter(DateTimeOffset updatedSince)
+    private static Filter GetQueryFilter(DateTimeFull updatedSince)
     {
         LastEditedTimeFilter lastEditedFilter = new(onOrAfter: updatedSince);
         CheckboxFilter meetingFilter = new("Встреча", true);
-        DateFilter dateFilter = new("Дата", onOrAfter: updatedSince.UtcDateTime);
+        DateFilter dateFilter = new("Дата", onOrAfter: updatedSince.ToDateTimeOffset().UtcDateTime);
         List<Filter> filters = new()
         {
             lastEditedFilter,
@@ -137,13 +139,13 @@ internal sealed class NotionHelper
     {
         lock (_delayLocker)
         {
-            DateTimeOffset now = DateTimeOffset.UtcNow;
+            DateTimeFull now = DateTimeFull.CreateUtcNow();
 
             TimeSpan? beforeUpdate = TimeManager.GetDelayUntil(_lastUpdate, _updatePeriod, now);
             if (beforeUpdate.HasValue)
             {
                 Task.Delay(beforeUpdate.Value).Wait();
-                now += beforeUpdate.Value;
+                now = DateTimeFull.CreateUtc(now.ToDateTimeOffset() + beforeUpdate.Value);
             }
             _lastUpdate = now;
         }
@@ -162,8 +164,9 @@ internal sealed class NotionHelper
     }
 
     private readonly INotionClient _client;
+    private readonly TimeManager _timeManager;
     private readonly string _databaseId;
     private readonly object _delayLocker = new();
     private readonly TimeSpan _updatePeriod;
-    private DateTimeOffset? _lastUpdate;
+    private DateTimeFull? _lastUpdate;
 }

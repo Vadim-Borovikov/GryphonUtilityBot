@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using GryphonUtilities;
-using Newtonsoft.Json;
 
 namespace GryphonUtilityBot.Web.Models;
 
@@ -29,7 +29,7 @@ public sealed class BotSingleton : IDisposable
 
         if (config.PingUrlsJson is not null)
         {
-            List<Uri>? deserialized = JsonConvert.DeserializeObject<List<Uri>>(config.PingUrlsJson);
+            List<Uri>? deserialized = JsonSerializer.Deserialize<List<Uri>>(config.PingUrlsJson);
             if (deserialized is not null)
             {
                 return deserialized;

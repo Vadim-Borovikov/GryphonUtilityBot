@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AbstractBot;
 using GryphonUtilities;
 using Telegram.Bot.Types;
 
@@ -14,6 +13,8 @@ internal sealed class Manager
     {
         _saveManager = saveManager;
         _bot = bot;
+        _saveManager.Load();
+        _saveManager.Save();
     }
 
     public Task SaveRecordAsync(Message message, MarkQuery? query)
@@ -37,8 +38,8 @@ internal sealed class Manager
 
         List<RecordData> records = _saveManager.Data
                                                .Records
-                                               .Where(r => r.DateTime.DateOnly() >= query.From)
-                                               .Where(r => r.DateTime.DateOnly() <= query.To)
+                                               .Where(r => r.DateTime.DateOnly >= query.From)
+                                               .Where(r => r.DateTime.DateOnly <= query.To)
                                                .ToList();
 
         if (query.Tags.Any())
@@ -73,7 +74,7 @@ internal sealed class Manager
 
         if (query.DateOnly.HasValue)
         {
-            record.DateTime = DateTimeOffsetHelper.FromDateOnly(query.DateOnly.Value);
+            record.DateTime = new DateTimeFull(query.DateOnly.Value, TimeOnly.MinValue, _bot.TimeManager.TimeZoneInfo);
         }
 
         record.Tags = query.Tags;
@@ -88,9 +89,9 @@ internal sealed class Manager
             return null;
         }
 
-        DateTimeOffset dateTime = query?.DateOnly is null
-            ? _bot.TimeManager.ToLocal(message.ForwardDate.Value)
-            : DateTimeOffsetHelper.FromDateOnly(query.DateOnly.Value);
+        DateTimeFull dateTime = query?.DateOnly is null
+            ? _bot.TimeManager.GetDateTimeFull(message.ForwardDate.Value)
+            : new DateTimeFull(query.DateOnly.Value, TimeOnly.MinValue, _bot.TimeManager.TimeZoneInfo);
         return new RecordData
         {
             MessageId = message.MessageId,

@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using GryphonUtilities;
 using GryphonUtilityBot.Records;
 using JetBrains.Annotations;
 
@@ -10,8 +10,8 @@ public sealed class Data
     [UsedImplicitly]
     public List<RecordData> Records { get; set; } = new();
 
-    public DateTimeOffset? LastUpdated { get; set; }
+    public DateTimeFull? LastUpdated { get; set; }
 
     [UsedImplicitly]
-    public Dictionary<string, DateTimeOffset> Meetings { get; set; } = new();
+    public Dictionary<string, DateTimeFull> Meetings { get; set; } = new();
 }

@@ -11,12 +11,13 @@ namespace GryphonUtilityBot.Web.Models.Calendar;
 
 internal sealed class Service : IHostedService, IDisposable
 {
-    public Service(NotionHelper notionHelper, GoogleCalendarHelper googleCalendarHelper, Config config)
+    public Service(NotionHelper notionHelper, GoogleCalendarHelper googleCalendarHelper, Config config,
+        BotSingleton botSingleton)
     {
         _notionHelper = notionHelper;
         _googleCalendarHelper = googleCalendarHelper;
         _config = config;
-        _saveManager = new SaveManager<Data>(config.SavePath);
+        _saveManager = new SaveManager<Data>(config.SavePath, botSingleton.Bot.TimeManager);
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -42,7 +43,7 @@ internal sealed class Service : IHostedService, IDisposable
     private async Task TickAsync(CancellationToken cancellationToken)
     {
         Utils.LogManager.LogTimedMessage("Calendar sync tick");
-        DateTimeOffset now = DateTimeOffset.UtcNow;
+        DateTimeFull now = DateTimeFull.CreateUtcNow();
 
         _saveManager.Load();
 
@@ -53,12 +54,12 @@ internal sealed class Service : IHostedService, IDisposable
         _saveManager.Save();
     }
 
-    private async Task ProcessOutdatedAndDeletedPages(DateTimeOffset now)
+    private async Task ProcessOutdatedAndDeletedPages(DateTimeFull now)
     {
         List<string> toRemove = new();
         foreach (string id in _saveManager.Data.Meetings.Keys)
         {
-            if (_saveManager.Data.Meetings[id] < now)
+            if (_saveManager.Data.Meetings[id].ToDateTimeOffset() < now.ToDateTimeOffset())
             {
                 toRemove.Add(id);
             }
@@ -97,7 +98,8 @@ internal sealed class Service : IHostedService, IDisposable
 
     private async Task ApplyUpdatesAsync()
     {
-        _saveManager.Data.LastUpdated ??= DateTimeOffsetHelper.FromDateOnly(_config.NotionStartWatchingDate);
+        _saveManager.Data.LastUpdated ??=
+            new DateTimeFull(_config.NotionStartWatchingDate, TimeOnly.MinValue, _config.SystemTimeZoneId);
         NotionRequestResult<List<PageInfo>> result =
             await _notionHelper.TryGetPagesAsync(_saveManager.Data.LastUpdated.Value);
 
@@ -138,7 +140,7 @@ internal sealed class Service : IHostedService, IDisposable
         }
     }
 
-    private Task<Event> CreateEventAsync(PageInfo page, DateTimeOffset start, DateTimeOffset end)
+    private Task<Event> CreateEventAsync(PageInfo page, DateTimeFull start, DateTimeFull end)
     {
         Utils.LogManager.LogTimedMessage($"Creating event for page \"{page.Title}\".");
         return _googleCalendarHelper.CreateEventAsync(page.Title, start, end, page.Page.Url);
@@ -152,19 +154,19 @@ internal sealed class Service : IHostedService, IDisposable
             : await _googleCalendarHelper.GetEventAsync(page.GoogleEventId);
     }
 
-    private async Task UpdateEventAsync(Event calendarEvent, PageInfo page, DateTimeOffset start, DateTimeOffset end)
+    private async Task UpdateEventAsync(Event calendarEvent, PageInfo page, DateTimeFull start, DateTimeFull end)
     {
         Utils.LogManager.LogTimedMessage($"Updating event \"{calendarEvent.Id}\" for page \"{page.Title}\".");
         await _googleCalendarHelper.UpdateEventAsync(page.GoogleEventId, calendarEvent, page.Title, start, end,
             page.Page.Url);
-        _saveManager.Data.Meetings[page.Page.Id] = end.ToUniversalTime();
+        _saveManager.Data.Meetings[page.Page.Id] = end;
     }
 
-    private async Task UpdatePageAsync(PageInfo page, Event calendarEvent, DateTimeOffset end)
+    private async Task UpdatePageAsync(PageInfo page, Event calendarEvent, DateTimeFull end)
     {
         Utils.LogManager.LogTimedMessage($"Updating page \"{page.Title}\" for event \"{calendarEvent.Id}\"");
         await _notionHelper.UpdateAsync(page, calendarEvent.Id, new Uri(calendarEvent.HtmlLink));
-        _saveManager.Data.Meetings[page.Page.Id] = end.ToUniversalTime();
+        _saveManager.Data.Meetings[page.Page.Id] = end;
     }
 
     private async Task ClearPageAsync(PageInfo page)

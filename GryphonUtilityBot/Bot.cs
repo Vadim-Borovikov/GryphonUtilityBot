@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AbstractBot;
 using AbstractBot.Commands;
+using GryphonUtilities;
 using GryphonUtilityBot.Actions;
 using GryphonUtilityBot.Articles;
 using GryphonUtilityBot.Commands;
@@ -14,7 +15,15 @@ namespace GryphonUtilityBot;
 
 public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
 {
-    public Bot(Config config) : base(config) => _saveManager = new SaveManager<Data>(Config.SavePath);
+    public Bot(Config config) : base(config)
+    {
+        _saveManager = new SaveManager<Data>(Config.SavePath, TimeManager);
+        AdditionalConverters[typeof(DateOnly)] = AdditionalConverters[typeof(DateOnly?)] = o => GetDateOnly(o);
+        AdditionalConverters[typeof(Uri)] = Utils.ToUri;
+
+        _saveManager.Load();
+        _saveManager.Save();
+    }
 
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -42,11 +51,23 @@ public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
         return CurrencyManager.ChangeCurrency(callback.Data);
     }
 
+    private DateOnly? GetDateOnly(object? o)
+    {
+        if (o is DateOnly d)
+        {
+            return d;
+        }
+
+        DateTimeFull? dtf = GetDateTimeFull(o);
+        return dtf?.DateOnly;
+    }
+
     private SupportedAction? GetAction(Message message, CommandBase? command)
     {
         if (message.ForwardFrom is not null)
         {
-            if (CurrentQuery is not null && (message.Date > CurrentQueryTime))
+            if (CurrentQuery is not null
+                && (TimeManager.GetDateTimeFull(message.Date).ToDateTimeOffset() > CurrentQueryTime.ToDateTimeOffset()))
             {
                 CurrentQuery = null;
             }
@@ -113,7 +134,7 @@ public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
     }
 
     internal MarkQuery? CurrentQuery;
-    internal DateTimeOffset CurrentQueryTime;
+    internal DateTimeFull CurrentQueryTime;
 
     internal Articles.Manager ArticlesManager => _articlesManager ??= new Articles.Manager(this);
     internal Records.Manager RecordsManager => _recordsManager ??= new Records.Manager(this, _saveManager);

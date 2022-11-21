@@ -68,7 +68,7 @@ internal sealed class Manager
         {
             case 1:
                 uri = CreateUri(parts[0]);
-                return uri is null ? null : new Article(DateTimeOffset.Now.DateOnly(), uri);
+                return uri is null ? null : new Article(DateTimeFull.CreateUtcNow().DateOnly, uri);
             case 2:
                 DateOnly? date = ParseDate(parts[0]);
                 if (!date.HasValue)
@@ -95,8 +95,8 @@ internal sealed class Manager
 
         try
         {
-            DateTimeOffset now = DateTimeOffset.Now;
-            return new DateOnly(now.Year, now.Month, day);
+            DateTimeFull now = DateTimeFull.CreateUtcNow();
+            return new DateOnly(now.DateOnly.Year, now.DateOnly.Month, day);
         }
         catch (ArgumentOutOfRangeException)
         {
@@ -121,7 +121,7 @@ internal sealed class Manager
     private async Task LoadAsync()
     {
         SheetData<Article> data = await DataManager<Article>.LoadAsync(_bot.GoogleSheetsProvider,
-            _bot.Config.GoogleRange, additionalConverters: AdditionalConverters);
+            _bot.Config.GoogleRange, additionalConverters: _bot.AdditionalConverters);
         _articles = new SortedSet<Article>(data.Instances);
         _titles = data.Titles;
     }
@@ -137,13 +137,6 @@ internal sealed class Manager
     {
         return $"{article.Date:d MMMM yyyy}{Environment.NewLine}{article.Uri}";
     }
-
-    private static readonly Dictionary<Type, Func<object?, object?>> AdditionalConverters = new()
-    {
-        { typeof(Uri), Utils.ToUri },
-        { typeof(DateOnly), o => Utils.ToDateOnly(o) },
-        { typeof(DateOnly?), o => Utils.ToDateOnly(o) }
-    };
 
     private SortedSet<Article> _articles;
     private readonly Bot _bot;

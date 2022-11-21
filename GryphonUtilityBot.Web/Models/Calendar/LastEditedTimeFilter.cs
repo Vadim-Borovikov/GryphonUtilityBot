@@ -1,24 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using GryphonUtilities;
 using Notion.Client;
 
 namespace GryphonUtilityBot.Web.Models.Calendar;
 
 public sealed class LastEditedTimeFilter : Filter
 {
-    [JsonProperty("timestamp")]
+    [JsonPropertyName("timestamp")]
     public string Timestamp = "last_edited_time";
 
-    [JsonProperty("last_edited_time")]
+    [JsonPropertyName("last_edited_time")]
     public DateFilter.Condition LastEditedTime { get; set; }
 
     public LastEditedTimeFilter(
-        DateTimeOffset? equal = null,
-        DateTimeOffset? before = null,
-        DateTimeOffset? after = null,
-        DateTimeOffset? onOrBefore = null,
-        DateTimeOffset? onOrAfter = null,
+        DateTimeFull? equal = null,
+        DateTimeFull? before = null,
+        DateTimeFull? after = null,
+        DateTimeFull? onOrBefore = null,
+        DateTimeFull? onOrAfter = null,
         Dictionary<string, object>? pastWeek = null,
         Dictionary<string, object>? pastMonth = null,
         Dictionary<string, object>? pastYear = null,
@@ -29,11 +29,11 @@ public sealed class LastEditedTimeFilter : Filter
         bool? isNotEmpty = null)
     {
         LastEditedTime = new DateFilter.Condition(
-            equal?.UtcDateTime,
-            before?.UtcDateTime,
-            after?.UtcDateTime,
-            onOrBefore?.UtcDateTime,
-            onOrAfter?.UtcDateTime,
+            equal?.ToDateTimeOffset().UtcDateTime,
+            before?.ToDateTimeOffset().UtcDateTime,
+            after?.ToDateTimeOffset().UtcDateTime,
+            onOrBefore?.ToDateTimeOffset().UtcDateTime,
+            onOrAfter?.ToDateTimeOffset().UtcDateTime,
             pastWeek,
             pastMonth,
             pastYear,

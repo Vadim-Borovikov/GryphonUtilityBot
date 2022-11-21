@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Google;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Calendar.v3;
 using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Services;
-using Newtonsoft.Json;
+using GryphonUtilities;
 
 namespace GryphonUtilityBot.Web.Models.Calendar;
 
@@ -15,7 +16,7 @@ internal sealed class GoogleCalendarHelper : IDisposable
     public GoogleCalendarHelper(Config config)
     {
         string json = string.IsNullOrWhiteSpace(config.GoogleCredentialJson)
-            ? JsonConvert.SerializeObject(config.GoogleCredential)
+            ? JsonSerializer.Serialize(config.GoogleCredential)
             : config.GoogleCredentialJson;
         BaseClientService.Initializer initializer = CreateInitializer(json, config.ApplicationName);
         _service = new CalendarService(initializer);
@@ -25,13 +26,13 @@ internal sealed class GoogleCalendarHelper : IDisposable
 
     public void Dispose() => _service.Dispose();
 
-    public Task<Event> CreateEventAsync(string summary, DateTimeOffset start, DateTimeOffset end, string description)
+    public Task<Event> CreateEventAsync(string summary, DateTimeFull start, DateTimeFull end, string description)
     {
         Event body = new()
         {
             Summary = summary,
-            Start = new EventDateTime { DateTime = start.UtcDateTime },
-            End = new EventDateTime { DateTime = end.UtcDateTime },
+            Start = new EventDateTime { DateTime = start.ToDateTimeOffset().UtcDateTime },
+            End = new EventDateTime { DateTime = end.ToDateTimeOffset().UtcDateTime },
             Description = description,
             ColorId = _colorId
         };
@@ -53,12 +54,12 @@ internal sealed class GoogleCalendarHelper : IDisposable
         }
     }
 
-    public Task UpdateEventAsync(string id, Event body, string summary, DateTimeOffset start, DateTimeOffset end,
+    public Task UpdateEventAsync(string id, Event body, string summary, DateTimeFull start, DateTimeFull end,
         string description)
     {
         body.Summary = summary;
-        body.Start = new EventDateTime { DateTime = start.UtcDateTime };
-        body.End = new EventDateTime { DateTime = end.UtcDateTime };
+        body.Start = new EventDateTime { DateTime = start.ToDateTimeOffset().UtcDateTime };
+        body.End = new EventDateTime { DateTime = end.ToDateTimeOffset().UtcDateTime };
         body.Description = description;
         EventsResource.UpdateRequest request = _service.Events.Update(body, _calendarId, id);
         return request.ExecuteAsync();
