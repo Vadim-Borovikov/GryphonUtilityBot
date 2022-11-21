@@ -1,16 +1,19 @@
 ﻿using System.Collections.Generic;
-using System.Text.Json.Serialization;
 using GryphonUtilities;
+using JetBrains.Annotations;
 using Notion.Client;
+using Newtonsoft.Json;
 
 namespace GryphonUtilityBot.Web.Models.Calendar;
 
-public sealed class LastEditedTimeFilter : Filter
+internal sealed class LastEditedTimeFilter : Filter
 {
-    [JsonPropertyName("timestamp")]
+    [UsedImplicitly]
+    [JsonProperty("timestamp")]
     public string Timestamp = "last_edited_time";
 
-    [JsonPropertyName("last_edited_time")]
+    [UsedImplicitly]
+    [JsonProperty("last_edited_time")]
     public DateFilter.Condition LastEditedTime { get; set; }
 
     public LastEditedTimeFilter(
