@@ -20,9 +20,6 @@ public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
         _saveManager = new SaveManager<Data>(Config.SavePath, TimeManager);
         AdditionalConverters[typeof(DateOnly)] = AdditionalConverters[typeof(DateOnly?)] = o => GetDateOnly(o);
         AdditionalConverters[typeof(Uri)] = Utils.ToUri;
-
-        _saveManager.Load();
-        _saveManager.Save();
     }
 
     public override async Task StartAsync(CancellationToken cancellationToken)

@@ -13,8 +13,6 @@ internal sealed class Manager
     {
         _saveManager = saveManager;
         _bot = bot;
-        _saveManager.Load();
-        _saveManager.Save();
     }
 
     public Task SaveRecordAsync(Message message, MarkQuery? query)

@@ -47,7 +47,8 @@ internal sealed class PageInfo
 
         return date.Date?.Start is null || date.Date.End is null
             ? null
-            : (_timeManager.GetDateTimeFull(date.Date.Start.Value), _timeManager.GetDateTimeFull(date.Date.End.Value));
+            : (_timeManager.GetDateTimeFull(date.Date.Start.Value.ToUniversalTime()),
+                _timeManager.GetDateTimeFull(date.Date.End.Value.ToUniversalTime()));
     }
 
     private static string GetGoogleEventId(Page page)
