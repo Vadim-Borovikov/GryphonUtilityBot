@@ -17,7 +17,8 @@ internal sealed class Service : IHostedService, IDisposable
         _notionHelper = notionHelper;
         _googleCalendarHelper = googleCalendarHelper;
         _config = config;
-        _saveManager = new SaveManager<Data>(config.SavePath, botSingleton.Bot.TimeManager);
+        _timeManager = botSingleton.Bot.TimeManager;
+        _saveManager = new SaveManager<Data>(config.SavePath, _timeManager);
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -99,7 +100,7 @@ internal sealed class Service : IHostedService, IDisposable
     private async Task ApplyUpdatesAsync()
     {
         _saveManager.Data.LastUpdated ??=
-            new DateTimeFull(_config.NotionStartWatchingDate, TimeOnly.MinValue, _config.SystemTimeZoneId);
+            _timeManager.GetDateTimeFull(_config.NotionStartWatchingDate, TimeOnly.MinValue);
         NotionRequestResult<List<PageInfo>> result =
             await _notionHelper.TryGetPagesAsync(_saveManager.Data.LastUpdated.Value);
 
@@ -187,4 +188,5 @@ internal sealed class Service : IHostedService, IDisposable
     private readonly Config _config;
     private CancellationTokenSource? _cancellationTokenSource;
     private readonly SaveManager<Data> _saveManager;
+    private readonly TimeManager _timeManager;
 }

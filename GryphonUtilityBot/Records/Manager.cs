@@ -72,7 +72,7 @@ internal sealed class Manager
 
         if (query.DateOnly.HasValue)
         {
-            record.DateTime = new DateTimeFull(query.DateOnly.Value, TimeOnly.MinValue, _bot.TimeManager.TimeZoneInfo);
+            record.DateTime = _bot.TimeManager.GetDateTimeFull(query.DateOnly.Value, TimeOnly.MinValue);
         }
 
         record.Tags = query.Tags;
@@ -88,8 +88,8 @@ internal sealed class Manager
         }
 
         DateTimeFull dateTime = query?.DateOnly is null
-            ? _bot.TimeManager.GetDateTimeFull(message.ForwardDate.Value)
-            : new DateTimeFull(query.DateOnly.Value, TimeOnly.MinValue, _bot.TimeManager.TimeZoneInfo);
+            ? _bot.TimeManager.GetDateTimeFull(message.ForwardDate.Value.ToUniversalTime())
+            : _bot.TimeManager.GetDateTimeFull(query.DateOnly.Value, TimeOnly.MinValue);
         return new RecordData
         {
             MessageId = message.MessageId,

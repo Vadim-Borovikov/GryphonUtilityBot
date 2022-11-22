@@ -32,11 +32,11 @@ internal sealed class LastEditedTimeFilter : Filter
         bool? isNotEmpty = null)
     {
         LastEditedTime = new DateFilter.Condition(
-            equal?.ToUtcDateTime(),
-            before?.ToUtcDateTime(),
-            after?.ToUtcDateTime(),
-            onOrBefore?.ToUtcDateTime(),
-            onOrAfter?.ToUtcDateTime(),
+            equal?.UtcDateTime,
+            before?.UtcDateTime,
+            after?.UtcDateTime,
+            onOrBefore?.UtcDateTime,
+            onOrAfter?.UtcDateTime,
             pastWeek,
             pastMonth,
             pastYear,
