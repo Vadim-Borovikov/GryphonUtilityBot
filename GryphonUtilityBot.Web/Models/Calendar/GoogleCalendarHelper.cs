@@ -31,8 +31,8 @@ internal sealed class GoogleCalendarHelper : IDisposable
         Event body = new()
         {
             Summary = summary,
-            Start = new EventDateTime { DateTime = start.ToDateTimeOffset().UtcDateTime },
-            End = new EventDateTime { DateTime = end.ToDateTimeOffset().UtcDateTime },
+            Start = new EventDateTime { DateTime = start.ToUtcDateTime() },
+            End = new EventDateTime { DateTime = end.ToUtcDateTime() },
             Description = description,
             ColorId = _colorId
         };
@@ -58,8 +58,8 @@ internal sealed class GoogleCalendarHelper : IDisposable
         string description)
     {
         body.Summary = summary;
-        body.Start = new EventDateTime { DateTime = start.ToDateTimeOffset().UtcDateTime };
-        body.End = new EventDateTime { DateTime = end.ToDateTimeOffset().UtcDateTime };
+        body.Start = new EventDateTime { DateTime = start.ToUtcDateTime() };
+        body.End = new EventDateTime { DateTime = end.ToUtcDateTime() };
         body.Description = description;
         EventsResource.UpdateRequest request = _service.Events.Update(body, _calendarId, id);
         return request.ExecuteAsync();

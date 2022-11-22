@@ -125,7 +125,7 @@ internal sealed class NotionHelper
     {
         LastEditedTimeFilter lastEditedFilter = new(onOrAfter: updatedSince);
         CheckboxFilter meetingFilter = new("Встреча", true);
-        DateFilter dateFilter = new("Дата", onOrAfter: updatedSince.ToDateTimeOffset().UtcDateTime);
+        DateFilter dateFilter = new("Дата", onOrAfter: updatedSince.ToUtcDateTime());
         List<Filter> filters = new()
         {
             lastEditedFilter,
