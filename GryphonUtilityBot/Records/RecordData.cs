@@ -7,8 +7,8 @@ namespace GryphonUtilityBot.Records;
 [PublicAPI]
 public sealed class RecordData
 {
-    public int MessageId { get; init; }
-    public long ChatId { get; init; }
-    public DateTimeFull DateTime { get; set; }
-    public HashSet<string> Tags { get; set; } = new();
+    public int MessageId;
+    public long ChatId;
+    public DateTimeFull DateTime;
+    public HashSet<string> Tags = new();
 }

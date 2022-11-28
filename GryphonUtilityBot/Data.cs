@@ -8,10 +8,10 @@ namespace GryphonUtilityBot;
 public sealed class Data
 {
     [UsedImplicitly]
-    public List<RecordData> Records { get; set; } = new();
+    public List<RecordData> Records = new();
 
-    public DateTimeFull? LastUpdated { get; set; }
+    public DateTimeFull? LastUpdated;
 
     [UsedImplicitly]
-    public Dictionary<string, DateTimeFull> Meetings { get; set; } = new();
+    public Dictionary<string, DateTimeFull> Meetings = new();
 }

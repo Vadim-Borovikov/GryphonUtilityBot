@@ -13,7 +13,6 @@ internal sealed class LastEditedTimeFilter : Filter
     public string Timestamp = "last_edited_time";
 
     [UsedImplicitly]
-    [JsonProperty("last_edited_time")]
     public DateFilter.Condition LastEditedTime { get; set; }
 
     public LastEditedTimeFilter(
