@@ -11,7 +11,7 @@ internal sealed class CommandAction : SupportedAction
         _command = command;
     }
 
-    protected override Task ExecuteAsync() => _command.ExecuteAsync(Message, false, null);
+    protected override Task ExecuteAsync(Chat chat) => _command.ExecuteAsync(Message, chat, null);
 
     private readonly CommandBase _command;
 }

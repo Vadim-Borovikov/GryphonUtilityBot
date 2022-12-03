@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using AbstractBot;
-using GryphonUtilities;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.InputFiles;
 
@@ -14,21 +13,21 @@ internal abstract class SupportedAction
         Message = message;
     }
 
-    internal Task ExecuteWrapperAsync(InputOnlineFile forbiddenSticker)
+    internal Task ExecuteWrapperAsync(InputOnlineFile forbiddenSticker, Chat senderChat)
     {
-        User user = Message.From.GetValue(nameof(Message.From));
-        bool isMistress = user.Id == _bot.Config.MistressId;
+        bool isMistress = senderChat.Id == _bot.Config.MistressId;
         if (isMistress && !AllowedForMistress)
         {
             return _bot.SendTextMessageAsync(Message.Chat,
                 "Простите, госпожа, но господин заблокировал это действие даже для Вас.");
         }
 
-        bool shouldExecute = _bot.IsAccessSuffice(user.Id, BotBase.AccessType.Admins);
-        return shouldExecute ? ExecuteAsync() : _bot.SendStickerAsync(Message.Chat, forbiddenSticker);
+        return _bot.GetMaximumAccessFor(senderChat.Id) >= BotBase.AccessType.Admins
+            ? ExecuteAsync(Message.Chat)
+            : _bot.SendStickerAsync(Message.Chat, forbiddenSticker);
     }
 
-    protected abstract Task ExecuteAsync();
+    protected abstract Task ExecuteAsync(Chat chat);
 
     protected readonly Message Message;
 
