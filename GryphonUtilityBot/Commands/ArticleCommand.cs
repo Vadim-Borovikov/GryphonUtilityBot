@@ -8,8 +8,8 @@ internal sealed class ArticleCommand : CommandBaseCustom<Bot, Config>
 {
     public ArticleCommand(Bot bot) : base(bot, "article", "первая статья") { }
 
-    public override Task ExecuteAsync(Message message, bool fromChat, string? payload)
+    public override Task ExecuteAsync(Message message, Chat chat, string? payload)
     {
-        return Bot.ArticlesManager.SendFirstArticleAsync(message.Chat);
+        return Bot.ArticlesManager.SendFirstArticleAsync(chat);
     }
 }

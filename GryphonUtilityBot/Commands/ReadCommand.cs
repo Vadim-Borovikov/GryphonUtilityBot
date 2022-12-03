@@ -8,8 +8,8 @@ internal sealed class ReadCommand : CommandBaseCustom<Bot, Config>
 {
     public ReadCommand(Bot bot) : base(bot, "read", "удалить статью и выдать следующую") { }
 
-    public override Task ExecuteAsync(Message message, bool fromChat, string? payload)
+    public override Task ExecuteAsync(Message message, Chat chat, string? payload)
     {
-        return Bot.ArticlesManager.DeleteFirstArticleAsync(message.Chat);
+        return Bot.ArticlesManager.DeleteFirstArticleAsync(chat);
     }
 }

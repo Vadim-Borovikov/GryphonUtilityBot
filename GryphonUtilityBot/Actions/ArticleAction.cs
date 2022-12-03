@@ -8,7 +8,7 @@ internal sealed class ArticleAction : SupportedAction
 {
     public ArticleAction(Bot bot, Message message, Article article) : base(bot, message) => _article = article;
 
-    protected override Task ExecuteAsync() => Bot.ArticlesManager.ProcessNewArticleAsync(Message.Chat, _article);
+    protected override Task ExecuteAsync(Chat chat) => Bot.ArticlesManager.ProcessNewArticleAsync(chat, _article);
 
     private readonly Article _article;
 }

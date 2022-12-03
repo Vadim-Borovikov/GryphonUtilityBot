@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GryphonUtilities;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -20,15 +21,10 @@ internal sealed class Manager
         _currentCurrency = Info.Currecny.AED;
     }
 
-    private static IEnumerable<InlineKeyboardButton> GetRow(Info currecny)
-    {
-        return new List<InlineKeyboardButton> { currecny.Button };
-    }
-
     private static InlineKeyboardMarkup GetKeyboardWithout(Info.Currecny currecny)
     {
         IEnumerable<IEnumerable<InlineKeyboardButton>> keyboard =
-            CurrencyInfos.Where(p => p.Key != currecny).Select(p => GetRow(p.Value));
+            CurrencyInfos.Where(p => p.Key != currecny).Select(p => p.Value.Button.Yield());
         return new InlineKeyboardMarkup(keyboard);
     }
 
@@ -37,7 +33,7 @@ internal sealed class Manager
         _currentAmount = number;
         string message = PrepareResult(_currentAmount);
         InlineKeyboardMarkup keyboard = GetKeyboardWithout(_currentCurrency);
-        _currentMessage = await _bot.SendTextMessageAsync(chat, message, replyMarkup: keyboard);
+        _currentMessage = await _bot.SendTextMessageAsync(chat, message, keyboard);
     }
 
     public Task ChangeCurrency(string code)

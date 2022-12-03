@@ -6,17 +6,13 @@ namespace GryphonUtilityBot.Actions;
 
 internal sealed class RememberMarkAction : SupportedAction
 {
-    public RememberMarkAction(Bot bot, Message message, MarkQuery query) : base(bot, message)
-    {
-        _query = query;
-    }
+    public RememberMarkAction(Bot bot, Message message, MarkQuery query) : base(bot, message) => _query = query;
 
-    protected override Task ExecuteAsync()
+    protected override Task ExecuteAsync(Chat chat)
     {
         Bot.CurrentQuery = _query;
         Bot.CurrentQueryTime = Bot.TimeManager.GetDateTimeFull(Message.Date);
-        return Bot.SendTextMessageAsync(Message.Chat, "Запрос пометки зафиксирован.",
-            replyToMessageId: Message.MessageId);
+        return Bot.SendTextMessageAsync(chat, "Запрос пометки зафиксирован.", replyToMessageId: Message.MessageId);
     }
 
     protected override bool AllowedForMistress => true;

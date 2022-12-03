@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using AbstractBot;
 using AbstractBot.Commands;
+using GoogleSheetsManager.Providers;
 using GryphonUtilities;
 using GryphonUtilityBot.Actions;
 using GryphonUtilityBot.Articles;
@@ -13,14 +15,29 @@ using Telegram.Bot.Types.Enums;
 
 namespace GryphonUtilityBot;
 
-public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
+public sealed class Bot : BotBaseCustom<Config>, IDisposable
 {
+    internal readonly SheetsProvider GoogleSheetsProvider;
+    internal readonly Dictionary<Type, Func<object?, object?>> AdditionalConverters;
+
     public Bot(Config config) : base(config)
     {
-        _saveManager = new SaveManager<Data>(Config.SavePath, TimeManager);
-        AdditionalConverters[typeof(DateOnly)] = AdditionalConverters[typeof(DateOnly?)] = o => GetDateOnly(o);
-        AdditionalConverters[typeof(Uri)] = Utils.ToUri;
+        GoogleSheetsProvider = new SheetsProvider(config, config.GoogleSheetId);
+        AdditionalConverters = new Dictionary<Type, Func<object?, object?>>
+        {
+            { typeof(DateOnly), o => GetDateOnly(o) },
+            { typeof(DateOnly?), o => GetDateOnly(o) },
+            { typeof(Uri), Utils.ToUri }
+        };
+
+        SaveManager<Data> saveManager = new(config.SavePath, TimeManager);
+        RecordsManager = new Records.Manager(this, saveManager);
+
+        ArticlesManager = new Articles.Manager(this);
+        CurrencyManager = new Currency.Manager(this);
     }
+
+    public void Dispose() => GoogleSheetsProvider.Dispose();
 
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -30,13 +47,13 @@ public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
         await base.StartAsync(cancellationToken);
     }
 
-    protected override Task UpdateAsync(Message message, bool fromChat, CommandBase? command = null,
+    protected override Task ProcessTextMessageAsync(Message textMessage, Chat senderChat, CommandBase? command = null,
         string? payload = null)
     {
-        SupportedAction? action = GetAction(message, command);
+        SupportedAction? action = GetAction(textMessage, command);
         return action is null
-            ? SendStickerAsync(message.Chat, DontUnderstandSticker)
-            : action.ExecuteWrapperAsync(ForbiddenSticker);
+            ? SendStickerAsync(textMessage.Chat, DontUnderstandSticker)
+            : action.ExecuteWrapperAsync(ForbiddenSticker, senderChat);
     }
 
     protected override Task ProcessCallbackAsync(CallbackQuery callback)
@@ -55,7 +72,7 @@ public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
             return d;
         }
 
-        DateTimeFull? dtf = GetDateTimeFull(o);
+        DateTimeFull? dtf = GoogleSheetsManager.Utils.GetDateTimeFull(o, GoogleSheetsProvider.TimeManager);
         return dtf?.DateOnly;
     }
 
@@ -133,13 +150,7 @@ public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
     internal MarkQuery? CurrentQuery;
     internal DateTimeFull CurrentQueryTime;
 
-    internal Articles.Manager ArticlesManager => _articlesManager ??= new Articles.Manager(this);
-    internal Records.Manager RecordsManager => _recordsManager ??= new Records.Manager(this, _saveManager);
-    internal Currency.Manager CurrencyManager => _currencyManager ??= new Currency.Manager(this);
-
-    private Articles.Manager? _articlesManager;
-    private Records.Manager? _recordsManager;
-    private Currency.Manager? _currencyManager;
-
-    private readonly SaveManager<Data> _saveManager;
+    internal readonly Articles.Manager ArticlesManager;
+    internal readonly Records.Manager RecordsManager;
+    internal readonly Currency.Manager CurrencyManager;
 }

@@ -7,7 +7,10 @@ internal sealed class ForwardAction : SupportedAction
 {
     public ForwardAction(Bot bot, Message message) : base(bot, message) { }
 
-    protected override Task ExecuteAsync() => Bot.RecordsManager.SaveRecordAsync(Message, Bot.CurrentQuery);
+    protected override Task ExecuteAsync(Chat chat)
+    {
+        return Bot.RecordsManager.SaveRecordAsync(Message, chat, Bot.CurrentQuery);
+    }
 
     protected override bool AllowedForMistress => true;
 }

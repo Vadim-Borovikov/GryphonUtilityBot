@@ -6,14 +6,13 @@ namespace GryphonUtilityBot.Actions;
 
 internal sealed class MarkAction : SupportedAction
 {
-    public MarkAction(Bot bot, Message message, Message recordMessage, MarkQuery query)
-        : base(bot, message)
+    public MarkAction(Bot bot, Message message, Message recordMessage, MarkQuery query) : base(bot, message)
     {
         _recordMessage = recordMessage;
         _query = query;
     }
 
-    protected override Task ExecuteAsync() => Bot.RecordsManager.MarkAsync(Message.Chat, _recordMessage, _query);
+    protected override Task ExecuteAsync(Chat chat) => Bot.RecordsManager.MarkAsync(chat, _recordMessage, _query);
 
     protected override bool AllowedForMistress => true;
 
