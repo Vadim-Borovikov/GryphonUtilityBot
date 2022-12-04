@@ -25,10 +25,9 @@ public sealed class Bot : BotBaseCustom<Config>, IDisposable
         GoogleSheetsProvider = new SheetsProvider(config, config.GoogleSheetId);
         AdditionalConverters = new Dictionary<Type, Func<object?, object?>>
         {
-            { typeof(DateOnly), o => GetDateOnly(o) },
-            { typeof(DateOnly?), o => GetDateOnly(o) },
             { typeof(Uri), Utils.ToUri }
         };
+        AdditionalConverters[typeof(DateOnly)] = AdditionalConverters[typeof(DateOnly?)] = o => GetDateOnly(o);
 
         SaveManager<Data> saveManager = new(config.SavePath, TimeManager);
         RecordsManager = new Records.Manager(this, saveManager);
