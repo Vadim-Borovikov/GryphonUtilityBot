@@ -82,7 +82,7 @@ internal sealed class InsuranceManager
     {
         TimeSpan timeSpan =
             _bot.TimeManager.Now() - _bot.TimeManager.GetDateTimeFull(_bot.Config.ArrivalDate, TimeOnly.MinValue);
-        uint days = (uint) timeSpan.TotalDays;
+        uint days = (uint) Math.Ceiling(timeSpan.TotalDays);
         string messsage = string.Format(_bot.Config.InsuranceMessageFormat, _address,
             _bot.Config.ArrivalDate.ToString("dd MMMM yyyy"), days, _problem);
         return _bot.SendTextMessageAsync(chat, messsage, ParseMode.MarkdownV2);
