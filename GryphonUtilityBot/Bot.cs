@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using AbstractBot;
 using AbstractBot.Commands;
@@ -34,17 +33,12 @@ public sealed class Bot : BotBaseCustom<Config>, IDisposable
 
         ArticlesManager = new Articles.Manager(this);
         CurrencyManager = new Currency.Manager(this);
+
+        Commands.Add(new ArticleCommand(this));
+        Commands.Add(new ReadCommand(this));
     }
 
     public void Dispose() => GoogleSheetsProvider.Dispose();
-
-    public override async Task StartAsync(CancellationToken cancellationToken)
-    {
-        Commands.Add(new ArticleCommand(this));
-        Commands.Add(new ReadCommand(this));
-
-        await base.StartAsync(cancellationToken);
-    }
 
     protected override Task ProcessTextMessageAsync(Message textMessage, Chat senderChat, CommandBase? command = null,
         string? payload = null)
