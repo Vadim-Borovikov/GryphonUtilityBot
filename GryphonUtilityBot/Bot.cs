@@ -33,9 +33,11 @@ public sealed class Bot : BotBaseCustom<Config>, IDisposable
 
         ArticlesManager = new Articles.Manager(this);
         CurrencyManager = new Currency.Manager(this);
+        InsuranceManager = new InsuranceManager(this);
 
         Commands.Add(new ArticleCommand(this));
         Commands.Add(new ReadCommand(this));
+        Commands.Add(new InsuranceCommand(this));
     }
 
     public void Dispose() => GoogleSheetsProvider.Dispose();
@@ -83,6 +85,7 @@ public sealed class Bot : BotBaseCustom<Config>, IDisposable
 
         if (command is not null)
         {
+            InsuranceManager.Reset();
             return new CommandAction(this, message, command);
         }
 
@@ -94,6 +97,11 @@ public sealed class Bot : BotBaseCustom<Config>, IDisposable
         if (string.IsNullOrWhiteSpace(message.Text))
         {
             return null;
+        }
+
+        if (InsuranceManager.Active)
+        {
+            return new InsuranceAction(this, message, message.Text);
         }
 
         if (Articles.Manager.TryParseArticle(message.Text, out Article? article))
@@ -146,4 +154,5 @@ public sealed class Bot : BotBaseCustom<Config>, IDisposable
     internal readonly Articles.Manager ArticlesManager;
     internal readonly Records.Manager RecordsManager;
     internal readonly Currency.Manager CurrencyManager;
+    internal readonly InsuranceManager InsuranceManager;
 }
