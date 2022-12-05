@@ -32,16 +32,16 @@ internal sealed class InsuranceManager
         return AskForAddress(chat);
     }
 
-    public Task Accept(Chat chat, Message message)
+    public Task Accept(Chat chat, string text)
     {
         if (_address is null)
         {
-            return AcceptAddress(chat, message.Text);
+            return AcceptAddress(chat, text);
         }
 
         if (_problem is null)
         {
-            return AcceptProblem(chat, message.Text);
+            return AcceptProblem(chat, text);
         }
 
         return Task.CompletedTask;
@@ -51,28 +51,14 @@ internal sealed class InsuranceManager
 
     private Task AskForProblem(Chat chat) => _bot.SendTextMessageAsync(chat, "Что случилось?");
 
-    private async Task AcceptAddress(Chat chat, string? text)
+    private Task AcceptAddress(Chat chat, string text)
     {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            await _bot.SendTextMessageAsync(chat, "Адрес пуст.");
-            await AskForAddress(chat);
-            return;
-        }
-
         _address = text == HomeCaption ? _bot.Config.DefaultAddress : text;
-        await AskForProblem(chat);
+        return AskForProblem(chat);
     }
 
-    private async Task AcceptProblem(Chat chat, string? text)
+    private async Task AcceptProblem(Chat chat, string text)
     {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            await _bot.SendTextMessageAsync(chat, "Описание случившегося пусто.");
-            await AskForProblem(chat);
-            return;
-        }
-
         _problem = AbstractBot.Utils.EscapeCharacters(text);
         await GenerateAndSendMessage(chat);
         Reset();

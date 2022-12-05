@@ -4,6 +4,7 @@ using AbstractBot.Commands;
 using GryphonUtilityBot.Actions;
 using GryphonUtilityBot.Commands;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace GryphonUtilityBot;
 
@@ -32,9 +33,19 @@ public sealed class Bot : BotBaseCustom<Config>
             return new CommandAction(this, message, command);
         }
 
+        if (message.Type is not MessageType.Text)
+        {
+            return null;
+        }
+
+        if (string.IsNullOrWhiteSpace(message.Text))
+        {
+            return null;
+        }
+
         if (InsuranceManager.Active)
         {
-            return new InsuranceAction(this, message, InsuranceManager);
+            return new InsuranceAction(this, message, message.Text);
         }
 
         return null;
