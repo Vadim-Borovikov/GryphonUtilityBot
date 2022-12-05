@@ -44,7 +44,7 @@ public sealed class Bot : BotBase<Bot, Config>
             return null;
         }
 
-        if (message.Text is null)
+        if (string.IsNullOrWhiteSpace(message.Text))
         {
             return null;
         }
