@@ -91,7 +91,7 @@ public sealed class Bot : BotBaseCustom<Config>, IDisposable
             return null;
         }
 
-        if (message.Text is null)
+        if (string.IsNullOrWhiteSpace(message.Text))
         {
             return null;
         }
