@@ -16,13 +16,8 @@ internal sealed class Manager
         _articles = new SortedSet<Article>();
     }
 
-    public static bool TryParseArticle(string? text, out Article? article)
+    public static bool TryParseArticle(string text, out Article? article)
     {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            article = null;
-            return false;
-        }
         article = ParseArticle(text);
         return article is not null;
     }

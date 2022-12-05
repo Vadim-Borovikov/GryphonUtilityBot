@@ -7,6 +7,7 @@ using GryphonUtilityBot.Actions;
 using GryphonUtilityBot.Articles;
 using GryphonUtilityBot.Commands;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace GryphonUtilityBot;
 
@@ -36,6 +37,16 @@ public sealed class Bot : BotBaseGoogleSheets<Bot, Config>
         if (command is not null)
         {
             return new CommandAction(this, message, command);
+        }
+
+        if (message.Type is not MessageType.Text)
+        {
+            return null;
+        }
+
+        if (string.IsNullOrWhiteSpace(message.Text))
+        {
+            return null;
         }
 
         if (Manager.TryParseArticle(message.Text, out Article? article))
