@@ -4,6 +4,7 @@ using AbstractBot;
 using AbstractBot.Commands;
 using GryphonUtilityBot.Actions;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace GryphonUtilityBot;
 
@@ -34,6 +35,16 @@ public sealed class Bot : BotBase<Bot, Config>
         if (command is not null)
         {
             return new CommandAction(this, message, command);
+        }
+
+        if (message.Type is not MessageType.Text)
+        {
+            return null;
+        }
+
+        if (string.IsNullOrWhiteSpace(message.Text))
+        {
+            return null;
         }
 
         if (decimal.TryParse(message.Text, out decimal number))
