@@ -11,11 +11,8 @@ public sealed class Bot : BotBaseCustom<Config>
 {
     public Bot(Config config) : base(config)
     {
-        _insuranceManager = new InsuranceManager(this, config.InsuranceMessageFormat, config.DefaultAddress,
-            config.ArrivalDate);
-        InsuranceCommand insuranceCommand = new(this, _insuranceManager);
-
-        Commands.Add(insuranceCommand);
+        InsuranceManager = new InsuranceManager(this);
+        Commands.Add(new InsuranceCommand(this));
     }
 
     protected override Task ProcessTextMessageAsync(Message textMessage, Chat senderChat, CommandBase? command = null,
@@ -31,17 +28,17 @@ public sealed class Bot : BotBaseCustom<Config>
     {
         if (command is not null)
         {
-            _insuranceManager.Reset();
+            InsuranceManager.Reset();
             return new CommandAction(this, message, command);
         }
 
-        if (_insuranceManager.Active)
+        if (InsuranceManager.Active)
         {
-            return new InsuranceAction(this, message, _insuranceManager);
+            return new InsuranceAction(this, message, InsuranceManager);
         }
 
         return null;
     }
 
-    private readonly InsuranceManager _insuranceManager;
+    internal readonly InsuranceManager InsuranceManager;
 }
