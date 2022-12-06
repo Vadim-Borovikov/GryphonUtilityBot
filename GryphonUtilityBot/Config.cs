@@ -28,9 +28,7 @@ public class Config : ConfigGoogleSheets
 
     [Required]
     [MinLength(1)]
-    public List<string> InsuranceMessageFormatLines { get; init; } = null!;
-
-    internal string InsuranceMessageFormat => string.Join(Environment.NewLine, InsuranceMessageFormatLines);
+    public List<string> InsuranceMessageFormat { get; init; } = null!;
 
     [Required]
     [MinLength(1)]

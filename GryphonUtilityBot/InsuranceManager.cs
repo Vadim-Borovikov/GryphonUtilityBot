@@ -15,6 +15,8 @@ internal sealed class InsuranceManager
         _bot = bot;
         KeyboardButton home = new(HomeCaption);
         _homeKeyboard = new ReplyKeyboardMarkup(home);
+
+        _insuranceMessageFormat = string.Join(Environment.NewLine, bot.Config.InsuranceMessageFormat);
     }
 
     public void Reset()
@@ -69,7 +71,7 @@ internal sealed class InsuranceManager
         TimeSpan timeSpan =
             _bot.TimeManager.Now() - _bot.TimeManager.GetDateTimeFull(_bot.Config.ArrivalDate, TimeOnly.MinValue);
         uint days = (uint) Math.Ceiling(timeSpan.TotalDays);
-        string messsage = string.Format(_bot.Config.InsuranceMessageFormat, _address,
+        string messsage = string.Format(_insuranceMessageFormat, _address,
             _bot.Config.ArrivalDate.ToString("dd MMMM yyyy"), days, _problem);
         return _bot.SendTextMessageAsync(chat, messsage, ParseMode.MarkdownV2);
     }
@@ -78,6 +80,7 @@ internal sealed class InsuranceManager
 
     private readonly Bot _bot;
     private readonly IReplyMarkup _homeKeyboard;
+    private readonly string _insuranceMessageFormat;
 
     private string? _address;
     private string? _problem;
