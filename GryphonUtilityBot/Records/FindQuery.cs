@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace GryphonUtilityBot.Records;
 
-internal sealed class FindQuery : MarkQuery
+internal sealed class FindQuery : TagQuery
 {
     public readonly DateOnly From;
     public readonly DateOnly To;
@@ -14,13 +14,7 @@ internal sealed class FindQuery : MarkQuery
         To = to;
     }
 
-    public static bool TryParseFindQuery(string text, out FindQuery? query)
-    {
-        query = ParseFindQuery(text);
-        return query is not null;
-    }
-
-    private static FindQuery? ParseFindQuery(string text)
+    public static FindQuery? ParseFindQuery(string text)
     {
         List<string> parts = new(text.Split(' '));
         if (parts.Count == 0)

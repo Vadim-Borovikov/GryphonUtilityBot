@@ -1,15 +1,19 @@
 ﻿using System.Threading.Tasks;
-using AbstractBot.Commands;
+using AbstractBot.Operations;
+using GryphonUtilityBot.Articles;
 using Telegram.Bot.Types;
 
 namespace GryphonUtilityBot.Commands;
 
-internal sealed class ArticleCommand : CommandBaseCustom<Bot, Config>
+internal sealed class ArticleCommand : CommandOperation
 {
-    public ArticleCommand(Bot bot) : base(bot, "article", "первая статья") { }
+    protected override byte MenuOrder => 2;
 
-    public override Task ExecuteAsync(Message message, Chat chat, string? payload)
-    {
-        return Bot.ArticlesManager.SendFirstArticleAsync(chat);
-    }
+    protected override Access AccessLevel => Access.SuperAdmin;
+
+    public ArticleCommand(Bot bot, Manager manager) : base(bot, "article", "первая статья") => _manager = manager;
+
+    protected override Task ExecuteAsync(Message _, Chat chat, string? __) => _manager.SendFirstArticleAsync(chat);
+
+    private readonly Manager _manager;
 }

@@ -2,15 +2,13 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using AbstractBot;
-using AbstractBot.Commands;
+using AbstractBot.Operations;
 using GoogleSheetsManager.Providers;
 using GryphonUtilities;
-using GryphonUtilityBot.Actions;
 using GryphonUtilityBot.Articles;
 using GryphonUtilityBot.Commands;
-using GryphonUtilityBot.Records;
+using GryphonUtilityBot.Operations;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 
 namespace GryphonUtilityBot;
 
@@ -31,33 +29,44 @@ public sealed class Bot : BotBaseCustom<Config>, IDisposable
         SaveManager<Data> saveManager = new(config.SavePath, TimeManager);
         RecordsManager = new Records.Manager(this, saveManager);
 
-        ArticlesManager = new Articles.Manager(this);
-        CurrencyManager = new Currency.Manager(this);
+        Manager articlesManager = new(this);
+        _currencyManager = new Currency.Manager(this);
         InsuranceManager = new InsuranceManager(this);
 
-        Commands.Add(new ArticleCommand(this));
-        Commands.Add(new ReadCommand(this));
-        Commands.Add(new InsuranceCommand(this));
+        Operations.Add(new ArticleCommand(this, articlesManager));
+        Operations.Add(new InsuranceCommand(this, InsuranceManager));
+        Operations.Add(new ReadCommand(this, articlesManager));
+
+        Operations.Add(new ArticleOperation(this, articlesManager, InsuranceManager));
+        Operations.Add(new CurrencyOperation(this, _currencyManager, InsuranceManager));
+        Operations.Add(new FindOperation(this, RecordsManager, InsuranceManager));
+        Operations.Add(new ForwardOperation(this));
+        Operations.Add(new InsuranceOperation(this, InsuranceManager));
+        Operations.Add(new RememberTagOperation(this));
+        Operations.Add(new TagOperation(this, RecordsManager, InsuranceManager));
     }
 
     public void Dispose() => GoogleSheetsProvider.Dispose();
 
-    protected override Task ProcessTextMessageAsync(Message textMessage, Chat senderChat, CommandBase? command = null,
-        string? payload = null)
+    protected override Task ProcessInsufficientAccess(Message message, Chat sender, Operation operation)
     {
-        SupportedAction? action = GetAction(textMessage, command);
-        return action is null
-            ? SendStickerAsync(textMessage.Chat, DontUnderstandSticker)
-            : action.ExecuteWrapperAsync(ForbiddenSticker, senderChat);
+        if (sender.Id != Config.MistressId)
+        {
+            return base.ProcessInsufficientAccess(message, sender, operation);
+        }
+
+        Chat chat = GetReplyChatFor(message, sender);
+        return SendTextMessageAsync(chat,
+            "Простите, госпожа, но господин заблокировал это действие даже для Вас.", replyToMessageId: message.MessageId);
     }
 
-    protected override Task ProcessCallbackAsync(CallbackQuery callback)
+    protected override Task UpdateAsync(CallbackQuery callback)
     {
         if (callback.Data is null)
         {
             throw new NullReferenceException(nameof(callback.Data));
         }
-        return CurrencyManager.ChangeCurrency(callback.Data);
+        return _currencyManager.ChangeCurrency(callback.Data);
     }
 
     private DateOnly? GetDateOnly(object? o)
@@ -71,88 +80,11 @@ public sealed class Bot : BotBaseCustom<Config>, IDisposable
         return dtf?.DateOnly;
     }
 
-    private SupportedAction? GetAction(Message message, CommandBase? command)
-    {
-        if (message.ForwardFrom is not null)
-        {
-            if (CurrentQuery is not null
-                && (TimeManager.GetDateTimeFull(message.Date.ToUniversalTime()) > CurrentQueryTime))
-            {
-                CurrentQuery = null;
-            }
-            return new ForwardAction(this, message);
-        }
-
-        if (command is not null)
-        {
-            InsuranceManager.Reset();
-            return new CommandAction(this, message, command);
-        }
-
-        if (message.Type is not MessageType.Text)
-        {
-            return null;
-        }
-
-        if (string.IsNullOrWhiteSpace(message.Text))
-        {
-            return null;
-        }
-
-        if (InsuranceManager.Active)
-        {
-            return new InsuranceAction(this, message, message.Text);
-        }
-
-        if (Articles.Manager.TryParseArticle(message.Text, out Article? article))
-        {
-            if (article is null)
-            {
-                throw new NullReferenceException(nameof(article));
-            }
-            return new ArticleAction(this, message, article);
-        }
-
-        if (decimal.TryParse(message.Text, out decimal number))
-        {
-            return new NumberAction(this, message, number);
-        }
-
-        if (FindQuery.TryParseFindQuery(message.Text, out FindQuery? findQuery))
-        {
-            if (findQuery is null)
-            {
-                throw new NullReferenceException(nameof(findQuery));
-            }
-            return new FindQueryAction(this, message, findQuery);
-        }
-
-        if (MarkQuery.TryParseMarkQuery(message.Text, out MarkQuery? markQuery))
-        {
-            if (markQuery is null)
-            {
-                throw new NullReferenceException(nameof(findQuery));
-            }
-
-            if (message.ReplyToMessage is null)
-            {
-                return new RememberMarkAction(this, message, markQuery);
-            }
-
-            if (message.ReplyToMessage.ForwardFrom is not null)
-            {
-                return new MarkAction(this, message, message.ReplyToMessage, markQuery);
-            }
-        }
-
-        return null;
-    }
-
-    internal MarkQuery? CurrentQuery;
+    internal Records.TagQuery? CurrentQuery;
     internal DateTimeFull CurrentQueryTime;
 
-    internal readonly Articles.Manager ArticlesManager;
     internal readonly Records.Manager RecordsManager;
-    internal readonly Currency.Manager CurrencyManager;
     internal readonly InsuranceManager InsuranceManager;
+
+    private readonly Currency.Manager _currencyManager;
 }

@@ -3,24 +3,18 @@ using System.Collections.Generic;
 
 namespace GryphonUtilityBot.Records;
 
-internal class MarkQuery
+internal class TagQuery
 {
     public readonly DateOnly? DateOnly;
     public readonly HashSet<string> Tags;
 
-    protected MarkQuery(DateOnly? dateOnly, IEnumerable<string> tags)
+    protected TagQuery(DateOnly? dateOnly, IEnumerable<string> tags)
     {
         DateOnly = dateOnly;
         Tags = new HashSet<string>(tags);
     }
 
-    public static bool TryParseMarkQuery(string text, out MarkQuery? query)
-    {
-        query = ParseMarkQuery(text);
-        return query is not null;
-    }
-
-    private static MarkQuery? ParseMarkQuery(string text)
+    public static TagQuery? ParseTagQuery(string text)
     {
         List<string> parts = new(text.Split(' '));
         if (parts.Count == 0)
@@ -30,6 +24,6 @@ internal class MarkQuery
 
         DateOnly? dateTime = Utils.ParseFirstDate(parts);
 
-        return new MarkQuery(dateTime, parts);
+        return new TagQuery(dateTime, parts);
     }
 }

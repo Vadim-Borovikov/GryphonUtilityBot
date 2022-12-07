@@ -1,15 +1,22 @@
 ﻿using System.Threading.Tasks;
-using AbstractBot.Commands;
+using AbstractBot.Operations;
+using GryphonUtilityBot.Articles;
 using Telegram.Bot.Types;
 
 namespace GryphonUtilityBot.Commands;
 
-internal sealed class ReadCommand : CommandBaseCustom<Bot, Config>
+internal sealed class ReadCommand : CommandOperation
 {
-    public ReadCommand(Bot bot) : base(bot, "read", "удалить статью и выдать следующую") { }
+    protected override byte MenuOrder => 3;
 
-    public override Task ExecuteAsync(Message message, Chat chat, string? payload)
+    protected override Access AccessLevel => Access.SuperAdmin;
+
+    public ReadCommand(Bot bot, Manager manager) : base(bot, "read", "удалить статью и выдать следующую")
     {
-        return Bot.ArticlesManager.DeleteFirstArticleAsync(chat);
+        _manager = manager;
     }
+
+    protected override Task ExecuteAsync(Message _, Chat chat, string? __) => _manager.DeleteFirstArticleAsync(chat);
+
+    private readonly Manager _manager;
 }

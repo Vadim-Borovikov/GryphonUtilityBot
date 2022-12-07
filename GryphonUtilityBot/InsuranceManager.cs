@@ -19,13 +19,6 @@ internal sealed class InsuranceManager
         _insuranceMessageFormat = string.Join(Environment.NewLine, bot.Config.InsuranceMessageFormat);
     }
 
-    public void Reset()
-    {
-        _address = null;
-        _problem = null;
-        Active = false;
-    }
-
     public Task StartDiscussion(Chat chat)
     {
         _address = null;
@@ -74,6 +67,13 @@ internal sealed class InsuranceManager
         string messsage = string.Format(_insuranceMessageFormat, _address,
             _bot.Config.ArrivalDate.ToString("dd MMMM yyyy"), days, _problem);
         return _bot.SendTextMessageAsync(chat, messsage, ParseMode.MarkdownV2);
+    }
+
+    private void Reset()
+    {
+        _address = null;
+        _problem = null;
+        Active = false;
     }
 
     private const string HomeCaption = "Дома";

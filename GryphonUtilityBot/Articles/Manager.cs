@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GoogleSheetsManager;
-using GryphonUtilities;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -15,12 +14,6 @@ internal sealed class Manager
     {
         _bot = bot;
         _articles = new SortedSet<Article>();
-    }
-
-    public static bool TryParseArticle(string text, out Article? article)
-    {
-        article = ParseArticle(text);
-        return article is not null;
     }
 
     public async Task ProcessNewArticleAsync(Chat chat, Article article)
@@ -52,56 +45,6 @@ internal sealed class Manager
         string articleText = GetArticleMessageText(article);
         await _bot.SendTextMessageAsync(chat, $"Удалено: `{articleText}`\\.", ParseMode.MarkdownV2);
         await SendFirstArticleAsync(chat);
-    }
-
-    private static Article? ParseArticle(string text)
-    {
-        string[] parts = text.Split(' ');
-
-        Uri? uri;
-        switch (parts.Length)
-        {
-            case 1:
-                uri = CreateUri(parts[0]);
-                return uri is null ? null : new Article(DateTimeFull.CreateUtcNow().DateOnly, uri);
-            case 2:
-                DateOnly? date = ParseDate(parts[0]);
-                if (!date.HasValue)
-                {
-                    return null;
-                }
-                uri = CreateUri(parts[1]);
-                return uri is null ? null : new Article(date.Value, uri);
-            default: return null;
-        }
-    }
-
-    private static DateOnly? ParseDate(string dateString)
-    {
-        if (DateOnly.TryParse(dateString, out DateOnly date))
-        {
-            return date;
-        }
-
-        if (!int.TryParse(dateString, out int day))
-        {
-            return null;
-        }
-
-        try
-        {
-            DateTimeFull now = DateTimeFull.CreateUtcNow();
-            return new DateOnly(now.DateOnly.Year, now.DateOnly.Month, day);
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            return null;
-        }
-    }
-
-    private static Uri? CreateUri(string uriString)
-    {
-        return Uri.TryCreate(uriString, UriKind.Absolute, out Uri? uri) ? uri : null;
     }
 
     private async Task AddArticleAsync(Article article)

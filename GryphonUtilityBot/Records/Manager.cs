@@ -15,7 +15,7 @@ internal sealed class Manager
         _bot = bot;
     }
 
-    public Task SaveRecordAsync(Message message, Chat chat, MarkQuery? query)
+    public Task SaveRecordAsync(Message message, Chat chat, TagQuery? query)
     {
         _saveManager.Load();
 
@@ -58,7 +58,7 @@ internal sealed class Manager
         }
     }
 
-    public Task MarkAsync(Chat chat, Message recordMessage, MarkQuery query)
+    public Task TagAsync(Chat chat, Message recordMessage, TagQuery query)
     {
         _saveManager.Load();
 
@@ -80,7 +80,7 @@ internal sealed class Manager
         return _bot.SendTextMessageAsync(chat, "Запись обновлена.");
     }
 
-    private RecordData? GetRecord(Message message, MarkQuery? query)
+    private RecordData? GetRecord(Message message, TagQuery? query)
     {
         if (!message.ForwardDate.HasValue)
         {

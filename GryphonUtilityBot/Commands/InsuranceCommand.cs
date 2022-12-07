@@ -1,18 +1,22 @@
-﻿using AbstractBot.Commands;
-using AbstractBot;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using AbstractBot.Operations;
 using Telegram.Bot.Types;
 
 namespace GryphonUtilityBot.Commands;
 
-internal sealed class InsuranceCommand : CommandBaseCustom<Bot, Config>
+internal sealed class InsuranceCommand : CommandOperation
 {
-    public override BotBase.AccessType Access => BotBase.AccessType.SuperAdmin;
+    protected override byte MenuOrder => 4;
 
-    public InsuranceCommand(Bot bot) : base(bot, "insurance", "составить обращение в страховую") { }
+    protected override Access AccessLevel => Access.SuperAdmin;
 
-    public override Task ExecuteAsync(Message message, Chat chat, string? payload)
+    public InsuranceCommand(Bot bot, InsuranceManager manager)
+        : base(bot, "insurance", "составить обращение в страховую")
     {
-        return Bot.InsuranceManager.StartDiscussion(chat);
+        _manager = manager;
     }
+
+    protected override Task ExecuteAsync(Message _, Chat chat, string? __) => _manager.StartDiscussion(chat);
+
+    private readonly InsuranceManager _manager;
 }
