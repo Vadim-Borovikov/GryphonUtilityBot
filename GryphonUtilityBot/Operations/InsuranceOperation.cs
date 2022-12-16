@@ -21,7 +21,7 @@ internal sealed class InsuranceOperation : Operation
             return ExecutionResult.UnsuitableOperation;
         }
 
-        if (IsAccessSuffice(sender.Id))
+        if (!IsAccessSuffice(sender.Id))
         {
             return ExecutionResult.InsufficentAccess;
         }
