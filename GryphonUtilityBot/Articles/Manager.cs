@@ -41,7 +41,8 @@ internal sealed class Manager
     {
         await LoadAsync();
 
-        string text = $"{_articles.Count}. {GetArticleMessageText(_articles.First())}";
+        Article? article = _articles.FirstOrDefault();
+        string text = article is null ? "Больше статей нет." : $"{_articles.Count}. {GetArticleMessageText(article)}";
         await _bot.SendTextMessageAsync(chat, text);
     }
 
@@ -49,9 +50,19 @@ internal sealed class Manager
     {
         await LoadAsync();
 
-        Article article = _articles.First();
+        Article? article = _articles.FirstOrDefault();
+        if (article is null)
+        {
+            await _bot.SendTextMessageAsync(chat, "Список статей уже пуст.");
+            return;
+        }
+
         _articles.Remove(article);
-        _articles.First().Current = true;
+        Article? next = _articles.FirstOrDefault();
+        if (next is not null)
+        {
+            next.Current = true;
+        }
         await SaveAsync();
 
         string articleText = GetArticleMessageText(article);
