@@ -10,7 +10,7 @@ internal sealed class RememberTagOperation: Operation
 {
     protected override byte MenuOrder => 8;
 
-    protected override Access AccessLevel => Access.Admins;
+    protected override Access AccessLevel => Access.Admin;
 
     public RememberTagOperation(Bot bot) : base(bot)
     {
@@ -18,7 +18,7 @@ internal sealed class RememberTagOperation: Operation
         _bot = bot;
     }
 
-    protected override async Task<ExecutionResult> TryExecuteAsync(Message message, Chat sender)
+    protected override async Task<ExecutionResult> TryExecuteAsync(Message message, long senderId)
     {
         TagQuery? query = Check(message);
         if (query is null)
@@ -26,15 +26,15 @@ internal sealed class RememberTagOperation: Operation
             return ExecutionResult.UnsuitableOperation;
         }
 
-        if (!IsAccessSuffice(sender.Id))
+        if (!IsAccessSuffice(senderId))
         {
             return ExecutionResult.InsufficentAccess;
         }
 
-        Chat chat = BotBase.GetReplyChatFor(message, sender);
         _bot.CurrentQuery = query;
         _bot.CurrentQueryTime = _bot.TimeManager.GetDateTimeFull(message.Date);
-        await _bot.SendTextMessageAsync(chat, "Запрос пометки зафиксирован.", replyToMessageId: message.MessageId);
+        await _bot.SendTextMessageAsync(message.Chat, "Запрос пометки зафиксирован.",
+            replyToMessageId: message.MessageId);
         return ExecutionResult.Success;
     }
 

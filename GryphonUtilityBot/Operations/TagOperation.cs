@@ -10,7 +10,7 @@ internal sealed class TagOperation : Operation
 {
     protected override byte MenuOrder => 9;
 
-    protected override Access AccessLevel => Access.Admins;
+    protected override Access AccessLevel => Access.Admin;
 
     public TagOperation(Bot bot, Manager manager, InsuranceManager insuranceManager) : base(bot)
     {
@@ -19,7 +19,7 @@ internal sealed class TagOperation : Operation
         _insuranceManager = insuranceManager;
     }
 
-    protected override async Task<ExecutionResult> TryExecuteAsync(Message message, Chat sender)
+    protected override async Task<ExecutionResult> TryExecuteAsync(Message message, long senderId)
     {
         TagQuery? query = Check(message);
         if (query is null || message.ReplyToMessage?.ForwardFrom is null)
@@ -27,13 +27,12 @@ internal sealed class TagOperation : Operation
             return ExecutionResult.UnsuitableOperation;
         }
 
-        if (!IsAccessSuffice(sender.Id))
+        if (!IsAccessSuffice(senderId))
         {
             return ExecutionResult.InsufficentAccess;
         }
 
-        Chat chat = BotBase.GetReplyChatFor(message, sender);
-        await _manager.TagAsync(chat, message.ReplyToMessage, query);
+        await _manager.TagAsync(message.Chat, message.ReplyToMessage, query);
         return ExecutionResult.Success;
     }
 

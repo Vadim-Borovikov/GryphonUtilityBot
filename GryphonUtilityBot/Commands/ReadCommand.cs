@@ -16,7 +16,10 @@ internal sealed class ReadCommand : CommandOperation
         _manager = manager;
     }
 
-    protected override Task ExecuteAsync(Message _, Chat chat, string? __) => _manager.DeleteFirstArticleAsync(chat);
+    protected override Task ExecuteAsync(Message message, long _, string? __)
+    {
+        return _manager.DeleteFirstArticleAsync(message.Chat);
+    }
 
     private readonly Manager _manager;
 }

@@ -15,7 +15,7 @@ internal sealed class Manager
         _bot = bot;
     }
 
-    public Task SaveRecordAsync(Message message, Chat chat, TagQuery? query)
+    public Task SaveRecordAsync(Message message, TagQuery? query)
     {
         _saveManager.Load();
 
@@ -27,7 +27,7 @@ internal sealed class Manager
 
         _saveManager.Save();
 
-        return _bot.SendTextMessageAsync(chat, "Запись добавлена.", replyToMessageId: message.MessageId);
+        return _bot.SendTextMessageAsync(message.Chat, "Запись добавлена.", replyToMessageId: message.MessageId);
     }
 
     public async Task ProcessFindQueryAsync(Chat chat, FindQuery query)
@@ -78,6 +78,17 @@ internal sealed class Manager
         record.Tags = query.Tags;
         _saveManager.Save();
         return _bot.SendTextMessageAsync(chat, "Запись обновлена.");
+    }
+
+    public static DateOnly? ParseFirstDate(List<string> parts)
+    {
+        if ((parts.Count == 0) || !DateOnly.TryParse(parts.First(), out DateOnly date))
+        {
+            return null;
+        }
+
+        parts.RemoveAt(0);
+        return date;
     }
 
     private RecordData? GetRecord(Message message, TagQuery? query)

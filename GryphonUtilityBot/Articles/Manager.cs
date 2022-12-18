@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GoogleSheetsManager;
+using GoogleSheetsManager.Documents;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -10,11 +11,22 @@ namespace GryphonUtilityBot.Articles;
 
 internal sealed class Manager
 {
-    public Manager(Bot bot)
+    public Manager(Bot bot, DocumentsManager documentsManager)
     {
         _bot = bot;
         _articles = new SortedSet<Article>();
+
+        Dictionary<Type, Func<object?, object?>> additionalConverters = new()
+        {
+            { typeof(Uri), o => o.ToUri() }
+        };
+        additionalConverters[typeof(DateOnly)] = additionalConverters[typeof(DateOnly?)] =
+            o => o.ToDateOnly(_bot.TimeManager);
+
+        GoogleSheetsManager.Documents.Document document = documentsManager.GetOrAdd(_bot.Config.GoogleSheetId);
+        _sheet = document.GetOrAddSheet(bot.Config.GoogleTitle, additionalConverters);
     }
+
 
     public async Task ProcessNewArticleAsync(Chat chat, Article article)
     {
@@ -58,17 +70,16 @@ internal sealed class Manager
 
     private async Task LoadAsync()
     {
-        SheetData<Article> data = await DataManager<Article>.LoadAsync(_bot.GoogleSheetsProvider,
-            _bot.Config.GoogleRange, additionalConverters: _bot.AdditionalConverters);
+        SheetData<Article> data = await _sheet.LoadAsync<Article>(_bot.Config.GoogleRange);
         _articles = new SortedSet<Article>(data.Instances);
         _titles = data.Titles;
     }
 
     private async Task SaveAsync()
     {
-        await _bot.GoogleSheetsProvider.ClearValuesAsync(_bot.Config.GoogleRange);
+        await _sheet.ClearAsync(_bot.Config.GoogleRange);
         SheetData<Article> data = new(_articles.ToList(), _titles);
-        await DataManager<Article>.SaveAsync(_bot.GoogleSheetsProvider, _bot.Config.GoogleRange, data);
+        await _sheet.SaveAsync(_bot.Config.GoogleRange, data);
     }
 
     private static string GetArticleMessageText(Article article)
@@ -79,4 +90,5 @@ internal sealed class Manager
     private SortedSet<Article> _articles;
     private readonly Bot _bot;
     private IList<string> _titles = Array.Empty<string>();
+    private readonly Sheet _sheet;
 }

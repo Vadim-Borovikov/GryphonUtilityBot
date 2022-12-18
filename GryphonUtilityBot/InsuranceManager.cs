@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -16,7 +18,10 @@ internal sealed class InsuranceManager
         KeyboardButton home = new(HomeCaption);
         _homeKeyboard = new ReplyKeyboardMarkup(home);
 
-        _insuranceMessageFormat = string.Join(Environment.NewLine, bot.Config.InsuranceMessageFormat);
+        List<string> messageFormatLines =
+            JsonSerializer.Deserialize<List<string>>(bot.Config.InsuranceMessageFormatJson)
+            ?? bot.Config.InsuranceMessageFormat;
+        _insuranceMessageFormat = string.Join(Environment.NewLine, messageFormatLines);
     }
 
     public Task StartDiscussion(Chat chat)
@@ -54,7 +59,7 @@ internal sealed class InsuranceManager
 
     private async Task AcceptProblem(Chat chat, string text)
     {
-        _problem = AbstractBot.Utils.EscapeCharacters(text);
+        _problem = AbstractBot.Bots.Bot.EscapeCharacters(text);
         await GenerateAndSendMessage(chat);
         Reset();
     }

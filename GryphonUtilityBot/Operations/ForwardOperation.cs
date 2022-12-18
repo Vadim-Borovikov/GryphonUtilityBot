@@ -8,7 +8,7 @@ internal sealed class ForwardOperation : Operation
 {
     protected override byte MenuOrder => 7;
 
-    protected override Access AccessLevel => Access.Admins;
+    protected override Access AccessLevel => Access.Admin;
 
     public ForwardOperation(Bot bot) : base(bot)
     {
@@ -16,25 +16,24 @@ internal sealed class ForwardOperation : Operation
         _bot = bot;
     }
 
-    protected override async Task<ExecutionResult> TryExecuteAsync(Message message, Chat sender)
+    protected override async Task<ExecutionResult> TryExecuteAsync(Message message, long senderId)
     {
         if (message.ForwardFrom is null || _bot.InsuranceManager.Active || message.ReplyToMessage is not null)
         {
             return ExecutionResult.UnsuitableOperation;
         }
 
-        if (!IsAccessSuffice(sender.Id))
+        if (!IsAccessSuffice(senderId))
         {
             return ExecutionResult.InsufficentAccess;
         }
 
         if (_bot.CurrentQuery is not null
-            && (_bot.TimeManager.GetDateTimeFull(message.Date.ToUniversalTime()) > _bot.CurrentQueryTime))
+            && (Bot.TimeManager.GetDateTimeFull(message.Date.ToUniversalTime()) > _bot.CurrentQueryTime))
         {
             _bot.CurrentQuery = null;
         }
-        Chat chat = BotBase.GetReplyChatFor(message, sender);
-        await _bot.RecordsManager.SaveRecordAsync(message, chat, _bot.CurrentQuery);
+        await _bot.RecordsManager.SaveRecordAsync(message, _bot.CurrentQuery);
         return ExecutionResult.Success;
     }
 

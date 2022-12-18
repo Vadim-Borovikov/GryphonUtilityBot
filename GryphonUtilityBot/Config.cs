@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using AbstractBot;
+using AbstractBot.Configs;
 using JetBrains.Annotations;
 
 // ReSharper disable NullableWarningSuppressionIsUsed
@@ -17,6 +17,10 @@ public class Config : ConfigGoogleSheets
 
     [Required]
     [MinLength(1)]
+    public string GoogleTitle { get; init; } = null!;
+
+    [Required]
+    [MinLength(1)]
     public string GoogleRange { get; init; } = null!;
 
     [Required]
@@ -26,9 +30,9 @@ public class Config : ConfigGoogleSheets
     [Required]
     public long MistressId { get; init; }
 
-    [Required]
-    [MinLength(1)]
-    public List<string> InsuranceMessageFormat { get; init; } = null!;
+    public string? InsuranceMessageFormatJson { get; init; }
+
+    public List<string>? InsuranceMessageFormat { get; init; }
 
     [Required]
     [MinLength(1)]

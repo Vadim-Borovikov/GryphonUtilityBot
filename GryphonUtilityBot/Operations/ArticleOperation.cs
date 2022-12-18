@@ -22,7 +22,7 @@ internal sealed class ArticleOperation : Operation
         _insuranceManager = insuranceManager;
     }
 
-    protected override async Task<ExecutionResult> TryExecuteAsync(Message message, Chat sender)
+    protected override async Task<ExecutionResult> TryExecuteAsync(Message message, long senderId)
     {
         Article? article = Check(message);
         if (article is null)
@@ -30,13 +30,12 @@ internal sealed class ArticleOperation : Operation
             return ExecutionResult.UnsuitableOperation;
         }
 
-        if (!IsAccessSuffice(sender.Id))
+        if (!IsAccessSuffice(senderId))
         {
             return ExecutionResult.InsufficentAccess;
         }
 
-        Chat chat = BotBase.GetReplyChatFor(message, sender);
-        await _manager.ProcessNewArticleAsync(chat, article);
+        await _manager.ProcessNewArticleAsync(message.Chat, article);
         return ExecutionResult.Success;
     }
 

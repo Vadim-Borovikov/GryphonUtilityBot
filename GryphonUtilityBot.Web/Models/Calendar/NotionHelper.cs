@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AbstractBot;
 using GryphonUtilities;
 using Notion.Client;
 
@@ -16,6 +15,7 @@ internal sealed class NotionHelper
         _timeManager = botSingleton.Bot.TimeManager;
         _databaseId = config.NotionDatabaseId;
         _updatePeriod = TimeSpan.FromSeconds(config.NotionUpdatesPerSecondLimit);
+        _logger = botSingleton.Bot.Logger;
     }
 
     public Task<NotionRequestResult<PageInfo>> TryGetPageAsync(string id) => Wrapper(GetPageAsync, id);
@@ -58,8 +58,8 @@ internal sealed class NotionHelper
         return new PageInfo(page, _timeManager);
     }
 
-    private static async Task<NotionRequestResult<TResult>> Wrapper<TParam, TResult>(Func<TParam,
-        Task<TResult>> method, TParam param)
+    private async Task<NotionRequestResult<TResult>> Wrapper<TParam, TResult>(Func<TParam, Task<TResult>> method,
+        TParam param)
         where TResult : class
     {
         try
@@ -69,14 +69,14 @@ internal sealed class NotionHelper
         }
         catch (NotionApiException ex) when (ex.NotionAPIErrorCode == NotionAPIErrorCode.ObjectNotFound)
         {
-            Utils.LogManager.LogError($"Method with parameter {param} resulted with ObjectNotFound");
-            Utils.LogManager.LogException(ex);
+            _logger.LogError($"Method with parameter {param} resulted with ObjectNotFound");
+            _logger.LogException(ex);
             return new NotionRequestResult<TResult>(true);
         }
         catch (NotionApiException ex)
         {
-            Utils.LogManager.LogError($"Method with parameter {param} resulted with unspecified NotionApiException");
-            Utils.LogManager.LogException(ex);
+            _logger.LogError($"Method with parameter {param} resulted with unspecified NotionApiException");
+            _logger.LogException(ex);
             return new NotionRequestResult<TResult>(false);
         }
     }
@@ -169,4 +169,5 @@ internal sealed class NotionHelper
     private readonly object _delayLocker = new();
     private readonly TimeSpan _updatePeriod;
     private DateTimeFull? _lastUpdate;
+    private readonly Logger _logger;
 }

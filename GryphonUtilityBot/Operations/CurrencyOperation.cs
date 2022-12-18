@@ -10,7 +10,7 @@ internal sealed class CurrencyOperation : Operation
 {
     protected override byte MenuOrder => 5;
 
-    protected override Access AccessLevel => Access.Admins;
+    protected override Access AccessLevel => Access.Admin;
 
     public CurrencyOperation(Bot bot, Manager manager, InsuranceManager insuranceManager) : base(bot)
     {
@@ -19,7 +19,7 @@ internal sealed class CurrencyOperation : Operation
         _insuranceManager = insuranceManager;
     }
 
-    protected override async Task<ExecutionResult> TryExecuteAsync(Message message, Chat sender)
+    protected override async Task<ExecutionResult> TryExecuteAsync(Message message, long senderId)
     {
         decimal? number = Check(message);
         if (number is null)
@@ -27,13 +27,12 @@ internal sealed class CurrencyOperation : Operation
             return ExecutionResult.UnsuitableOperation;
         }
 
-        if (!IsAccessSuffice(sender.Id))
+        if (!IsAccessSuffice(senderId))
         {
             return ExecutionResult.InsufficentAccess;
         }
 
-        Chat chat = BotBase.GetReplyChatFor(message, sender);
-        await _manager.ProcessNumberAsync(chat, number.Value);
+        await _manager.ProcessNumberAsync(message.Chat, number.Value);
         return ExecutionResult.Success;
     }
 

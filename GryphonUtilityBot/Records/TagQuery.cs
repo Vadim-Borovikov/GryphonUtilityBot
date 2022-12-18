@@ -22,7 +22,7 @@ internal class TagQuery
             return null;
         }
 
-        DateOnly? dateTime = Utils.ParseFirstDate(parts);
+        DateOnly? dateTime = Manager.ParseFirstDate(parts);
 
         return new TagQuery(dateTime, parts);
     }

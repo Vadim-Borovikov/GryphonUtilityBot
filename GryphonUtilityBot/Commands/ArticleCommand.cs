@@ -13,7 +13,10 @@ internal sealed class ArticleCommand : CommandOperation
 
     public ArticleCommand(Bot bot, Manager manager) : base(bot, "article", "первая статья") => _manager = manager;
 
-    protected override Task ExecuteAsync(Message _, Chat chat, string? __) => _manager.SendFirstArticleAsync(chat);
+    protected override Task ExecuteAsync(Message message, long _, string? __)
+    {
+        return _manager.SendFirstArticleAsync(message.Chat);
+    }
 
     private readonly Manager _manager;
 }

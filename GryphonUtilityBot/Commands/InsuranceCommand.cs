@@ -16,7 +16,10 @@ internal sealed class InsuranceCommand : CommandOperation
         _manager = manager;
     }
 
-    protected override Task ExecuteAsync(Message _, Chat chat, string? __) => _manager.StartDiscussion(chat);
+    protected override Task ExecuteAsync(Message message, long _, string? __)
+    {
+        return _manager.StartDiscussion(message.Chat);
+    }
 
     private readonly InsuranceManager _manager;
 }

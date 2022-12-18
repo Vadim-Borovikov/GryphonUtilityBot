@@ -19,13 +19,14 @@ internal sealed class Service : IHostedService, IDisposable
         _config = config;
         _timeManager = botSingleton.Bot.TimeManager;
         _saveManager = new SaveManager<Data>(config.SavePath, _timeManager);
+        _logger = botSingleton.Bot.Logger;
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
         TimeSpan interval = TimeSpan.FromMinutes(1.0 / _config.NotionPollsPerMinute);
         _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        Invoker.DoPeriodically(TickAsync, interval, true, _cancellationTokenSource.Token);
+        Invoker.DoPeriodically(TickAsync, interval, true, _logger, _cancellationTokenSource.Token);
         return Task.CompletedTask;
     }
 
@@ -43,7 +44,7 @@ internal sealed class Service : IHostedService, IDisposable
 
     private async Task TickAsync(CancellationToken cancellationToken)
     {
-        Utils.LogManager.LogTimedMessage("Calendar sync tick");
+        _logger.LogTimedMessage("Calendar sync tick");
         DateTimeFull now = DateTimeFull.CreateUtcNow();
 
         _saveManager.Load();
@@ -143,13 +144,13 @@ internal sealed class Service : IHostedService, IDisposable
 
     private Task<Event> CreateEventAsync(PageInfo page, DateTimeFull start, DateTimeFull end)
     {
-        Utils.LogManager.LogTimedMessage($"Creating event for page \"{page.Title}\".");
+        _logger.LogTimedMessage($"Creating event for page \"{page.Title}\".");
         return _googleCalendarHelper.CreateEventAsync(page.Title, start, end, page.Page.Url);
     }
 
     private async Task<Event?> GetEventAsync(PageInfo page)
     {
-        Utils.LogManager.LogTimedMessage($"Acquiring event for page \"{page.Title}\".");
+        _logger.LogTimedMessage($"Acquiring event for page \"{page.Title}\".");
         return string.IsNullOrWhiteSpace(page.GoogleEventId)
             ? null
             : await _googleCalendarHelper.GetEventAsync(page.GoogleEventId);
@@ -157,7 +158,7 @@ internal sealed class Service : IHostedService, IDisposable
 
     private async Task UpdateEventAsync(Event calendarEvent, PageInfo page, DateTimeFull start, DateTimeFull end)
     {
-        Utils.LogManager.LogTimedMessage($"Updating event \"{calendarEvent.Id}\" for page \"{page.Title}\".");
+        _logger.LogTimedMessage($"Updating event \"{calendarEvent.Id}\" for page \"{page.Title}\".");
         await _googleCalendarHelper.UpdateEventAsync(page.GoogleEventId, calendarEvent, page.Title, start, end,
             page.Page.Url);
         _saveManager.Data.Meetings[page.Page.Id] = end;
@@ -165,21 +166,21 @@ internal sealed class Service : IHostedService, IDisposable
 
     private async Task UpdatePageAsync(PageInfo page, Event calendarEvent, DateTimeFull end)
     {
-        Utils.LogManager.LogTimedMessage($"Updating page \"{page.Title}\" for event \"{calendarEvent.Id}\"");
+        _logger.LogTimedMessage($"Updating page \"{page.Title}\" for event \"{calendarEvent.Id}\"");
         await _notionHelper.UpdateAsync(page, calendarEvent.Id, new Uri(calendarEvent.HtmlLink));
         _saveManager.Data.Meetings[page.Page.Id] = end;
     }
 
     private async Task ClearPageAsync(PageInfo page)
     {
-        Utils.LogManager.LogTimedMessage($"Clearing page \"{page.Title}\" of event \"{page.GoogleEventId}\"");
+        _logger.LogTimedMessage($"Clearing page \"{page.Title}\" of event \"{page.GoogleEventId}\"");
         await _notionHelper.ClearAsync(page);
         _saveManager.Data.Meetings.Remove(page.Page.Id);
     }
 
     private async Task DeleteEventAsync(Event calendarEvent, PageInfo page)
     {
-        Utils.LogManager.LogTimedMessage($"Deleting event \"{page.GoogleEventId}\" for page \"{page.Title}\".");
+        _logger.LogTimedMessage($"Deleting event \"{page.GoogleEventId}\" for page \"{page.Title}\".");
         await _googleCalendarHelper.DeleteEventAsync(calendarEvent);
     }
 
@@ -189,4 +190,5 @@ internal sealed class Service : IHostedService, IDisposable
     private CancellationTokenSource? _cancellationTokenSource;
     private readonly SaveManager<Data> _saveManager;
     private readonly TimeManager _timeManager;
+    private readonly Logger _logger;
 }

@@ -11,18 +11,18 @@ internal sealed class FindOperation : Operation
 {
     protected override byte MenuOrder => 10;
 
-    protected override Access AccessLevel => Access.Admins;
+    protected override Access AccessLevel => Access.Admin;
 
     public FindOperation(Bot bot, Manager manager, InsuranceManager insuranceManager) : base(bot)
     {
         MenuDescription =
-            $"*пара дат, например \"1\\.02\\.20 1\\.03\\.22\"* – найти записи в этот период{Environment.NewLine}" +
-            "*пара дат и теги, например \"1\\.02\\.20 1\\.03\\.22 творчество вкусности\"* – найти записи в этот период с этими тегами";
+            $"*{AbstractBot.Bots.Bot.EscapeCharacters("пара дат, например \"1.02.20 1.03.22\"")}* – найти записи в этот период{Environment.NewLine}" +
+            $"*{AbstractBot.Bots.Bot.EscapeCharacters("пара дат и теги, например \"1.02.20 1.03.22\" творчество вкусности")}* – найти записи в этот период с этими тегами";
         _manager = manager;
         _insuranceManager = insuranceManager;
     }
 
-    protected override async Task<ExecutionResult> TryExecuteAsync(Message message, Chat sender)
+    protected override async Task<ExecutionResult> TryExecuteAsync(Message message, long senderId)
     {
         FindQuery? query = Check(message);
         if (query is null)
@@ -30,13 +30,12 @@ internal sealed class FindOperation : Operation
             return ExecutionResult.UnsuitableOperation;
         }
 
-        if (!IsAccessSuffice(sender.Id))
+        if (!IsAccessSuffice(senderId))
         {
             return ExecutionResult.InsufficentAccess;
         }
 
-        Chat chat = BotBase.GetReplyChatFor(message, sender);
-        await _manager.ProcessFindQueryAsync(chat, query);
+        await _manager.ProcessFindQueryAsync(message.Chat, query);
         return ExecutionResult.Success;
     }
 

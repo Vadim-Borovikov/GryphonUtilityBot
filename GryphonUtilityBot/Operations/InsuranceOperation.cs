@@ -13,7 +13,7 @@ internal sealed class InsuranceOperation : Operation
 
     public InsuranceOperation(Bot bot, InsuranceManager manager) : base(bot) => _manager = manager;
 
-    protected override async Task<ExecutionResult> TryExecuteAsync(Message message, Chat sender)
+    protected override async Task<ExecutionResult> TryExecuteAsync(Message message, long senderId)
     {
         if ((message.Type != MessageType.Text) || string.IsNullOrWhiteSpace(message.Text)
                                                || message.ForwardFrom is not null || !_manager.Active)
@@ -21,13 +21,12 @@ internal sealed class InsuranceOperation : Operation
             return ExecutionResult.UnsuitableOperation;
         }
 
-        if (!IsAccessSuffice(sender.Id))
+        if (!IsAccessSuffice(senderId))
         {
             return ExecutionResult.InsufficentAccess;
         }
 
-        Chat chat = BotBase.GetReplyChatFor(message, sender);
-        await _manager.Accept(chat, message.Text);
+        await _manager.Accept(message.Chat, message.Text);
         return ExecutionResult.Success;
     }
 

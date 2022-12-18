@@ -22,13 +22,13 @@ internal sealed class FindQuery : TagQuery
             return null;
         }
 
-        DateOnly? from = Utils.ParseFirstDate(parts);
+        DateOnly? from = Manager.ParseFirstDate(parts);
         if (!from.HasValue)
         {
             return null;
         }
 
-        DateOnly? to = Utils.ParseFirstDate(parts);
+        DateOnly? to = Manager.ParseFirstDate(parts);
         if (!to.HasValue)
         {
             return null;
