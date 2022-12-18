@@ -18,10 +18,14 @@ internal sealed class InsuranceManager
         KeyboardButton home = new(HomeCaption);
         _homeKeyboard = new ReplyKeyboardMarkup(home);
 
-        List<string> messageFormatLines =
-            JsonSerializer.Deserialize<List<string>>(bot.Config.InsuranceMessageFormatJson)
-            ?? bot.Config.InsuranceMessageFormat;
-        _insuranceMessageFormat = string.Join(Environment.NewLine, messageFormatLines);
+        List<string>? messageFormatLines = bot.Config.InsuranceMessageFormat;
+        if (!string.IsNullOrWhiteSpace(bot.Config.InsuranceMessageFormatJson))
+        {
+            messageFormatLines = JsonSerializer.Deserialize<List<string>>(bot.Config.InsuranceMessageFormatJson);
+        }
+
+        _insuranceMessageFormat =
+            messageFormatLines is null ? "" : string.Join(Environment.NewLine, messageFormatLines);
     }
 
     public Task StartDiscussion(Chat chat)
