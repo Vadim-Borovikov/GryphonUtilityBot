@@ -74,6 +74,10 @@ internal sealed class Manager
     {
         await LoadAsync();
 
+        if (_articles.Count == 0)
+        {
+            article.Current = true;
+        }
         _articles.Add(article);
 
         await SaveAsync();
