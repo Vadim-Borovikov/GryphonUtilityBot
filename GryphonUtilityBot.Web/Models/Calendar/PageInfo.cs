@@ -40,15 +40,21 @@ internal sealed class PageInfo
 
     private (DateTimeFull, DateTimeFull)? GetDates(Page page)
     {
-        if (page.Properties["Дата"] is not DatePropertyValue date)
+        if (page.Properties["Дата"] is not FormulaPropertyValue formula)
         {
-            throw new NullReferenceException("\"Дата\" does not contain DatePropertyValue.");
+            throw new NullReferenceException("\"Дата\" does not contain FormulaPropertyValue.");
         }
 
-        return date.Date?.Start is null || date.Date.End is null
+        Date? date = formula.Formula.Date;
+        if (date is null)
+        {
+            throw new NullReferenceException("\"Дата\" formula does not contain a date value.");
+        }
+
+        return date.Start is null || date.End is null
             ? null
-            : (_timeManager.GetDateTimeFull(date.Date.Start.Value.ToUniversalTime()),
-                _timeManager.GetDateTimeFull(date.Date.End.Value.ToUniversalTime()));
+            : (_timeManager.GetDateTimeFull(date.Start.Value.ToUniversalTime()),
+                _timeManager.GetDateTimeFull(date.End.Value.ToUniversalTime()));
     }
 
     private static string GetGoogleEventId(Page page)
