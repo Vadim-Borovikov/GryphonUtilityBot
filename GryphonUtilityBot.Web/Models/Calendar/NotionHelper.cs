@@ -73,9 +73,15 @@ internal sealed class NotionHelper
             _logger.LogException(ex);
             return new NotionRequestResult<TResult>(true);
         }
+        catch (NotionApiException ex) when (ex.NotionAPIErrorCode.HasValue)
+        {
+            _logger.LogError($"Method with parameter {param} resulted with NotionApiException with NotionAPIErrorCode {ex.NotionAPIErrorCode} and StatusCode {ex.StatusCode}");
+            _logger.LogException(ex);
+            return new NotionRequestResult<TResult>(false);
+        }
         catch (NotionApiException ex)
         {
-            _logger.LogError($"Method with parameter {param} resulted with unspecified NotionApiException");
+            _logger.LogError($"Method with parameter {param} resulted with NotionApiException with unspecified NotionAPIErrorCode and StatusCode {ex.StatusCode}");
             _logger.LogException(ex);
             return new NotionRequestResult<TResult>(false);
         }
