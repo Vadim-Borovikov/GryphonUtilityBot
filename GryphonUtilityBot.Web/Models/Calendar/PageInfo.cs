@@ -84,12 +84,12 @@ internal sealed class PageInfo
 
     private static string? GetStatus(Page page)
     {
-        if (page.Properties["Статус"] is not SelectPropertyValue status)
+        if (page.Properties["Статус"] is not StatusPropertyValue status)
         {
-            throw new NullReferenceException("\"Статус\" does not contain SelectPropertyValue.");
+            throw new NullReferenceException("\"Статус\" does not contain StatusPropertyValue.");
         }
 
-        return status.Select?.Name;
+        return status.Status.Name;
     }
 
     private readonly TimeManager _timeManager;
