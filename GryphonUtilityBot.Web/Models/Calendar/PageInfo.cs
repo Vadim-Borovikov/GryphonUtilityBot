@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System;
 using System.Linq;
-using GryphonUtilities;
+using GryphonUtilities.Time;
 
 namespace GryphonUtilityBot.Web.Models.Calendar;
 
@@ -16,10 +16,10 @@ internal sealed class PageInfo
     public readonly bool IsCancelled;
     public readonly bool IsDeleted;
 
-    public PageInfo(Page page, TimeManager timeManager)
+    public PageInfo(Page page, Clock clock)
     {
         Page = page;
-        _timeManager = timeManager;
+        _clock = clock;
         Title = GetTitle(page);
         Dates = GetDates(page);
         GoogleEventId = GetGoogleEventId(page);
@@ -53,8 +53,8 @@ internal sealed class PageInfo
 
         return date.Start is null || date.End is null
             ? null
-            : (_timeManager.GetDateTimeFull(date.Start.Value.ToUniversalTime()),
-                _timeManager.GetDateTimeFull(date.End.Value.ToUniversalTime()));
+            : (_clock.GetDateTimeFull(date.Start.Value.ToUniversalTime()),
+                _clock.GetDateTimeFull(date.End.Value.ToUniversalTime()));
     }
 
     private static string GetGoogleEventId(Page page)
@@ -92,5 +92,5 @@ internal sealed class PageInfo
         return status.Status.Name;
     }
 
-    private readonly TimeManager _timeManager;
+    private readonly Clock _clock;
 }

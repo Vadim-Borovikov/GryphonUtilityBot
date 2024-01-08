@@ -1,40 +1,36 @@
-﻿using AbstractBot.Operations;
+﻿using System;
+using AbstractBot.Operations;
 using System.Threading.Tasks;
+using AbstractBot.Configs;
 using Telegram.Bot.Types;
 
 namespace GryphonUtilityBot.Operations;
 
-internal sealed class ForwardOperation : Operation
+internal sealed class ForwardOperation : OperationSimple
 {
-    protected override byte MenuOrder => 7;
+    protected override byte Order => 7;
 
-    protected override Access AccessLevel => Access.Admin;
+    public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.Records;
 
     public ForwardOperation(Bot bot) : base(bot)
     {
-        MenuDescription = "*переслать сообщение* – добавить запись в таймлайн";
+        Description = new MessageTemplate("*переслать сообщение* – добавить запись в таймлайн", true);
         _bot = bot;
     }
 
-    protected override async Task<ExecutionResult> TryExecuteAsync(Message message, long senderId)
+    protected override bool IsInvokingBy(Message message, User sender)
     {
-        if (message.ForwardFrom is null || message.ReplyToMessage is not null)
-        {
-            return ExecutionResult.UnsuitableOperation;
-        }
+        return message.ForwardFrom is not null && message.ReplyToMessage is null;
+    }
 
-        if (!IsAccessSuffice(senderId))
-        {
-            return ExecutionResult.InsufficentAccess;
-        }
-
+    protected override Task ExecuteAsync(Message message, User sender)
+    {
         if (_bot.CurrentQuery is not null
-            && (Bot.TimeManager.GetDateTimeFull(message.Date.ToUniversalTime()) > _bot.CurrentQueryTime))
+            && (Bot.Clock.GetDateTimeFull(message.Date.ToUniversalTime()) > _bot.CurrentQueryTime))
         {
             _bot.CurrentQuery = null;
         }
-        await _bot.RecordsManager.SaveRecordAsync(message, _bot.CurrentQuery);
-        return ExecutionResult.Success;
+        return _bot.RecordsManager.SaveRecordAsync(message, _bot.CurrentQuery);
     }
 
     private readonly Bot _bot;

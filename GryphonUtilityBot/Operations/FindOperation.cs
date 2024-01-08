@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using AbstractBot.Configs;
 using AbstractBot.Operations;
 using GryphonUtilityBot.Records;
 using Telegram.Bot.Types;
@@ -7,50 +9,47 @@ using Telegram.Bot.Types.Enums;
 
 namespace GryphonUtilityBot.Operations;
 
-internal sealed class FindOperation : Operation
+internal sealed class FindOperation : Operation<FindQuery>
 {
-    protected override byte MenuOrder => 10;
+    protected override byte Order => 10;
 
-    protected override Access AccessLevel => Access.Admin;
+    public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.Records;
 
     public FindOperation(Bot bot, Manager manager) : base(bot)
     {
-        MenuDescription =
-            $"*{AbstractBot.Bots.Bot.EscapeCharacters("пара дат, например \"1.02.20 1.03.22\"")}* – найти записи в этот период{Environment.NewLine}" +
-            $"*{AbstractBot.Bots.Bot.EscapeCharacters("пара дат и теги, например \"1.02.20 1.03.22\" творчество вкусности")}* – найти записи в этот период с этими тегами";
+        Description = new MessageTemplate
+        {
+            Text = new List<string>
+            {
+                "*пара дат, например \"1\\.02\\.20 1\\.03\\.22\"* – найти записи в этот период",
+                "*пара дат и теги, например \"1\\.02\\.20 1\\.03\\.22 творчество вкусности\"* – найти записи в этот период с этими тегами"
+            },
+            MarkdownV2 = true
+        };
+
         _manager = manager;
     }
 
-    protected override async Task<ExecutionResult> TryExecuteAsync(Message message, long senderId)
+    protected override bool IsInvokingBy(Message message, User sender, out FindQuery? data)
     {
-        FindQuery? query = Check(message);
-        if (query is null)
-        {
-            return ExecutionResult.UnsuitableOperation;
-        }
-
-        if (!IsAccessSuffice(senderId))
-        {
-            return ExecutionResult.InsufficentAccess;
-        }
-
-        await _manager.ProcessFindQueryAsync(message.Chat, query);
-        return ExecutionResult.Success;
-    }
-
-    private static FindQuery? Check(Message message)
-    {
+        data = null;
         if ((message.Type != MessageType.Text) || string.IsNullOrWhiteSpace(message.Text))
         {
-            return null;
+            return false;
         }
 
         if (message.ForwardFrom is not null || message.ReplyToMessage is not null)
         {
-            return null;
+            return false;
         }
 
-        return FindQuery.ParseFindQuery(message.Text);
+        data = FindQuery.ParseFindQuery(message.Text);
+        return data is null;
+    }
+
+    protected override Task ExecuteAsync(FindQuery data, Message message, User sender)
+    {
+        return _manager.ProcessFindQueryAsync(message.Chat, data);
     }
 
     private readonly Manager _manager;

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using AbstractBot;
 using Google.Apis.Calendar.v3.Data;
 using GryphonUtilities;
+using GryphonUtilities.Time;
 using Microsoft.Extensions.Hosting;
 
 namespace GryphonUtilityBot.Web.Models.Calendar;
@@ -17,8 +17,8 @@ internal sealed class Service : IHostedService, IDisposable
         _notionHelper = notionHelper;
         _googleCalendarHelper = googleCalendarHelper;
         _config = config;
-        _timeManager = botSingleton.Bot.TimeManager;
-        _saveManager = new SaveManager<Data>(config.SavePath, _timeManager);
+        _clock = botSingleton.Bot.Clock;
+        _saveManager = new SaveManager<Data>(config.SavePath, _clock);
         _logger = botSingleton.Bot.Logger;
     }
 
@@ -101,7 +101,7 @@ internal sealed class Service : IHostedService, IDisposable
     private async Task ApplyUpdatesAsync()
     {
         _saveManager.Data.LastUpdated ??=
-            _timeManager.GetDateTimeFull(_config.NotionStartWatchingDate, TimeOnly.MinValue);
+            _clock.GetDateTimeFull(_config.NotionStartWatchingDate, TimeOnly.MinValue);
         NotionRequestResult<List<PageInfo>> result =
             await _notionHelper.TryGetPagesAsync(_saveManager.Data.LastUpdated.Value);
 
@@ -189,6 +189,6 @@ internal sealed class Service : IHostedService, IDisposable
     private readonly Config _config;
     private CancellationTokenSource? _cancellationTokenSource;
     private readonly SaveManager<Data> _saveManager;
-    private readonly TimeManager _timeManager;
+    private readonly Clock _clock;
     private readonly Logger _logger;
 }

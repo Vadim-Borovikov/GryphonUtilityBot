@@ -8,7 +8,7 @@ using JetBrains.Annotations;
 namespace GryphonUtilityBot;
 
 [PublicAPI]
-public class Config : ConfigGoogleSheets
+public class Config : ConfigWithSheets<Texts>
 {
     [Required]
     [MinLength(1)]
@@ -23,16 +23,5 @@ public class Config : ConfigGoogleSheets
     public string GoogleRange { get; init; } = null!;
 
     [Required]
-    [MinLength(1)]
-    public string SavePath { get; init; } = null!;
-
-    [Required]
     public long MistressId { get; init; }
-
-    [Required]
-    [MinLength(1)]
-    public string DefaultAddress { get; init; } = null!;
-
-    [Required]
-    public DateOnly ArrivalDate { get; init; }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GryphonUtilities;
+using GryphonUtilities.Time;
 using Notion.Client;
 
 namespace GryphonUtilityBot.Web.Models.Calendar;
@@ -12,7 +13,7 @@ internal sealed class NotionHelper
     public NotionHelper(INotionClient client, Config config, BotSingleton botSingleton)
     {
         _client = client;
-        _timeManager = botSingleton.Bot.TimeManager;
+        _clock = botSingleton.Bot.Clock;
         _databaseId = config.NotionDatabaseId;
         _updatePeriod = TimeSpan.FromSeconds(config.NotionUpdatesPerSecondLimit);
         _logger = botSingleton.Bot.Logger;
@@ -55,7 +56,7 @@ internal sealed class NotionHelper
     {
         DelayIfNeeded();
         Page page = await _client.Pages.RetrieveAsync(id);
-        return new PageInfo(page, _timeManager);
+        return new PageInfo(page, _clock);
     }
 
     private async Task<NotionRequestResult<TResult>> Wrapper<TParam, TResult>(Func<TParam, Task<TResult>> method,
@@ -99,7 +100,7 @@ internal sealed class NotionHelper
             {
                 break;
             }
-            result.AddRange(chunk.Results.Select(p => new PageInfo(p, _timeManager)));
+            result.AddRange(chunk.Results.Select(p => new PageInfo(p, _clock)));
             query.StartCursor = chunk.HasMore ? chunk.NextCursor : null;
         }
         while (query.StartCursor is not null);
@@ -147,7 +148,7 @@ internal sealed class NotionHelper
         {
             DateTimeFull now = DateTimeFull.CreateUtcNow();
 
-            TimeSpan? beforeUpdate = TimeManager.GetDelayUntil(_lastUpdate, _updatePeriod, now);
+            TimeSpan? beforeUpdate = Clock.GetDelayUntil(_lastUpdate, _updatePeriod, now);
             if (beforeUpdate.HasValue)
             {
                 Task.Delay(beforeUpdate.Value).Wait();
@@ -170,7 +171,7 @@ internal sealed class NotionHelper
     }
 
     private readonly INotionClient _client;
-    private readonly TimeManager _timeManager;
+    private readonly Clock _clock;
     private readonly string _databaseId;
     private readonly object _delayLocker = new();
     private readonly TimeSpan _updatePeriod;

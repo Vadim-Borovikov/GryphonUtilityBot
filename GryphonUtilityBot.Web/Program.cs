@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using GryphonUtilities;
+using GryphonUtilities.Time;
 using GryphonUtilityBot.Web.Models;
 using GryphonUtilityBot.Web.Models.Calendar;
 using Microsoft.AspNetCore.Builder;
@@ -16,8 +17,8 @@ internal static class Program
     public static void Main(string[] args)
     {
         Logger.DeleteExceptionLog();
-        TimeManager timeManager = new();
-        Logger logger = new(timeManager);
+        Clock clock = new();
+        Logger logger = new(clock);
         try
         {
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -28,8 +29,8 @@ internal static class Program
                 throw new NullReferenceException("Can't load config.");
             }
 
-            timeManager = new TimeManager(config.SystemTimeZoneIdLogs);
-            logger = new Logger(timeManager);
+            clock = new Clock(config.SystemTimeZoneIdLogs);
+            logger = new Logger(clock);
             logger.LogStartup();
 
             IServiceCollection services = builder.Services;

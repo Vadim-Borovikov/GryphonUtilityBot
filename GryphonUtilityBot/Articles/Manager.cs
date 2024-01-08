@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using GoogleSheetsManager;
 using GoogleSheetsManager.Documents;
+using GoogleSheetsManager.Extensions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -11,7 +11,7 @@ namespace GryphonUtilityBot.Articles;
 
 internal sealed class Manager
 {
-    public Manager(Bot bot, DocumentsManager documentsManager)
+    public Manager(Bot bot, GoogleSheetsManager.Documents.Manager documentsManager)
     {
         _bot = bot;
         _articles = new SortedSet<Article>();
@@ -21,7 +21,7 @@ internal sealed class Manager
             { typeof(Uri), o => o.ToUri() }
         };
         additionalConverters[typeof(DateOnly)] = additionalConverters[typeof(DateOnly?)] =
-            o => o.ToDateOnly(_bot.TimeManager);
+            o => o.ToDateOnly(_bot.Clock);
 
         GoogleSheetsManager.Documents.Document document = documentsManager.GetOrAdd(_bot.Config.GoogleSheetId);
         _sheet = document.GetOrAddSheet(bot.Config.GoogleTitle, additionalConverters);
@@ -33,7 +33,7 @@ internal sealed class Manager
         await AddArticleAsync(article);
 
         string articleText = GetArticleMessageText(article);
-        await _bot.SendTextMessageAsync(chat, $"Добавлено: `{articleText}`\\.", ParseMode.MarkdownV2);
+        await _bot.SendTextMessageAsync(chat, $"Добавлено: `{articleText}`\\.", parseMode: ParseMode.MarkdownV2);
         await SendFirstArticleAsync(chat);
     }
 
@@ -66,7 +66,7 @@ internal sealed class Manager
         await SaveAsync();
 
         string articleText = GetArticleMessageText(article);
-        await _bot.SendTextMessageAsync(chat, $"Удалено: `{articleText}`\\.", ParseMode.MarkdownV2);
+        await _bot.SendTextMessageAsync(chat, $"Удалено: `{articleText}`\\.", parseMode: ParseMode.MarkdownV2);
         await SendFirstArticleAsync(chat);
     }
 
@@ -85,16 +85,14 @@ internal sealed class Manager
 
     private async Task LoadAsync()
     {
-        SheetData<Article> data = await _sheet.LoadAsync<Article>(_bot.Config.GoogleRange);
-        _articles = new SortedSet<Article>(data.Instances);
-        _titles = data.Titles;
+        List<Article> data = await _sheet.LoadAsync<Article>(_bot.Config.GoogleRange);
+        _articles = new SortedSet<Article>(data);
     }
 
     private async Task SaveAsync()
     {
         await _sheet.ClearAsync(_bot.Config.GoogleRange);
-        SheetData<Article> data = new(_articles.ToList(), _titles);
-        await _sheet.SaveAsync(_bot.Config.GoogleRange, data);
+        await _sheet.SaveAsync(_bot.Config.GoogleRange, _articles.ToList());
     }
 
     private static string GetArticleMessageText(Article article)
@@ -104,6 +102,5 @@ internal sealed class Manager
 
     private SortedSet<Article> _articles;
     private readonly Bot _bot;
-    private IList<string> _titles = Array.Empty<string>();
     private readonly Sheet _sheet;
 }

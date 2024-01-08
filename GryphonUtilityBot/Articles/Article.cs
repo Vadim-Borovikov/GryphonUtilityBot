@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using GoogleSheetsManager;
-using GryphonUtilities;
+using GryphonUtilities.Time;
 using JetBrains.Annotations;
 
 // ReSharper disable NullableWarningSuppressionIsUsed

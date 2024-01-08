@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GryphonUtilities;
+using GryphonUtilities.Time;
 using Telegram.Bot.Types;
 
 namespace GryphonUtilityBot.Records;
@@ -58,12 +59,12 @@ internal sealed class Manager
         }
     }
 
-    public Task TagAsync(Chat chat, Message recordMessage, TagQuery query)
+    public Task TagAsync(Chat chat, long chatId, long messageId, TagQuery query)
     {
         _saveManager.Load();
 
         RecordData? record = _saveManager.Data.Records.FirstOrDefault(r =>
-            (r.ChatId == recordMessage.Chat.Id) && (r.MessageId == recordMessage.MessageId));
+            (r.ChatId == chatId) && (r.MessageId == messageId));
 
         if (record is null)
         {
@@ -72,7 +73,7 @@ internal sealed class Manager
 
         if (query.DateOnly.HasValue)
         {
-            record.DateTime = _bot.TimeManager.GetDateTimeFull(query.DateOnly.Value, TimeOnly.MinValue);
+            record.DateTime = _bot.Clock.GetDateTimeFull(query.DateOnly.Value, TimeOnly.MinValue);
         }
 
         record.Tags = query.Tags;
@@ -99,8 +100,8 @@ internal sealed class Manager
         }
 
         DateTimeFull dateTime = query?.DateOnly is null
-            ? _bot.TimeManager.GetDateTimeFull(message.ForwardDate.Value.ToUniversalTime())
-            : _bot.TimeManager.GetDateTimeFull(query.DateOnly.Value, TimeOnly.MinValue);
+            ? _bot.Clock.GetDateTimeFull(message.ForwardDate.Value.ToUniversalTime())
+            : _bot.Clock.GetDateTimeFull(query.DateOnly.Value, TimeOnly.MinValue);
         return new RecordData
         {
             MessageId = message.MessageId,

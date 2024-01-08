@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using AbstractBot.Configs;
 using AbstractBot.Operations;
 using GryphonUtilityBot.Records;
 using Telegram.Bot.Types;
@@ -6,51 +8,42 @@ using Telegram.Bot.Types.Enums;
 
 namespace GryphonUtilityBot.Operations;
 
-internal sealed class RememberTagOperation: Operation
+internal sealed class RememberTagOperation: Operation<TagQuery>
 {
-    protected override byte MenuOrder => 8;
+    protected override byte Order => 8;
 
-    protected override Access AccessLevel => Access.Admin;
+    public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.Records;
 
     public RememberTagOperation(Bot bot) : base(bot)
     {
-        MenuDescription = "*переслать сообщение и добавить текст* – добавить запись в таймлайн с тегами";
+        Description =
+            new MessageTemplate("*переслать сообщение и добавить текст* – добавить запись в таймлайн с тегами", true);
         _bot = bot;
     }
 
-    protected override async Task<ExecutionResult> TryExecuteAsync(Message message, long senderId)
+    protected override bool IsInvokingBy(Message message, User sender, out TagQuery? data)
     {
-        TagQuery? query = Check(message);
-        if (query is null)
-        {
-            return ExecutionResult.UnsuitableOperation;
-        }
-
-        if (!IsAccessSuffice(senderId))
-        {
-            return ExecutionResult.InsufficentAccess;
-        }
-
-        _bot.CurrentQuery = query;
-        _bot.CurrentQueryTime = _bot.TimeManager.GetDateTimeFull(message.Date);
-        await _bot.SendTextMessageAsync(message.Chat, "Запрос пометки зафиксирован.",
-            replyToMessageId: message.MessageId);
-        return ExecutionResult.Success;
-    }
-
-    private static TagQuery? Check(Message message)
-    {
+        data = null;
         if ((message.Type != MessageType.Text) || string.IsNullOrWhiteSpace(message.Text))
         {
-            return null;
+            return false;
         }
 
         if (message.ForwardFrom is not null || message.ReplyToMessage is not null)
         {
-            return null;
+            return false;
         }
 
-        return TagQuery.ParseTagQuery(message.Text);
+        data = TagQuery.ParseTagQuery(message.Text);
+        return data is not null;
+    }
+
+    protected override Task ExecuteAsync(TagQuery data, Message message, User sender)
+    {
+        _bot.CurrentQuery = data;
+        _bot.CurrentQueryTime = _bot.Clock.GetDateTimeFull(message.Date);
+        return _bot.SendTextMessageAsync(message.Chat, "Запрос пометки зафиксирован.",
+            replyToMessageId: message.MessageId);
     }
 
     private readonly Bot _bot;

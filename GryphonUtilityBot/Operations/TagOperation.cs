@@ -1,53 +1,56 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using AbstractBot.Configs;
 using AbstractBot.Operations;
+using GryphonUtilityBot.Operations.Infos;
 using GryphonUtilityBot.Records;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace GryphonUtilityBot.Operations;
 
-internal sealed class TagOperation : Operation
+internal sealed class TagOperation : Operation<TagOperationInfo>
 {
-    protected override byte MenuOrder => 9;
+    protected override byte Order => 9;
 
-    protected override Access AccessLevel => Access.Admin;
+    public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.Records;
 
     public TagOperation(Bot bot, Manager manager) : base(bot)
     {
-        MenuDescription = "*ответить на сообщение, которое переслали раньше* – добавить теги к записи";
+        Description =
+            new MessageTemplate("*ответить на сообщение, которое переслали раньше* – добавить теги к записи", true);
         _manager = manager;
     }
 
-    protected override async Task<ExecutionResult> TryExecuteAsync(Message message, long senderId)
+    protected override bool IsInvokingBy(Message message, User sender, out TagOperationInfo? data)
     {
-        TagQuery? query = Check(message);
-        if (query is null || message.ReplyToMessage?.ForwardFrom is null)
-        {
-            return ExecutionResult.UnsuitableOperation;
-        }
-
-        if (!IsAccessSuffice(senderId))
-        {
-            return ExecutionResult.InsufficentAccess;
-        }
-
-        await _manager.TagAsync(message.Chat, message.ReplyToMessage, query);
-        return ExecutionResult.Success;
-    }
-
-    private static TagQuery? Check(Message message)
-    {
+        data = null;
         if ((message.Type != MessageType.Text) || string.IsNullOrWhiteSpace(message.Text))
         {
-            return null;
+            return false;
         }
 
         if (message.ForwardFrom is not null)
         {
-            return null;
+            return false;
         }
 
-        return TagQuery.ParseTagQuery(message.Text);
+        if (message.ReplyToMessage?.ForwardFrom is null)
+        {
+            return false;
+        }
+
+        TagQuery? query = TagQuery.ParseTagQuery(message.Text);
+        if (query is not null)
+        {
+            data = new TagOperationInfo(query, message.ReplyToMessage);
+        }
+        return data is not null;
+    }
+
+    protected override Task ExecuteAsync(TagOperationInfo data, Message message, User sender)
+    {
+        return _manager.TagAsync(message.Chat, data.ChatId, data.MessageId, data.TagQuery);
     }
 
     private readonly Manager _manager;

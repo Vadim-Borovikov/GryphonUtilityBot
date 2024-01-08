@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using GryphonUtilities;
+using GryphonUtilities.Time;
 using JetBrains.Annotations;
 using Notion.Client;
 using Newtonsoft.Json;
