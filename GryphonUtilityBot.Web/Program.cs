@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
-using AbstractBot;
+using GryphonUtilities;
+using GryphonUtilities.Time;
 using GryphonUtilityBot.Web.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -14,7 +15,9 @@ internal static class Program
 {
     public static void Main(string[] args)
     {
-        Utils.LogManager.DeleteExceptionLog();
+        Logger.DeleteExceptionLog();
+        Clock clock = new();
+        Logger logger = new(clock);
         try
         {
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -24,7 +27,10 @@ internal static class Program
             {
                 throw new NullReferenceException("Can't load config.");
             }
-            Utils.StartLogWith(config.SystemTimeZoneIdLogs);
+
+            clock = new Clock(config.SystemTimeZoneIdLogs);
+            logger = new Logger(clock);
+            logger.LogStartup();
 
             IServiceCollection services = builder.Services;
             services.AddControllersWithViews().AddNewtonsoftJson();
@@ -47,7 +53,7 @@ internal static class Program
         }
         catch (Exception ex)
         {
-            Utils.LogManager.LogException(ex);
+            logger.LogException(ex);
         }
     }
 

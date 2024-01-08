@@ -1,8 +1,9 @@
-﻿using JetBrains.Annotations;
+﻿using AbstractBot.Configs;
+using JetBrains.Annotations;
 
 namespace GryphonUtilityBot;
 
 [PublicAPI]
-public class Config : AbstractBot.Config
+public class Config : Config<Texts>
 {
 }
