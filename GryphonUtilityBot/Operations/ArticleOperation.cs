@@ -13,13 +13,12 @@ internal sealed class ArticleOperation : Operation
 
     protected override Access AccessLevel => Access.SuperAdmin;
 
-    public ArticleOperation(Bot bot, Manager manager, InsuranceManager insuranceManager) : base(bot)
+    public ArticleOperation(Bot bot, Manager manager) : base(bot)
     {
         MenuDescription =
             $"*ссылка* – добавить статью сегодняшним числом{Environment.NewLine}" +
             "*дата и ссылка* – добавить статью";
         _manager = manager;
-        _insuranceManager = insuranceManager;
     }
 
     protected override async Task<ExecutionResult> TryExecuteAsync(Message message, long senderId)
@@ -39,14 +38,14 @@ internal sealed class ArticleOperation : Operation
         return ExecutionResult.Success;
     }
 
-    private Article? Check(Message message)
+    private static Article? Check(Message message)
     {
         if ((message.Type != MessageType.Text) || string.IsNullOrWhiteSpace(message.Text))
         {
             return null;
         }
 
-        if (message.ForwardFrom is not null || _insuranceManager.Active || message.ReplyToMessage is not null)
+        if (message.ForwardFrom is not null || message.ReplyToMessage is not null)
         {
             return null;
         }
@@ -55,5 +54,4 @@ internal sealed class ArticleOperation : Operation
     }
 
     private readonly Manager _manager;
-    private readonly InsuranceManager _insuranceManager;
 }

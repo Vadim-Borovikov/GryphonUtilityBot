@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using AbstractBot.Configs;
 using JetBrains.Annotations;
@@ -29,10 +28,6 @@ public class Config : ConfigGoogleSheets
 
     [Required]
     public long MistressId { get; init; }
-
-    public string? InsuranceMessageFormatJson { get; init; }
-
-    public List<string>? InsuranceMessageFormat { get; init; }
 
     [Required]
     [MinLength(1)]

@@ -13,13 +13,12 @@ internal sealed class FindOperation : Operation
 
     protected override Access AccessLevel => Access.Admin;
 
-    public FindOperation(Bot bot, Manager manager, InsuranceManager insuranceManager) : base(bot)
+    public FindOperation(Bot bot, Manager manager) : base(bot)
     {
         MenuDescription =
             $"*{AbstractBot.Bots.Bot.EscapeCharacters("пара дат, например \"1.02.20 1.03.22\"")}* – найти записи в этот период{Environment.NewLine}" +
             $"*{AbstractBot.Bots.Bot.EscapeCharacters("пара дат и теги, например \"1.02.20 1.03.22\" творчество вкусности")}* – найти записи в этот период с этими тегами";
         _manager = manager;
-        _insuranceManager = insuranceManager;
     }
 
     protected override async Task<ExecutionResult> TryExecuteAsync(Message message, long senderId)
@@ -39,14 +38,14 @@ internal sealed class FindOperation : Operation
         return ExecutionResult.Success;
     }
 
-    private FindQuery? Check(Message message)
+    private static FindQuery? Check(Message message)
     {
         if ((message.Type != MessageType.Text) || string.IsNullOrWhiteSpace(message.Text))
         {
             return null;
         }
 
-        if (message.ForwardFrom is not null || _insuranceManager.Active || message.ReplyToMessage is not null)
+        if (message.ForwardFrom is not null || message.ReplyToMessage is not null)
         {
             return null;
         }
@@ -55,5 +54,4 @@ internal sealed class FindOperation : Operation
     }
 
     private readonly Manager _manager;
-    private readonly InsuranceManager _insuranceManager;
 }

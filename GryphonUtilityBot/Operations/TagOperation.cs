@@ -12,11 +12,10 @@ internal sealed class TagOperation : Operation
 
     protected override Access AccessLevel => Access.Admin;
 
-    public TagOperation(Bot bot, Manager manager, InsuranceManager insuranceManager) : base(bot)
+    public TagOperation(Bot bot, Manager manager) : base(bot)
     {
         MenuDescription = "*ответить на сообщение, которое переслали раньше* – добавить теги к записи";
         _manager = manager;
-        _insuranceManager = insuranceManager;
     }
 
     protected override async Task<ExecutionResult> TryExecuteAsync(Message message, long senderId)
@@ -36,14 +35,14 @@ internal sealed class TagOperation : Operation
         return ExecutionResult.Success;
     }
 
-    private TagQuery? Check(Message message)
+    private static TagQuery? Check(Message message)
     {
         if ((message.Type != MessageType.Text) || string.IsNullOrWhiteSpace(message.Text))
         {
             return null;
         }
 
-        if (message.ForwardFrom is not null || _insuranceManager.Active)
+        if (message.ForwardFrom is not null)
         {
             return null;
         }
@@ -52,5 +51,4 @@ internal sealed class TagOperation : Operation
     }
 
     private readonly Manager _manager;
-    private readonly InsuranceManager _insuranceManager;
 }

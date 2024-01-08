@@ -17,18 +17,15 @@ public sealed class Bot : BotWithSheets<Config>
         RecordsManager = new Records.Manager(this, saveManager);
 
         Manager articlesManager = new(this, DocumentsManager);
-        InsuranceManager = new InsuranceManager(this);
 
         Operations.Add(new ArticleCommand(this, articlesManager));
-        Operations.Add(new InsuranceCommand(this, InsuranceManager));
         Operations.Add(new ReadCommand(this, articlesManager));
 
-        Operations.Add(new ArticleOperation(this, articlesManager, InsuranceManager));
-        Operations.Add(new FindOperation(this, RecordsManager, InsuranceManager));
+        Operations.Add(new ArticleOperation(this, articlesManager));
+        Operations.Add(new FindOperation(this, RecordsManager));
         Operations.Add(new ForwardOperation(this));
-        Operations.Add(new InsuranceOperation(this, InsuranceManager));
         Operations.Add(new RememberTagOperation(this));
-        Operations.Add(new TagOperation(this, RecordsManager, InsuranceManager));
+        Operations.Add(new TagOperation(this, RecordsManager));
     }
 
     protected override Task ProcessInsufficientAccess(Message message, long senderId, Operation operation)
@@ -47,5 +44,4 @@ public sealed class Bot : BotWithSheets<Config>
     internal DateTimeFull CurrentQueryTime;
 
     internal readonly Records.Manager RecordsManager;
-    internal readonly InsuranceManager InsuranceManager;
 }

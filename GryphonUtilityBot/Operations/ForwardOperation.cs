@@ -18,7 +18,7 @@ internal sealed class ForwardOperation : Operation
 
     protected override async Task<ExecutionResult> TryExecuteAsync(Message message, long senderId)
     {
-        if (message.ForwardFrom is null || _bot.InsuranceManager.Active || message.ReplyToMessage is not null)
+        if (message.ForwardFrom is null || message.ReplyToMessage is not null)
         {
             return ExecutionResult.UnsuitableOperation;
         }

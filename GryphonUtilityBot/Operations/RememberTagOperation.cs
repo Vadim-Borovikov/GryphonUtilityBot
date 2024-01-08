@@ -38,14 +38,14 @@ internal sealed class RememberTagOperation: Operation
         return ExecutionResult.Success;
     }
 
-    private TagQuery? Check(Message message)
+    private static TagQuery? Check(Message message)
     {
         if ((message.Type != MessageType.Text) || string.IsNullOrWhiteSpace(message.Text))
         {
             return null;
         }
 
-        if (message.ForwardFrom is not null || _bot.InsuranceManager.Active || message.ReplyToMessage is not null)
+        if (message.ForwardFrom is not null || message.ReplyToMessage is not null)
         {
             return null;
         }
