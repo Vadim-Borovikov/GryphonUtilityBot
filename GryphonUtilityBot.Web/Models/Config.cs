@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 namespace GryphonUtilityBot.Web.Models;
 
 [PublicAPI]
-public sealed class Config : GryphonUtilityBot.Config
+public sealed class Config : Configs.Config
 {
     [Required]
     [MinLength(1)]
