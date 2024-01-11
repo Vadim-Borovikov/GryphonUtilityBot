@@ -1,8 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System;
+using System.Threading.Tasks;
 using AbstractBot.Configs;
 using GoogleSheetsManager.Documents;
 using GryphonUtilities.Extensions;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace GryphonUtilityBot.Money;
 
@@ -13,6 +16,11 @@ internal sealed class Manager
         _bot = bot;
         GoogleSheetsManager.Documents.Document document = documentsManager.GetOrAdd(_bot.Config.GoogleSheetId);
         _sheet = document.GetOrAddSheet(bot.Config.GoogleTitle);
+        _itemVendorChat = new Chat
+        {
+            Id = bot.Config.ItemVendorId,
+            Type = ChatType.Private
+        };
     }
 
     public Task StartAsync() => _sheet.LoadTitlesAsync(_bot.Config.GoogleRange);
@@ -30,6 +38,12 @@ internal sealed class Manager
         await formatted.SendAsync(_bot, chat, replyToMessageId: replyToMessageId);
     }
 
+    public async Task ProcessSubmissionAsync(string name, Uri email, string telegram, List<string> items,
+        List<Uri> slips)
+    {
+    }
+
     private readonly Bot _bot;
     private readonly Sheet _sheet;
+    private readonly Chat _itemVendorChat;
 }

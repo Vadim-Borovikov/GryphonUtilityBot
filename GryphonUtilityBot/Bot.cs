@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using AbstractBot.Bots;
@@ -32,6 +33,11 @@ public sealed class Bot : BotWithSheets<Config, Texts, object, CommandDataSimple
         await base.StartAsync(cancellationToken);
 
         await _manager.StartAsync();
+    }
+
+    public Task OnSubmissionReceivedAsync(string name, Uri email, string telegram, List<string> items, List<Uri> slips)
+    {
+        return _manager.ProcessSubmissionAsync(name, email, telegram, items, slips);
     }
 
     private readonly Manager _manager;

@@ -20,4 +20,7 @@ public class Config : ConfigWithSheets<Texts>
     [Required]
     [MinLength(1)]
     public string GoogleRange { get; init; } = null!;
+
+    [Required]
+    public long ItemVendorId { get; init; }
 }
