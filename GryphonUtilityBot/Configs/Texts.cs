@@ -1,4 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using AbstractBot.Configs;
 using JetBrains.Annotations;
 
@@ -19,25 +22,19 @@ public class Texts : AbstractBot.Configs.Texts
     public string DateOnlyFormat { get; init; } = null!;
 
     [Required]
-    public string TagDima { get; init; } = null!;
-    [Required]
-    public string TagRita { get; init; } = null!;
-
-    [Required]
-    public string FromDima { get; init; } = null!;
-    [Required]
-    public string FromRita { get; init; } = null!;
-
-    [Required]
-    public string VerbDima { get; init; } = null!;
-    [Required]
-    public string VerbRita { get; init; } = null!;
-
-    [Required]
-    public string ToDima { get; init; } = null!;
-    [Required]
-    public string ToRita { get; init; } = null!;
+    public Dictionary<string, Agent> Agents { get; init; } = null!;
 
     [Required]
     public string DefaultCurrency { get; init; } = null!;
+
+    public string? TryGetAgent(string tag)
+    {
+        return Agents.Keys.SingleOrDefault(n => tag.Equals(Agents[n].Tag, StringComparison.CurrentCultureIgnoreCase));
+    }
+
+    public string? TryGetPartner(Agent agent)
+    {
+        return Agents.Keys.SingleOrDefault(n => n.Equals(agent.Partner, StringComparison.CurrentCultureIgnoreCase));
+    }
+
 }

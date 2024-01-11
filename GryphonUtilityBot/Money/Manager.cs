@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using AbstractBot.Configs;
 using GoogleSheetsManager.Documents;
 using GryphonUtilities.Extensions;
+using GryphonUtilityBot.Configs;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -29,16 +30,15 @@ internal sealed class Manager
     {
         await _sheet.AddAsync(_bot.Config.GoogleRange, transaction.WrapWithList());
 
-        string verb = transaction.From == _bot.Config.Texts.FromDima
-            ? _bot.Config.Texts.VerbDima
-            : _bot.Config.Texts.VerbRita;
+        string name = transaction.From;
+        Agent agent = _bot.Config.Texts.Agents[name];
         string date = transaction.Date.ToString(_bot.Config.Texts.DateOnlyFormat);
-        MessageTemplate formatted = _bot.Config.Texts.TransactionAddedFormat.Format(date, transaction.From, verb,
+        MessageTemplate formatted = _bot.Config.Texts.TransactionAddedFormat.Format(date, name, agent.Verb,
             transaction.To, transaction.Amount, transaction.Currency, transaction.Note);
         await formatted.SendAsync(_bot, chat, replyToMessageId: replyToMessageId);
     }
 
-    public async Task ProcessSubmissionAsync(string name, Uri email, string telegram, List<string> items,
+    public async Task ProcessSubmissionAsync(string name, Uri email, string telegram, List<string> products,
         List<Uri> slips)
     {
     }

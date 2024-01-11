@@ -63,20 +63,14 @@ internal sealed class Transaction
 
         string tag = parts[index];
 
-        string from;
-        string to;
+        string? name = texts.TryGetAgent(tag);
+        if (name is null)
+        {
+            return null;
+        }
 
-        if (tag.Equals(texts.TagDima, StringComparison.CurrentCultureIgnoreCase))
-        {
-            from = texts.FromDima;
-            to = texts.ToRita;
-        }
-        else if (tag.Equals(texts.TagRita, StringComparison.CurrentCultureIgnoreCase))
-        {
-            from = texts.FromRita;
-            to = texts.ToDima;
-        }
-        else
+        string? partner = texts.TryGetPartner(texts.Agents[name]);
+        if (partner is null)
         {
             return null;
         }
@@ -105,11 +99,10 @@ internal sealed class Transaction
 
         string note = string.Join(" ", parts.Skip(index + 1));
 
-        return new Transaction(from, to, date, amount, texts.DefaultCurrency, note);
+        return new Transaction(name, texts.Agents[partner].To, date, amount, texts.DefaultCurrency, note);
     }
 
-    private const string FromTitle = "Кто";
-    private const string ToTitle = "Кому";
+    private const string FromTitle = "Кто"; private const string ToTitle = "Кому";
     private const string DateTitle = "Когда";
     private const string CurrencyTitle = "Чего";
     private const string AmountTitle = "Сумма напрямую";
