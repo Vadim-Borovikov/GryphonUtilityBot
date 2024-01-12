@@ -19,13 +19,35 @@ public class Texts : AbstractBot.Configs.Texts
     public MessageTemplate TransactionAddedFormat { get; init; } = null!;
 
     [Required]
+    public MessageTemplate TransactionCoreFormat { get; init; } = null!;
+
+    [Required]
+    [MinLength(1)]
     public string DateOnlyFormat { get; init; } = null!;
 
     [Required]
+    [MinLength(1)]
     public Dictionary<string, Agent> Agents { get; init; } = null!;
 
     [Required]
-    public string DefaultCurrency { get; init; } = null!;
+    public MessageTemplate PaymentConfirmationFormat { get; init; } = null!;
+
+    [Required]
+    public MessageTemplate ListItemFormat { get; init; } = null!;
+
+    [Required]
+    [MinLength(1)]
+    public string ProductSoldNoteFormat { get; init; } = null!;
+
+    [Required]
+    [MinLength(1)]
+    public string PaymentSlipButtonCaption { get; init; } = null!;
+    [Required]
+    [MinLength(1)]
+    public string PaymentSlipButtonFormat { get; init; } = null!;
+    [Required]
+    [MinLength(1)]
+    public string PaymentConfirmationButton { get; init; } = null!;
 
     public string? TryGetAgent(string tag)
     {
@@ -36,5 +58,4 @@ public class Texts : AbstractBot.Configs.Texts
     {
         return Agents.Keys.SingleOrDefault(n => n.Equals(agent.Partner, StringComparison.CurrentCultureIgnoreCase));
     }
-
 }

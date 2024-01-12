@@ -9,37 +9,40 @@ using JetBrains.Annotations;
 
 namespace GryphonUtilityBot.Money;
 
-internal sealed class Transaction
+public sealed class Transaction
 {
     [UsedImplicitly]
     [Required]
     [SheetField(FromTitle)]
-    public readonly string From;
+    public string From { get; set; } = null!;
 
     [UsedImplicitly]
     [Required]
     [SheetField(ToTitle)]
-    public readonly string To;
+    public string To { get; set; } = null!;
 
     [UsedImplicitly]
     [Required]
     [SheetField(DateTitle, "{0:dd.MM.yyyy}")]
-    public readonly DateOnly Date;
+    public DateOnly Date;
 
     [UsedImplicitly]
     [Required]
     [SheetField(CurrencyTitle)]
-    public readonly string Currency;
+    public string Currency { get; set; } = null!;
 
     [UsedImplicitly]
     [Required]
     [SheetField(AmountTitle)]
-    public readonly decimal Amount;
+    public decimal Amount { get; set; }
 
     [UsedImplicitly]
     [Required]
     [SheetField(NoteTitle)]
-    public readonly string? Note;
+    public string? Note;
+
+    [UsedImplicitly]
+    public Transaction() { }
 
     private Transaction(string from, string to, DateOnly date, decimal amount, string currency, string? note = null)
     {
@@ -51,7 +54,7 @@ internal sealed class Transaction
         Note = note;
     }
 
-    public static Transaction? TryParseReceipt(string s, DateOnly defaultDate, Texts texts)
+    internal static Transaction? TryParseReceipt(string s, DateOnly defaultDate, Texts texts, string defaultCurrency)
     {
         string[] parts = s.Split(null);
 
@@ -99,7 +102,7 @@ internal sealed class Transaction
 
         string note = string.Join(" ", parts.Skip(index + 1));
 
-        return new Transaction(name, texts.Agents[partner].To, date, amount, texts.DefaultCurrency, note);
+        return new Transaction(name, texts.Agents[partner].To, date, amount, defaultCurrency, note);
     }
 
     private const string FromTitle = "Кто"; private const string ToTitle = "Кому";

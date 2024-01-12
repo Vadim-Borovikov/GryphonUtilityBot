@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
 using System.Threading.Tasks;
 using GryphonUtilities.Extensions;
 using Microsoft.Extensions.Options;
@@ -11,9 +12,9 @@ using Microsoft.Extensions.Options;
 namespace GryphonUtilityBot.Web.Controllers;
 
 [Route("[controller]")]
-public class BookController : ControllerBase
+public class PurchaseController : ControllerBase
 {
-    public BookController(IOptions<Config> config) => _config = config.Value;
+    public PurchaseController(IOptions<Config> config) => _config = config.Value;
 
     [HttpPost]
     public async Task<ActionResult> Post([FromServices] BotSingleton singleton, [FromForm] Submission model,
@@ -42,7 +43,8 @@ public class BookController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        await singleton.Bot.OnSubmissionReceivedAsync(model.Name, model.Email, model.Telegram, items, slips);
+        await singleton.Bot.OnSubmissionReceivedAsync(model.Name, new MailAddress(model.Email), model.Telegram, items,
+            slips);
 
         return Ok();
     }
