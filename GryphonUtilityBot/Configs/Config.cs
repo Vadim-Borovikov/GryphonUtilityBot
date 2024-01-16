@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using AbstractBot.Configs;
 using JetBrains.Annotations;
 
@@ -26,8 +25,5 @@ public class Config : ConfigWithSheets<Texts>
     public string DefaultCurrency { get; init; } = null!;
 
     [Required]
-    public long ItemVendorId { get; init; }
-
-    [Required]
-    public Dictionary<byte, Product> Products { get; init; } = null!;
+    public long TransactionLogsChatId { get; init; }
 }

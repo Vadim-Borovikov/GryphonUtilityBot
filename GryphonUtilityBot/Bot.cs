@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Mail;
 using System.Threading;
 using System.Threading.Tasks;
 using AbstractBot.Bots;
@@ -28,7 +26,6 @@ public sealed class Bot : BotWithSheets<Config, Texts, object, CommandDataSimple
         _manager = new Manager(this, DocumentsManager);
 
         Operations.Add(new AddReceipt(this, _manager));
-        Operations.Add(new AcceptPurchase(this, _manager));
     }
 
     public override async Task StartAsync(CancellationToken cancellationToken)
@@ -38,11 +35,9 @@ public sealed class Bot : BotWithSheets<Config, Texts, object, CommandDataSimple
         await _manager.StartAsync();
     }
 
-    public Task OnSubmissionReceivedAsync(string name, MailAddress email, string telegram, List<string> items,
-        List<Uri> slips)
+    public Task AddSimultaneousTransactionsAsync(List<Transaction> transactions, DateOnly date, string note)
     {
-        List<byte> productIds = Config.Products.Where(p => items.Contains(p.Value.Name)).Select(p => p.Key).ToList();
-        return _manager.ProcessSubmissionAsync(name, email, telegram, productIds, slips);
+        return _manager.AddSimultaneousTransactionsAsync(transactions, date, note);
     }
 
     private readonly Manager _manager;
