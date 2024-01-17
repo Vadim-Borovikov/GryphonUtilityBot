@@ -9,13 +9,13 @@ using Telegram.Bot.Types.Enums;
 
 namespace GryphonUtilityBot.Operations;
 
-internal sealed class TagOperation : Operation<TagOperationInfo>
+internal sealed class TagRecord : Operation<TagOperationInfo>
 {
     protected override byte Order => 9;
 
     public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.Records;
 
-    public TagOperation(Bot bot, Manager manager) : base(bot)
+    public TagRecord(Bot bot, Manager manager) : base(bot)
     {
         Description =
             new MessageTemplate("*ответить на сообщение, которое переслали раньше* – добавить теги к записи", true);

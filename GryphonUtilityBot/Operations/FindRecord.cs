@@ -9,13 +9,13 @@ using Telegram.Bot.Types.Enums;
 
 namespace GryphonUtilityBot.Operations;
 
-internal sealed class FindOperation : Operation<FindQuery>
+internal sealed class FindRecord : Operation<FindQuery>
 {
-    protected override byte Order => 10;
+    protected override byte Order => 7;
 
     public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.Records;
 
-    public FindOperation(Bot bot, Manager manager) : base(bot)
+    public FindRecord(Bot bot, Manager manager) : base(bot)
     {
         Description = new MessageTemplate
         {

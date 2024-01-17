@@ -23,8 +23,8 @@ internal sealed class Manager
         additionalConverters[typeof(DateOnly)] = additionalConverters[typeof(DateOnly?)] =
             o => o.ToDateOnly(_bot.Clock);
 
-        GoogleSheetsManager.Documents.Document document = documentsManager.GetOrAdd(_bot.Config.GoogleSheetId);
-        _sheet = document.GetOrAddSheet(bot.Config.GoogleTitle, additionalConverters);
+        GoogleSheetsManager.Documents.Document document = documentsManager.GetOrAdd(_bot.Config.GoogleSheetIdArticles);
+        _sheet = document.GetOrAddSheet(bot.Config.GoogleTitleArticles, additionalConverters);
     }
 
 
@@ -85,14 +85,14 @@ internal sealed class Manager
 
     private async Task LoadAsync()
     {
-        List<Article> data = await _sheet.LoadAsync<Article>(_bot.Config.GoogleRange);
+        List<Article> data = await _sheet.LoadAsync<Article>(_bot.Config.GoogleRangeArticles);
         _articles = new SortedSet<Article>(data);
     }
 
     private async Task SaveAsync()
     {
-        await _sheet.ClearAsync(_bot.Config.GoogleRange);
-        await _sheet.SaveAsync(_bot.Config.GoogleRange, _articles.ToList());
+        await _sheet.ClearAsync(_bot.Config.GoogleRangeArticles);
+        await _sheet.SaveAsync(_bot.Config.GoogleRangeArticles, _articles.ToList());
     }
 
     private static string GetArticleMessageText(Article article)

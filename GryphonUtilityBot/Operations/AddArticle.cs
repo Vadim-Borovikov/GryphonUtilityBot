@@ -9,13 +9,13 @@ using Telegram.Bot.Types.Enums;
 
 namespace GryphonUtilityBot.Operations;
 
-internal sealed class ArticleOperation : Operation<Article>
+internal sealed class AddArticle : Operation<Article>
 {
-    protected override byte Order => 6;
+    protected override byte Order => 4;
 
     public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.OtherFeatures;
 
-    public ArticleOperation(Bot bot, Manager manager) : base(bot)
+    public AddArticle(Bot bot, Manager manager) : base(bot)
     {
         Description = new MessageTemplate
         {
