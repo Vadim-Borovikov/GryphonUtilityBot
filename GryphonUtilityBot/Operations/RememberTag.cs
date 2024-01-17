@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using AbstractBot.Configs;
 using AbstractBot.Operations;
 using GryphonUtilityBot.Records;
 using Telegram.Bot.Types;
@@ -8,18 +7,13 @@ using Telegram.Bot.Types.Enums;
 
 namespace GryphonUtilityBot.Operations;
 
-internal sealed class RememberTagOperation: Operation<TagQuery>
+internal sealed class RememberTag: Operation<TagQuery>
 {
     protected override byte Order => 8;
 
     public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.Records;
 
-    public RememberTagOperation(Bot bot) : base(bot)
-    {
-        Description =
-            new MessageTemplate("*переслать сообщение и добавить текст* – добавить запись в таймлайн с тегами", true);
-        _bot = bot;
-    }
+    public RememberTag(Bot bot) : base(bot, bot.Config.Texts.RememberTagDescription) => _bot = bot;
 
     protected override bool IsInvokingBy(Message message, User sender, out TagQuery? data)
     {

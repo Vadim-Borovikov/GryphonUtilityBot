@@ -1,23 +1,26 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AbstractBot.Bots;
-using AbstractBot.Configs;
 using AbstractBot.Operations;
 using AbstractBot.Operations.Data;
 using GryphonUtilities;
 using GryphonUtilities.Time;
-using GryphonUtilityBot.Articles;
+using GryphonUtilityBot.Configs;
+using GryphonUtilityBot.Money;
 using GryphonUtilityBot.Operations;
 using GryphonUtilityBot.Operations.Commands;
 using JetBrains.Annotations;
 using Telegram.Bot.Types;
+
 namespace GryphonUtilityBot;
 
-public sealed class Bot : BotWithSheets<Config, Texts, Data, CommandDataSimple>
+public sealed class Bot : BotWithSheets<Config, Texts, object, CommandDataSimple>
 {
     [Flags]
     internal enum AccessType
     {
+        [UsedImplicitly]
         Default = 1,
         Records = 2,
         OtherFeatures = 4,
@@ -32,16 +35,25 @@ public sealed class Bot : BotWithSheets<Config, Texts, Data, CommandDataSimple>
         SaveManager<Data> saveManager = new(config.SavePath, Clock);
         RecordsManager = new Records.Manager(this, saveManager);
 
-        Manager articlesManager = new(this, DocumentsManager);
+        Articles.Manager articlesManager = new(this, DocumentsManager);
+
+        _financemanager = new Manager(this, DocumentsManager);
+        Operations.Add(new AddReceipt(this, _financemanager));
 
         Operations.Add(new ArticleCommand(this, articlesManager));
         Operations.Add(new ReadCommand(this, articlesManager));
 
-        Operations.Add(new ArticleOperation(this, articlesManager));
-        Operations.Add(new FindOperation(this, RecordsManager));
-        Operations.Add(new ForwardOperation(this));
-        Operations.Add(new RememberTagOperation(this));
-        Operations.Add(new TagOperation(this, RecordsManager));
+        Operations.Add(new AddArticle(this, articlesManager));
+
+        Operations.Add(new FindRecord(this, RecordsManager));
+        Operations.Add(new AddRecord(this));
+        Operations.Add(new RememberTag(this));
+        Operations.Add(new TagRecord(this, RecordsManager));
+    }
+
+    public Task AddSimultaneousTransactionsAsync(List<Transaction> transactions, DateOnly date, string note)
+    {
+        return _financemanager.AddSimultaneousTransactionsAsync(transactions, date, note);
     }
 
     protected override Task ProcessInsufficientAccess(Message message, User sender, OperationBasic operation)
@@ -51,13 +63,14 @@ public sealed class Bot : BotWithSheets<Config, Texts, Data, CommandDataSimple>
             return base.ProcessInsufficientAccess(message, sender, operation);
         }
 
-        return SendTextMessageAsync(message.Chat,
-            "Простите, госпожа, но господин заблокировал это действие даже для Вас.",
-            replyToMessageId: message.MessageId);
+        Config.Texts.ForbiddenForMistress.ReplyToMessageId = message.MessageId;
+        return Config.Texts.ForbiddenForMistress.SendAsync(this, message.Chat);
     }
 
     internal Records.TagQuery? CurrentQuery;
     internal DateTimeFull CurrentQueryTime;
 
     internal readonly Records.Manager RecordsManager;
+
+    private readonly Manager _financemanager;
 }

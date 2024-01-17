@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
-using AbstractBot;
 using GryphonUtilities.Time;
 using GryphonUtilityBot.Records;
 using JetBrains.Annotations;
 
 namespace GryphonUtilityBot;
 
-public sealed class Data : SaveData
+public sealed class Data
 {
     [UsedImplicitly]
     public List<RecordData> Records = new();

@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AbstractBot.Configs.MessageTemplates;
 using GoogleSheetsManager.Documents;
 using GoogleSheetsManager.Extensions;
+using GryphonUtilityBot.Extensions;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 
 namespace GryphonUtilityBot.Articles;
 
@@ -23,8 +24,8 @@ internal sealed class Manager
         additionalConverters[typeof(DateOnly)] = additionalConverters[typeof(DateOnly?)] =
             o => o.ToDateOnly(_bot.Clock);
 
-        GoogleSheetsManager.Documents.Document document = documentsManager.GetOrAdd(_bot.Config.GoogleSheetId);
-        _sheet = document.GetOrAddSheet(bot.Config.GoogleTitle, additionalConverters);
+        GoogleSheetsManager.Documents.Document document = documentsManager.GetOrAdd(_bot.Config.GoogleSheetIdArticles);
+        _sheet = document.GetOrAddSheet(bot.Config.GoogleTitleArticles, additionalConverters);
     }
 
 
@@ -32,8 +33,9 @@ internal sealed class Manager
     {
         await AddArticleAsync(article);
 
-        string articleText = GetArticleMessageText(article);
-        await _bot.SendTextMessageAsync(chat, $"Добавлено: `{articleText}`\\.", parseMode: ParseMode.MarkdownV2);
+        MessageTemplateText articleText = GetArticleMessageTemplate(article);
+        MessageTemplateText messageTemplate = _bot.Config.Texts.ArticleAddedFormat.Format(articleText);
+        await messageTemplate.SendAsync(_bot, chat);
         await SendFirstArticleAsync(chat);
     }
 
@@ -42,8 +44,10 @@ internal sealed class Manager
         await LoadAsync();
 
         Article? article = _articles.FirstOrDefault();
-        string text = article is null ? "Больше статей нет." : $"{_articles.Count}. {GetArticleMessageText(article)}";
-        await _bot.SendTextMessageAsync(chat, text);
+        MessageTemplateText messageTemplate = article is null
+            ? _bot.Config.Texts.NoMoreArticles
+            : _bot.Config.Texts.ArticleWithNumberFormat.Format(_articles.Count, GetArticleMessageTemplate(article));
+        await messageTemplate.SendAsync(_bot, chat);
     }
 
     public async Task DeleteFirstArticleAsync(Chat chat)
@@ -53,7 +57,7 @@ internal sealed class Manager
         Article? article = _articles.FirstOrDefault();
         if (article is null)
         {
-            await _bot.SendTextMessageAsync(chat, "Список статей уже пуст.");
+            await _bot.Config.Texts.AllArticlesDeletedAlready.SendAsync(_bot, chat);
             return;
         }
 
@@ -65,8 +69,9 @@ internal sealed class Manager
         }
         await SaveAsync();
 
-        string articleText = GetArticleMessageText(article);
-        await _bot.SendTextMessageAsync(chat, $"Удалено: `{articleText}`\\.", parseMode: ParseMode.MarkdownV2);
+        MessageTemplateText articleText = GetArticleMessageTemplate(article);
+        MessageTemplateText messageTemplate = _bot.Config.Texts.ArticleDeletedFormat.Format(articleText);
+        await messageTemplate.SendAsync(_bot, chat);
         await SendFirstArticleAsync(chat);
     }
 
@@ -85,19 +90,20 @@ internal sealed class Manager
 
     private async Task LoadAsync()
     {
-        List<Article> data = await _sheet.LoadAsync<Article>(_bot.Config.GoogleRange);
+        List<Article> data = await _sheet.LoadAsync<Article>(_bot.Config.GoogleRangeArticles);
         _articles = new SortedSet<Article>(data);
     }
 
     private async Task SaveAsync()
     {
-        await _sheet.ClearAsync(_bot.Config.GoogleRange);
-        await _sheet.SaveAsync(_bot.Config.GoogleRange, _articles.ToList());
+        await _sheet.ClearAsync(_bot.Config.GoogleRangeArticles);
+        await _sheet.SaveAsync(_bot.Config.GoogleRangeArticles, _articles.ToList());
     }
 
-    private static string GetArticleMessageText(Article article)
+    private MessageTemplateText GetArticleMessageTemplate(Article article)
     {
-        return $"{article.Date:d MMMM yyyy}{Environment.NewLine}{article.Uri}";
+        string date = article.Date.ToString(_bot.Config.Texts.DateOnlyFormat);
+        return _bot.Config.Texts.ArticleFormat.Format(date, article.Uri);
     }
 
     private SortedSet<Article> _articles;

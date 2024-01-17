@@ -23,19 +23,20 @@ internal sealed class Manager
         RecordData? record = GetRecord(message, query);
         if (record is not null)
         {
-            _saveManager.Data.Records.Add(record);
+            _saveManager.SaveData.Records.Add(record);
         }
 
         _saveManager.Save();
 
-        return _bot.SendTextMessageAsync(message.Chat, "Запись добавлена.", replyToMessageId: message.MessageId);
+        _bot.Config.Texts.RecordAdded.ReplyToMessageId = message.MessageId;
+        return _bot.Config.Texts.RecordAdded.SendAsync(_bot, message.Chat);
     }
 
     public async Task ProcessFindQueryAsync(Chat chat, FindQuery query)
     {
         _saveManager.Load();
 
-        List<RecordData> records = _saveManager.Data
+        List<RecordData> records = _saveManager.SaveData
                                                .Records
                                                .Where(r => r.DateTime.DateOnly >= query.From)
                                                .Where(r => r.DateTime.DateOnly <= query.To)
@@ -55,7 +56,7 @@ internal sealed class Manager
         }
         else
         {
-            await _bot.SendTextMessageAsync(chat, "Я не нашёл таких записей.");
+            await _bot.Config.Texts.RecordsNotFound.SendAsync(_bot, chat);
         }
     }
 
@@ -63,12 +64,12 @@ internal sealed class Manager
     {
         _saveManager.Load();
 
-        RecordData? record = _saveManager.Data.Records.FirstOrDefault(r =>
+        RecordData? record = _saveManager.SaveData.Records.FirstOrDefault(r =>
             (r.ChatId == chatId) && (r.MessageId == messageId));
 
         if (record is null)
         {
-            return _bot.SendTextMessageAsync(chat, "Я не нашёл нужной записи.");
+            return _bot.Config.Texts.RecordNotFound.SendAsync(_bot, chat);
         }
 
         if (query.DateOnly.HasValue)
@@ -78,7 +79,7 @@ internal sealed class Manager
 
         record.Tags = query.Tags;
         _saveManager.Save();
-        return _bot.SendTextMessageAsync(chat, "Запись обновлена.");
+        return _bot.Config.Texts.RecordAdded.SendAsync(_bot, chat);
     }
 
     public static DateOnly? ParseFirstDate(List<string> parts)
