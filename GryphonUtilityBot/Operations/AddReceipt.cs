@@ -14,9 +14,8 @@ internal sealed class AddReceipt : Operation<Transaction>
 
     public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.OtherFeatures;
 
-    public AddReceipt(Bot bot, Manager manager) : base(bot)
+    public AddReceipt(Bot bot, Manager manager) : base(bot, bot.Config.Texts.AddReceiptDescription)
     {
-        Description = bot.Config.Texts.AddReceiptDescription;
         _bot = bot;
         _manager = manager;
     }

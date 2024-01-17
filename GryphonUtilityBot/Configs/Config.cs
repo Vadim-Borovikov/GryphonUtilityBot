@@ -2,8 +2,6 @@
 using AbstractBot.Configs;
 using JetBrains.Annotations;
 
-// ReSharper disable NullableWarningSuppressionIsUsed
-
 namespace GryphonUtilityBot.Configs;
 
 [PublicAPI]

@@ -5,8 +5,6 @@ using GoogleSheetsManager;
 using GryphonUtilityBot.Configs;
 using JetBrains.Annotations;
 
-// ReSharper disable NullableWarningSuppressionIsUsed
-
 namespace GryphonUtilityBot.Money;
 
 public sealed class Transaction
@@ -105,7 +103,8 @@ public sealed class Transaction
         return new Transaction(name, texts.Agents[partner].To, date, amount, defaultCurrency, note);
     }
 
-    private const string FromTitle = "Кто"; private const string ToTitle = "Кому";
+    private const string FromTitle = "Кто";
+    private const string ToTitle = "Кому";
     private const string DateTitle = "Когда";
     private const string CurrencyTitle = "Чего";
     private const string AmountTitle = "Сумма напрямую";

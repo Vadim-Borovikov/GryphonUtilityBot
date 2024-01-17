@@ -63,9 +63,8 @@ public sealed class Bot : BotWithSheets<Config, Texts, object, CommandDataSimple
             return base.ProcessInsufficientAccess(message, sender, operation);
         }
 
-        return SendTextMessageAsync(message.Chat,
-            "Простите, госпожа, но господин заблокировал это действие даже для Вас.",
-            replyToMessageId: message.MessageId);
+        Config.Texts.ForbiddenForMistress.ReplyToMessageId = message.MessageId;
+        return Config.Texts.ForbiddenForMistress.SendAsync(this, message.Chat);
     }
 
     internal Records.TagQuery? CurrentQuery;

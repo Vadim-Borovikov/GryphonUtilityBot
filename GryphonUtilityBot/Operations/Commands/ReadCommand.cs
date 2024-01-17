@@ -12,7 +12,8 @@ internal sealed class ReadCommand : CommandSimple
 
     public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.OtherFeatures;
 
-    public ReadCommand(Bot bot, Manager manager) : base(bot, "read", "удалить статью и выдать следующую")
+    public ReadCommand(Bot bot, Manager manager)
+        : base(bot, "read", bot.Config.Texts.ReadCommandDescription)
     {
         _manager = manager;
     }

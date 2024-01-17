@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using AbstractBot.Configs.MessageTemplates;
 using AbstractBot.Operations;
 using GryphonUtilityBot.Records;
 using Telegram.Bot.Types;
@@ -15,18 +13,8 @@ internal sealed class FindRecord : Operation<FindQuery>
 
     public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.Records;
 
-    public FindRecord(Bot bot, Manager manager) : base(bot)
+    public FindRecord(Bot bot, Manager manager) : base(bot, bot.Config.Texts.FindRecordDescription)
     {
-        Description = new MessageTemplateText
-        {
-            Text = new List<string>
-            {
-                "*пара дат, например \"1\\.02\\.20 1\\.03\\.22\"* – найти записи в этот период",
-                "*пара дат и теги, например \"1\\.02\\.20 1\\.03\\.22 творчество вкусности\"* – найти записи в этот период с этими тегами"
-            },
-            MarkdownV2 = true
-        };
-
         _manager = manager;
     }
 

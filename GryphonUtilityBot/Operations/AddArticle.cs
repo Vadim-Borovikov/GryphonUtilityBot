@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using AbstractBot.Configs.MessageTemplates;
 using AbstractBot.Operations;
 using GryphonUtilityBot.Articles;
 using Telegram.Bot.Types;
@@ -15,18 +13,9 @@ internal sealed class AddArticle : Operation<Article>
 
     public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.OtherFeatures;
 
-    public AddArticle(Bot bot, Manager manager) : base(bot)
+    public AddArticle(Bot bot, Manager manager)
+        : base(bot, bot.Config.Texts.AddArticleDescription)
     {
-        Description = new MessageTemplateText
-        {
-            Text = new List<string>
-            {
-                "*ссылка* – добавить статью сегодняшним числом",
-                "*дата и ссылка* – добавить статью"
-            },
-            MarkdownV2 = true
-        };
-
         _manager = manager;
     }
 

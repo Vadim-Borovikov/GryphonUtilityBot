@@ -4,23 +4,21 @@ using GoogleSheetsManager;
 using GryphonUtilities.Time;
 using JetBrains.Annotations;
 
-// ReSharper disable NullableWarningSuppressionIsUsed
-
 namespace GryphonUtilityBot.Articles;
 
 internal sealed class Article : IComparable<Article>
 {
     [UsedImplicitly]
     [Required]
-    [SheetField("Ссылка")]
+    [SheetField(UriTitle)]
     public Uri Uri = null!;
 
     [UsedImplicitly]
-    [SheetField("Читаю")]
+    [SheetField(CurrentTitle)]
     public bool Current;
 
     [Required]
-    [SheetField("Дата")]
+    [SheetField(DateTitle)]
     public DateOnly Date;
 
     public Article() { }
@@ -109,4 +107,8 @@ internal sealed class Article : IComparable<Article>
     {
         return Uri.TryCreate(uriString, UriKind.Absolute, out Uri? uri) ? uri : null;
     }
+
+    private const string UriTitle = "Ссылка";
+    private const string CurrentTitle = "Читаю";
+    private const string DateTitle = "Дата";
 }

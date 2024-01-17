@@ -12,7 +12,11 @@ internal sealed class ArticleCommand : CommandSimple
 
     public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.OtherFeatures;
 
-    public ArticleCommand(Bot bot, Manager manager) : base(bot, "article", "первая статья") => _manager = manager;
+    public ArticleCommand(Bot bot, Manager manager)
+        : base(bot, "article", bot.Config.Texts.ArticleCommandDescription)
+    {
+        _manager = manager;
+    }
 
     protected override Task ExecuteAsync(Message message, User _) => _manager.SendFirstArticleAsync(message.Chat);
 

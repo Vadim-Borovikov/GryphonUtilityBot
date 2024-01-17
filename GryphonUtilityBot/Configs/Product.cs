@@ -3,8 +3,6 @@ using System.ComponentModel.DataAnnotations;
 using GryphonUtilityBot.Money;
 using JetBrains.Annotations;
 
-// ReSharper disable NullableWarningSuppressionIsUsed
-
 namespace GryphonUtilityBot.Configs;
 
 [PublicAPI]

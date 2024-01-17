@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using AbstractBot.Configs.MessageTemplates;
 using AbstractBot.Operations;
 using GryphonUtilityBot.Operations.Infos;
 using GryphonUtilityBot.Records;
@@ -15,10 +14,8 @@ internal sealed class TagRecord : Operation<TagRecordInfo>
 
     public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.Records;
 
-    public TagRecord(Bot bot, Manager manager) : base(bot)
+    public TagRecord(Bot bot, Manager manager) : base(bot, bot.Config.Texts.TagRecordDescription)
     {
-        Description =
-            new MessageTemplateText("*ответить на сообщение, которое переслали раньше* – добавить теги к записи", true);
         _manager = manager;
     }
 
