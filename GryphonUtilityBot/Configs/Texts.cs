@@ -35,20 +35,6 @@ public class Texts : AbstractBot.Configs.Texts
     [Required]
     public MessageTemplate ListItemFormat { get; init; } = null!;
 
-    [Required]
-    [MinLength(1)]
-    public string ProductSoldNoteFormat { get; init; } = null!;
-
-    [Required]
-    [MinLength(1)]
-    public string PaymentSlipButtonCaption { get; init; } = null!;
-    [Required]
-    [MinLength(1)]
-    public string PaymentSlipButtonFormat { get; init; } = null!;
-    [Required]
-    [MinLength(1)]
-    public string PaymentConfirmationButton { get; init; } = null!;
-
     public string? TryGetAgent(string tag)
     {
         return Agents.Keys.SingleOrDefault(n => tag.Equals(Agents[n].Tag, StringComparison.CurrentCultureIgnoreCase));
