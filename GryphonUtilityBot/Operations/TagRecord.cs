@@ -9,7 +9,7 @@ using Telegram.Bot.Types.Enums;
 
 namespace GryphonUtilityBot.Operations;
 
-internal sealed class TagRecord : Operation<TagOperationInfo>
+internal sealed class TagRecord : Operation<TagRecordInfo>
 {
     protected override byte Order => 9;
 
@@ -22,7 +22,7 @@ internal sealed class TagRecord : Operation<TagOperationInfo>
         _manager = manager;
     }
 
-    protected override bool IsInvokingBy(Message message, User sender, out TagOperationInfo? data)
+    protected override bool IsInvokingBy(Message message, User sender, out TagRecordInfo? data)
     {
         data = null;
         if ((message.Type != MessageType.Text) || string.IsNullOrWhiteSpace(message.Text))
@@ -43,12 +43,12 @@ internal sealed class TagRecord : Operation<TagOperationInfo>
         TagQuery? query = TagQuery.ParseTagQuery(message.Text);
         if (query is not null)
         {
-            data = new TagOperationInfo(query, message.ReplyToMessage);
+            data = new TagRecordInfo(query, message.ReplyToMessage);
         }
         return data is not null;
     }
 
-    protected override Task ExecuteAsync(TagOperationInfo data, Message message, User sender)
+    protected override Task ExecuteAsync(TagRecordInfo data, Message message, User sender)
     {
         return _manager.TagAsync(message.Chat, data.ChatId, data.MessageId, data.TagQuery);
     }
