@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GryphonUtilityBot;
+namespace GryphonUtilityBot.Extensions;
 
 internal static class ObjectExtensions
 {
