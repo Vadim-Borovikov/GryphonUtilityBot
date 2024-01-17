@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using AbstractBot.Configs;
+using AbstractBot.Configs.MessageTemplates;
 using AbstractBot.Operations;
 using GryphonUtilityBot.Operations.Infos;
 using GryphonUtilityBot.Records;
@@ -18,7 +18,7 @@ internal sealed class TagRecord : Operation<TagOperationInfo>
     public TagRecord(Bot bot, Manager manager) : base(bot)
     {
         Description =
-            new MessageTemplate("*ответить на сообщение, которое переслали раньше* – добавить теги к записи", true);
+            new MessageTemplateText("*ответить на сообщение, которое переслали раньше* – добавить теги к записи", true);
         _manager = manager;
     }
 

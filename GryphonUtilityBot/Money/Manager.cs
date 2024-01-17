@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System;
 using System.Threading.Tasks;
-using AbstractBot.Configs;
+using AbstractBot.Configs.MessageTemplates;
 using GoogleSheetsManager.Documents;
 using GryphonUtilities.Extensions;
 using GryphonUtilityBot.Configs;
@@ -25,8 +25,6 @@ internal sealed class Manager
         };
     }
 
-    public Task StartAsync() => _sheet.LoadTitlesAsync(_bot.Config.GoogleRangeTransactions);
-
     public async Task AddSimultaneousTransactionsAsync(List<Transaction> transactions, DateOnly date, string note)
     {
         foreach (Transaction t in transactions)
@@ -39,16 +37,16 @@ internal sealed class Manager
 
         string dateString = date.ToString(_bot.Config.Texts.DateOnlyFormat);
 
-        List<MessageTemplate> items = new();
+        List<MessageTemplateText> items = new();
         foreach (Transaction t in transactions)
         {
-            MessageTemplate core = GetCore(t);
-            MessageTemplate item = _bot.Config.Texts.ListItemFormat.Format(core);
+            MessageTemplateText core = GetCore(t);
+            MessageTemplateText item = _bot.Config.Texts.ListItemFormat.Format(core);
             items.Add(item);
         }
-        MessageTemplate list = MessageTemplate.JoinTexts(items).Denull();
+        MessageTemplateText list = MessageTemplateText.JoinTexts(items);
 
-        MessageTemplate formatted = _bot.Config.Texts.TransactionAddedFormat.Format(dateString, list, note);
+        MessageTemplateText formatted = _bot.Config.Texts.TransactionAddedFormat.Format(dateString, list, note);
         await formatted.SendAsync(_bot, _transactionLogsChat);
     }
 
@@ -57,13 +55,14 @@ internal sealed class Manager
         await _sheet.AddAsync(_bot.Config.GoogleRangeTransactions, transaction.WrapWithList());
 
         string dateString = transaction.Date.ToString(_bot.Config.Texts.DateOnlyFormat);
-        MessageTemplate core = GetCore(transaction);
-        MessageTemplate formatted =
+        MessageTemplateText core = GetCore(transaction);
+        MessageTemplateText formatted =
             _bot.Config.Texts.TransactionAddedFormat.Format(dateString, core, transaction.Note);
-        await formatted.SendAsync(_bot, chat, replyToMessageId: replyToMessageId);
+        formatted.ReplyToMessageId = replyToMessageId;
+        await formatted.SendAsync(_bot, chat);
     }
 
-    private MessageTemplate GetCore(Transaction transaction)
+    private MessageTemplateText GetCore(Transaction transaction)
     {
         string name = transaction.From;
         Agent agent = _bot.Config.Texts.Agents[name];

@@ -52,16 +52,16 @@ internal sealed class Service : IHostedService, IDisposable
         await ProcessOutdatedAndDeletedPages(now);
         await ApplyUpdatesAsync();
 
-        _saveManager.Data.LastUpdated = now;
+        _saveManager.SaveData.LastUpdated = now;
         _saveManager.Save();
     }
 
     private async Task ProcessOutdatedAndDeletedPages(DateTimeFull now)
     {
         List<string> toRemove = new();
-        foreach (string id in _saveManager.Data.Meetings.Keys)
+        foreach (string id in _saveManager.SaveData.Meetings.Keys)
         {
-            if (_saveManager.Data.Meetings[id] < now)
+            if (_saveManager.SaveData.Meetings[id] < now)
             {
                 toRemove.Add(id);
             }
@@ -94,16 +94,16 @@ internal sealed class Service : IHostedService, IDisposable
         }
         foreach (string id in toRemove)
         {
-            _saveManager.Data.Meetings.Remove(id);
+            _saveManager.SaveData.Meetings.Remove(id);
         }
     }
 
     private async Task ApplyUpdatesAsync()
     {
-        _saveManager.Data.LastUpdated ??=
+        _saveManager.SaveData.LastUpdated ??=
             _clock.GetDateTimeFull(_config.NotionStartWatchingDate, TimeOnly.MinValue);
         NotionRequestResult<List<PageInfo>> result =
-            await _notionHelper.TryGetPagesAsync(_saveManager.Data.LastUpdated.Value);
+            await _notionHelper.TryGetPagesAsync(_saveManager.SaveData.LastUpdated.Value);
 
         if (result.Instance is null)
         {
@@ -161,21 +161,21 @@ internal sealed class Service : IHostedService, IDisposable
         _logger.LogTimedMessage($"Updating event \"{calendarEvent.Id}\" for page \"{page.Title}\".");
         await _googleCalendarHelper.UpdateEventAsync(page.GoogleEventId, calendarEvent, page.Title, start, end,
             page.Page.Url);
-        _saveManager.Data.Meetings[page.Page.Id] = end;
+        _saveManager.SaveData.Meetings[page.Page.Id] = end;
     }
 
     private async Task UpdatePageAsync(PageInfo page, Event calendarEvent, DateTimeFull end)
     {
         _logger.LogTimedMessage($"Updating page \"{page.Title}\" for event \"{calendarEvent.Id}\"");
         await _notionHelper.UpdateAsync(page, calendarEvent.Id, new Uri(calendarEvent.HtmlLink));
-        _saveManager.Data.Meetings[page.Page.Id] = end;
+        _saveManager.SaveData.Meetings[page.Page.Id] = end;
     }
 
     private async Task ClearPageAsync(PageInfo page)
     {
         _logger.LogTimedMessage($"Clearing page \"{page.Title}\" of event \"{page.GoogleEventId}\"");
         await _notionHelper.ClearAsync(page);
-        _saveManager.Data.Meetings.Remove(page.Page.Id);
+        _saveManager.SaveData.Meetings.Remove(page.Page.Id);
     }
 
     private async Task DeleteEventAsync(Event calendarEvent, PageInfo page)

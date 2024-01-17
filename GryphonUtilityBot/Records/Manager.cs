@@ -23,7 +23,7 @@ internal sealed class Manager
         RecordData? record = GetRecord(message, query);
         if (record is not null)
         {
-            _saveManager.Data.Records.Add(record);
+            _saveManager.SaveData.Records.Add(record);
         }
 
         _saveManager.Save();
@@ -35,7 +35,7 @@ internal sealed class Manager
     {
         _saveManager.Load();
 
-        List<RecordData> records = _saveManager.Data
+        List<RecordData> records = _saveManager.SaveData
                                                .Records
                                                .Where(r => r.DateTime.DateOnly >= query.From)
                                                .Where(r => r.DateTime.DateOnly <= query.To)
@@ -63,7 +63,7 @@ internal sealed class Manager
     {
         _saveManager.Load();
 
-        RecordData? record = _saveManager.Data.Records.FirstOrDefault(r =>
+        RecordData? record = _saveManager.SaveData.Records.FirstOrDefault(r =>
             (r.ChatId == chatId) && (r.MessageId == messageId));
 
         if (record is null)

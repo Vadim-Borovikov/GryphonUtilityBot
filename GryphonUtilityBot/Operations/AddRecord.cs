@@ -1,7 +1,7 @@
 ﻿using System;
 using AbstractBot.Operations;
 using System.Threading.Tasks;
-using AbstractBot.Configs;
+using AbstractBot.Configs.MessageTemplates;
 using Telegram.Bot.Types;
 
 namespace GryphonUtilityBot.Operations;
@@ -14,7 +14,7 @@ internal sealed class AddRecord : OperationSimple
 
     public AddRecord(Bot bot) : base(bot)
     {
-        Description = new MessageTemplate("*переслать сообщение* – добавить запись в таймлайн", true);
+        Description = new MessageTemplateText("*переслать сообщение* – добавить запись в таймлайн", true);
         _bot = bot;
     }
 

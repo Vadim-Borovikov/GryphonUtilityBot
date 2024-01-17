@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using AbstractBot.Configs;
+using AbstractBot.Configs.MessageTemplates;
 using JetBrains.Annotations;
 
 // ReSharper disable NullableWarningSuppressionIsUsed
@@ -13,13 +13,13 @@ namespace GryphonUtilityBot.Configs;
 public class Texts : AbstractBot.Configs.Texts
 {
     [Required]
-    public MessageTemplate AddReceiptDescription { get; init; } = null!;
+    public MessageTemplateText AddReceiptDescription { get; init; } = null!;
 
     [Required]
-    public MessageTemplate TransactionAddedFormat { get; init; } = null!;
+    public MessageTemplateText TransactionAddedFormat { get; init; } = null!;
 
     [Required]
-    public MessageTemplate TransactionCoreFormat { get; init; } = null!;
+    public MessageTemplateText TransactionCoreFormat { get; init; } = null!;
 
     [Required]
     [MinLength(1)]
@@ -30,10 +30,7 @@ public class Texts : AbstractBot.Configs.Texts
     public Dictionary<string, Agent> Agents { get; init; } = null!;
 
     [Required]
-    public MessageTemplate PaymentConfirmationFormat { get; init; } = null!;
-
-    [Required]
-    public MessageTemplate ListItemFormat { get; init; } = null!;
+    public MessageTemplateText ListItemFormat { get; init; } = null!;
 
     public string? TryGetAgent(string tag)
     {

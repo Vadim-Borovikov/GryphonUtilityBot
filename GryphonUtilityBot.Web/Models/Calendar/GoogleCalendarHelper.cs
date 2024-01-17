@@ -15,9 +15,7 @@ internal sealed class GoogleCalendarHelper : IDisposable
 {
     public GoogleCalendarHelper(Config config)
     {
-        string json = string.IsNullOrWhiteSpace(config.GoogleCredentialJson)
-            ? JsonSerializer.Serialize(config.GoogleCredential)
-            : config.GoogleCredentialJson;
+        string json = JsonSerializer.Serialize(config.GoogleCredential);
         BaseClientService.Initializer initializer = CreateInitializer(json, config.ApplicationName);
         _service = new CalendarService(initializer);
         _calendarId = config.GoogleCalendarId;

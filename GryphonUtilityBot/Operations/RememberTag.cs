@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using AbstractBot.Configs;
+using AbstractBot.Configs.MessageTemplates;
 using AbstractBot.Operations;
 using GryphonUtilityBot.Records;
 using Telegram.Bot.Types;
@@ -17,7 +17,7 @@ internal sealed class RememberTag: Operation<TagQuery>
     public RememberTag(Bot bot) : base(bot)
     {
         Description =
-            new MessageTemplate("*переслать сообщение и добавить текст* – добавить запись в таймлайн с тегами", true);
+            new MessageTemplateText("*переслать сообщение и добавить текст* – добавить запись в таймлайн с тегами", true);
         _bot = bot;
     }
 

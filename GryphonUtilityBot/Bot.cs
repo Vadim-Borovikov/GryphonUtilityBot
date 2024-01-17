@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using AbstractBot.Bots;
 using AbstractBot.Operations;
@@ -50,13 +49,6 @@ public sealed class Bot : BotWithSheets<Config, Texts, object, CommandDataSimple
         Operations.Add(new AddRecord(this));
         Operations.Add(new RememberTag(this));
         Operations.Add(new TagRecord(this, RecordsManager));
-    }
-
-    public override async Task StartAsync(CancellationToken cancellationToken)
-    {
-        await base.StartAsync(cancellationToken);
-
-        await _financemanager.StartAsync();
     }
 
     public Task AddSimultaneousTransactionsAsync(List<Transaction> transactions, DateOnly date, string note)

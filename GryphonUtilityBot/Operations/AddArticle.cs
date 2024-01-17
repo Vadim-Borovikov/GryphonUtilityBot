@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using AbstractBot.Configs;
+using AbstractBot.Configs.MessageTemplates;
 using AbstractBot.Operations;
 using GryphonUtilityBot.Articles;
 using Telegram.Bot.Types;
@@ -17,7 +17,7 @@ internal sealed class AddArticle : Operation<Article>
 
     public AddArticle(Bot bot, Manager manager) : base(bot)
     {
-        Description = new MessageTemplate
+        Description = new MessageTemplateText
         {
             Text = new List<string>
             {
