@@ -2,8 +2,6 @@
 using System.ComponentModel.DataAnnotations;
 using JetBrains.Annotations;
 
-// ReSharper disable NullableWarningSuppressionIsUsed
-
 namespace GryphonUtilityBot.Web.Models;
 
 [PublicAPI]
