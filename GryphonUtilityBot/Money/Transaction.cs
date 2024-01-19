@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using GoogleSheetsManager;
+using GoogleSheetsManager.Extensions;
+using GryphonUtilities.Time;
 using GryphonUtilityBot.Configs;
 using JetBrains.Annotations;
 
@@ -52,12 +55,13 @@ public sealed class Transaction
         Note = note;
     }
 
-    internal static Transaction? TryParseReceipt(string s, DateOnly defaultDate, Texts texts, string defaultCurrency)
+    internal static Transaction? TryParseReceipt(string s, DateOnly defaultDate, Texts texts, Clock clock,
+        string defaultCurrency)
     {
-        string[] parts = s.Split(null);
+        List<string> parts = s.Split(null).Where(p => p.Length > 0).ToList();
 
         int index = 0;
-        if (parts.Length <= index)
+        if (parts.Count <= index)
         {
             return null;
         }
@@ -77,30 +81,32 @@ public sealed class Transaction
         }
 
         ++index;
-        if (parts.Length <= index)
+        if (parts.Count <= index)
         {
             return null;
         }
 
         DateOnly date = defaultDate;
-        if (DateOnly.TryParse(parts[index], out DateOnly result))
+        DateOnly? result = parts[index].ToDateOnly(clock);
+        if (result.HasValue)
         {
-            date = result;
+            date = result.Value;
             ++index;
-            if (parts.Length <= index)
+            if (parts.Count <= index)
             {
                 return null;
             }
         }
 
-        if (!decimal.TryParse(parts[index], out decimal amount))
+        decimal? amount = parts[index].ToDecimal();
+        if (amount is null)
         {
             return null;
         }
 
         string note = string.Join(" ", parts.Skip(index + 1));
 
-        return new Transaction(name, texts.Agents[partner].To, date, amount, defaultCurrency, note);
+        return new Transaction(name, texts.Agents[partner].To, date, amount.Value, defaultCurrency, note);
     }
 
     private const string FromTitle = "Кто";

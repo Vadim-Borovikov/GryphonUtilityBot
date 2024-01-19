@@ -36,7 +36,7 @@ internal sealed class AddReceipt : Operation<Transaction>
 
         DateTimeFull dateTimeFull = _bot.Clock.GetDateTimeFull(message.ForwardDate.Value);
         data = Transaction.TryParseReceipt(message.Text, dateTimeFull.DateOnly, _bot.Config.Texts,
-            _bot.Config.DefaultCurrency);
+            _bot.Clock, _bot.Config.DefaultCurrency);
         return data is not null;
     }
 
