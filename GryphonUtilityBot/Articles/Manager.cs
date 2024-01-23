@@ -96,7 +96,7 @@ internal sealed class Manager
 
     private async Task SaveAsync()
     {
-        await _sheet.ClearAsync(_bot.Config.GoogleRangeArticles);
+        await _sheet.ClearAsync(_bot.Config.GoogleRangeArticlesClear);
         await _sheet.SaveAsync(_bot.Config.GoogleRangeArticles, _articles.ToList());
     }
 

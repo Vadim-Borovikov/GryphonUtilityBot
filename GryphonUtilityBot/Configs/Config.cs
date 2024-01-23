@@ -21,6 +21,10 @@ public class Config : ConfigWithSheets<Texts>
 
     [Required]
     [MinLength(1)]
+    public string GoogleRangeArticlesClear { get; init; } = null!;
+
+    [Required]
+    [MinLength(1)]
     public string GoogleSheetIdTransactions { get; init; } = null!;
 
     [Required]
