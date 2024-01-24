@@ -86,6 +86,13 @@ public sealed class Transaction
             return null;
         }
 
+        decimal? amount = parts[index].ToDecimal();
+        if (amount is null)
+        {
+            return null;
+        }
+        ++index;
+
         DateOnly date = defaultDate;
         DateOnly? result = parts[index].ToDateOnly(clock);
         if (result.HasValue)
@@ -98,13 +105,7 @@ public sealed class Transaction
             }
         }
 
-        decimal? amount = parts[index].ToDecimal();
-        if (amount is null)
-        {
-            return null;
-        }
-
-        string note = string.Join(" ", parts.Skip(index + 1));
+        string note = string.Join(" ", parts.Skip(index));
 
         return new Transaction(name, texts.Agents[partner].To, date, amount.Value, defaultCurrency, note);
     }
