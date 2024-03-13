@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using GryphonUtilities;
 using GryphonUtilities.Time;
@@ -83,6 +84,12 @@ internal sealed class NotionHelper
         catch (NotionApiException ex)
         {
             _logger.LogError($"Method with parameter {param} resulted with NotionApiException with unspecified NotionAPIErrorCode and StatusCode {ex.StatusCode}");
+            _logger.LogException(ex);
+            return new NotionRequestResult<TResult>(false);
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError($"Method with parameter {param} resulted with HttpRequestException with HttpRequestError {ex.HttpRequestError}");
             _logger.LogException(ex);
             return new NotionRequestResult<TResult>(false);
         }
