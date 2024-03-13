@@ -88,11 +88,15 @@ public class Texts : AbstractBot.Configs.Texts
 
     public string? TryGetAgent(string tag)
     {
-        return Agents.Keys.SingleOrDefault(n => tag.Equals(Agents[n].Tag, StringComparison.CurrentCultureIgnoreCase));
+        List<string> keys =
+            Agents.Keys.Where(n => tag.Equals(Agents[n].Tag, StringComparison.CurrentCultureIgnoreCase)).ToList();
+        return keys.Count == 1 ? keys[0] : null;
     }
 
     public string? TryGetPartner(Agent agent)
     {
-        return Agents.Keys.SingleOrDefault(n => n.Equals(agent.Partner, StringComparison.CurrentCultureIgnoreCase));
+        List<string> keys =
+            Agents.Keys.Where(n => n.Equals(agent.Partner, StringComparison.CurrentCultureIgnoreCase)).ToList();
+        return keys.Count == 1 ? keys[0] : null;
     }
 }
