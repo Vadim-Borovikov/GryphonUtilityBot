@@ -114,6 +114,6 @@ public sealed class Transaction
     private const string ToTitle = "Кому";
     private const string DateTitle = "Когда";
     private const string CurrencyTitle = "Чего";
-    private const string AmountTitle = "Сумма напрямую";
+    private const string AmountTitle = "Сколько";
     private const string NoteTitle = "Комментарий";
 }
