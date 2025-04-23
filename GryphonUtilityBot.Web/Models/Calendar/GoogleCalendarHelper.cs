@@ -29,8 +29,8 @@ internal sealed class GoogleCalendarHelper : IDisposable
         Event body = new()
         {
             Summary = summary,
-            Start = new EventDateTime { DateTime = start.UtcDateTime },
-            End = new EventDateTime { DateTime = end.UtcDateTime },
+            Start = new EventDateTime { DateTimeDateTimeOffset = start.UtcDateTime },
+            End = new EventDateTime { DateTimeDateTimeOffset = end.UtcDateTime },
             Description = description,
             ColorId = _colorId
         };
@@ -56,8 +56,8 @@ internal sealed class GoogleCalendarHelper : IDisposable
         string description)
     {
         body.Summary = summary;
-        body.Start = new EventDateTime { DateTime = start.UtcDateTime };
-        body.End = new EventDateTime { DateTime = end.UtcDateTime };
+        body.Start = new EventDateTime { DateTimeDateTimeOffset = start.UtcDateTime };
+        body.End = new EventDateTime { DateTimeDateTimeOffset = end.UtcDateTime };
         body.Description = description;
         EventsResource.UpdateRequest request = _service.Events.Update(body, _calendarId, id);
         return request.ExecuteAsync();

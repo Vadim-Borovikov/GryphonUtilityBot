@@ -25,7 +25,7 @@ internal sealed class PageInfo
         GoogleEventId = GetGoogleEventId(page);
         GoogleEvent = GetGoogleEvent(page);
         IsCancelled = GetStatus(page) == "Отменена";
-        IsDeleted = Page.IsArchived;
+        IsDeleted = Page.InTrash;
     }
 
     private static string GetTitle(Page page)

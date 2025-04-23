@@ -102,13 +102,13 @@ internal sealed class NotionHelper
         do
         {
             DelayIfNeeded();
-            PaginatedList<Page>? chunk = await _client.Databases.QueryAsync(_databaseId, query);
-            if (chunk is null)
+            DatabaseQueryResponse? response = await _client.Databases.QueryAsync(_databaseId, query);
+            if (response is null)
             {
                 break;
             }
-            result.AddRange(chunk.Results.Select(p => new PageInfo(p, _clock)));
-            query.StartCursor = chunk.HasMore ? chunk.NextCursor : null;
+            result.AddRange(response.Results.OfType<Page>().Select(p => new PageInfo(p, _clock)));
+            query.StartCursor = response.HasMore ? response.NextCursor : null;
         }
         while (query.StartCursor is not null);
 
