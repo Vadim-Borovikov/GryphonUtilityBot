@@ -1,6 +1,5 @@
 ﻿using GryphonUtilityBot.Web.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -16,10 +15,10 @@ namespace GryphonUtilityBot.Web.Controllers;
 [Route("webhook/notion")]
 public sealed class NotionWebhookController : Controller
 {
-    public NotionWebhookController(IOptions<Config> options, Logger logger)
+    public NotionWebhookController(Config config, Logger logger)
     {
         _logger = logger;
-        _secret = options.Value.NotionWebhookSecret;
+        _secret = config.NotionWebhookSecret;
     }
 
     public async Task<IActionResult> Post()

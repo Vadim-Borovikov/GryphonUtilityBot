@@ -2,7 +2,6 @@
 using GryphonUtilityBot.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
 using System.Linq;
 using GryphonUtilityBot.Money;
 
@@ -11,7 +10,7 @@ namespace GryphonUtilityBot.Web.Controllers;
 [Route("[controller]")]
 public class PurchaseController : ControllerBase
 {
-    public PurchaseController(IOptions<Config> config) => _config = config.Value;
+    public PurchaseController(Config config) => _config = config;
 
     [HttpPost]
     public async Task<ActionResult> Post([FromServices] BotSingleton singleton, [FromBody] Purchase model)
