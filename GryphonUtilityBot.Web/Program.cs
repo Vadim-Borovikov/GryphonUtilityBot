@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Threading.Tasks;
 using GryphonUtilities;
 using GryphonUtilities.Time;
 using GryphonUtilityBot.Web.Models;
@@ -14,7 +15,7 @@ namespace GryphonUtilityBot.Web;
 
 internal static class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         Logger.DeleteExceptionLog();
         Clock clock = new();
@@ -23,21 +24,20 @@ internal static class Program
         {
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-            Config? config = Configure(builder);
-            if (config is null)
-            {
-                throw new NullReferenceException("Can't load config.");
-            }
-
+            Config config = Configure(builder) ?? throw new NullReferenceException("Can't load config.");
             clock = new Clock(config.SystemTimeZoneIdLogs);
             logger = new Logger(clock);
             logger.LogStartup();
 
             IServiceCollection services = builder.Services;
-            services.AddControllersWithViews().AddNewtonsoftJson();
+            services.AddControllersWithViews().AddNewtonsoftJson(); //  TODO remove after bot update
+
+            services.AddSingleton(logger);
 
             AddBotTo(services);
-            AddCalendarTo(services, config);
+
+            // TODO
+            // AddCalendarTo(services, config);
 
             WebApplication app = builder.Build();
 
@@ -51,7 +51,7 @@ internal static class Program
 
             UseUpdateEndpoint(app, config.Token);
 
-            app.Run();
+            await app.RunAsync();
         }
         catch (Exception ex)
         {

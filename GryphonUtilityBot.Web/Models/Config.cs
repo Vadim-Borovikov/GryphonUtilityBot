@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
 using JetBrains.Annotations;
 
 namespace GryphonUtilityBot.Web.Models;
@@ -31,6 +32,8 @@ public sealed class Config : Configs.Config
     [MinLength(1)]
     public string NotionToken { get; init; } = null!;
 
+    public string? NotionWebhookSecret { get; init; }
+
     [Required]
     [MinLength(1)]
     public string NotionDatabaseId { get; init; } = null!;
@@ -53,4 +56,10 @@ public sealed class Config : Configs.Config
     [Required]
     [MinLength(1)]
     public string GoogleCalendarColorId { get; init; } = null!;
+
+    public static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+        PropertyNameCaseInsensitive = true
+    };
 }
