@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using GryphonUtilities.Time;
 
-namespace GryphonUtilityBot.Web.Models.Calendar;
+namespace GryphonUtilityBot.Web.Models.Calendar.Notion;
 
 internal sealed class PageInfo
 {

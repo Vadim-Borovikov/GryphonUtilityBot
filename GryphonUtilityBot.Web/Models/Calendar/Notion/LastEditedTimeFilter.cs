@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 using Notion.Client;
 using Newtonsoft.Json;
 
-namespace GryphonUtilityBot.Web.Models.Calendar;
+namespace GryphonUtilityBot.Web.Models.Calendar.Notion;
 
 internal sealed class LastEditedTimeFilter : Filter
 {

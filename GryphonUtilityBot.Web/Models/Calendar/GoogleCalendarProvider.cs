@@ -11,9 +11,9 @@ using GryphonUtilities.Time;
 
 namespace GryphonUtilityBot.Web.Models.Calendar;
 
-internal sealed class GoogleCalendarHelper : IDisposable
+internal sealed class GoogleCalendarProvider : IDisposable
 {
-    public GoogleCalendarHelper(Config config)
+    public GoogleCalendarProvider(Config config)
     {
         string json = JsonSerializer.Serialize(config.GoogleCredential);
         BaseClientService.Initializer initializer = CreateInitializer(json, config.ApplicationName);

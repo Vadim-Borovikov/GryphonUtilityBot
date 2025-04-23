@@ -5,17 +5,18 @@ using System.Threading.Tasks;
 using Google.Apis.Calendar.v3.Data;
 using GryphonUtilities;
 using GryphonUtilities.Time;
+using GryphonUtilityBot.Web.Models.Calendar.Notion;
 using Microsoft.Extensions.Hosting;
 
 namespace GryphonUtilityBot.Web.Models.Calendar;
 
 internal sealed class Service : IHostedService, IDisposable
 {
-    public Service(NotionHelper notionHelper, GoogleCalendarHelper googleCalendarHelper, Config config,
+    public Service(Provider notionProvider, GoogleCalendarProvider googleCalendarProvider, Config config,
         BotSingleton botSingleton)
     {
-        _notionHelper = notionHelper;
-        _googleCalendarHelper = googleCalendarHelper;
+        _notionProvider = notionProvider;
+        _googleCalendarProvider = googleCalendarProvider;
         _config = config;
         _clock = botSingleton.Bot.Clock;
         _saveManager = new SaveManager<Data>(config.SavePath, _clock);
@@ -67,7 +68,7 @@ internal sealed class Service : IHostedService, IDisposable
             }
             else
             {
-                NotionRequestResult<PageInfo> result = await _notionHelper.TryGetPageAsync(id);
+                RequestResult<PageInfo> result = await _notionProvider.TryGetPageAsync(id);
                 if (!result.Successfull)
                 {
                     continue;
@@ -102,8 +103,8 @@ internal sealed class Service : IHostedService, IDisposable
     {
         _saveManager.SaveData.LastUpdated ??=
             _clock.GetDateTimeFull(_config.NotionStartWatchingDate, TimeOnly.MinValue);
-        NotionRequestResult<List<PageInfo>> result =
-            await _notionHelper.TryGetPagesAsync(_saveManager.SaveData.LastUpdated.Value);
+        RequestResult<List<PageInfo>> result =
+            await _notionProvider.TryGetPagesAsync(_saveManager.SaveData.LastUpdated.Value);
 
         if (result.Instance is null)
         {
@@ -145,7 +146,7 @@ internal sealed class Service : IHostedService, IDisposable
     private Task<Event> CreateEventAsync(PageInfo page, DateTimeFull start, DateTimeFull end)
     {
         _logger.LogTimedMessage($"Creating event for page \"{page.Title}\".");
-        return _googleCalendarHelper.CreateEventAsync(page.Title, start, end, page.Page.Url);
+        return _googleCalendarProvider.CreateEventAsync(page.Title, start, end, page.Page.Url);
     }
 
     private async Task<Event?> GetEventAsync(PageInfo page)
@@ -153,13 +154,13 @@ internal sealed class Service : IHostedService, IDisposable
         _logger.LogTimedMessage($"Acquiring event for page \"{page.Title}\".");
         return string.IsNullOrWhiteSpace(page.GoogleEventId)
             ? null
-            : await _googleCalendarHelper.GetEventAsync(page.GoogleEventId);
+            : await _googleCalendarProvider.GetEventAsync(page.GoogleEventId);
     }
 
     private async Task UpdateEventAsync(Event calendarEvent, PageInfo page, DateTimeFull start, DateTimeFull end)
     {
         _logger.LogTimedMessage($"Updating event \"{calendarEvent.Id}\" for page \"{page.Title}\".");
-        await _googleCalendarHelper.UpdateEventAsync(page.GoogleEventId, calendarEvent, page.Title, start, end,
+        await _googleCalendarProvider.UpdateEventAsync(page.GoogleEventId, calendarEvent, page.Title, start, end,
             page.Page.Url);
         _saveManager.SaveData.Meetings[page.Page.Id] = end;
     }
@@ -167,25 +168,25 @@ internal sealed class Service : IHostedService, IDisposable
     private async Task UpdatePageAsync(PageInfo page, Event calendarEvent, DateTimeFull end)
     {
         _logger.LogTimedMessage($"Updating page \"{page.Title}\" for event \"{calendarEvent.Id}\"");
-        await _notionHelper.UpdateAsync(page, calendarEvent.Id, new Uri(calendarEvent.HtmlLink));
+        await _notionProvider.UpdateAsync(page, calendarEvent.Id, new Uri(calendarEvent.HtmlLink));
         _saveManager.SaveData.Meetings[page.Page.Id] = end;
     }
 
     private async Task ClearPageAsync(PageInfo page)
     {
         _logger.LogTimedMessage($"Clearing page \"{page.Title}\" of event \"{page.GoogleEventId}\"");
-        await _notionHelper.ClearAsync(page);
+        await _notionProvider.ClearAsync(page);
         _saveManager.SaveData.Meetings.Remove(page.Page.Id);
     }
 
     private async Task DeleteEventAsync(Event calendarEvent, PageInfo page)
     {
         _logger.LogTimedMessage($"Deleting event \"{page.GoogleEventId}\" for page \"{page.Title}\".");
-        await _googleCalendarHelper.DeleteEventAsync(calendarEvent);
+        await _googleCalendarProvider.DeleteEventAsync(calendarEvent);
     }
 
-    private readonly NotionHelper _notionHelper;
-    private readonly GoogleCalendarHelper _googleCalendarHelper;
+    private readonly Provider _notionProvider;
+    private readonly GoogleCalendarProvider _googleCalendarProvider;
     private readonly Config _config;
     private CancellationTokenSource? _cancellationTokenSource;
     private readonly SaveManager<Data> _saveManager;

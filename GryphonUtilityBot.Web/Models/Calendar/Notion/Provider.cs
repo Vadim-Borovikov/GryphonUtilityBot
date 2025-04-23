@@ -7,11 +7,11 @@ using GryphonUtilities;
 using GryphonUtilities.Time;
 using Notion.Client;
 
-namespace GryphonUtilityBot.Web.Models.Calendar;
+namespace GryphonUtilityBot.Web.Models.Calendar.Notion;
 
-internal sealed class NotionHelper
+internal sealed class Provider
 {
-    public NotionHelper(INotionClient client, Config config, BotSingleton botSingleton)
+    public Provider(INotionClient client, Config config, BotSingleton botSingleton)
     {
         _client = client;
         _clock = botSingleton.Bot.Clock;
@@ -20,9 +20,9 @@ internal sealed class NotionHelper
         _logger = botSingleton.Bot.Logger;
     }
 
-    public Task<NotionRequestResult<PageInfo>> TryGetPageAsync(string id) => Wrapper(GetPageAsync, id);
+    public Task<RequestResult<PageInfo>> TryGetPageAsync(string id) => Wrapper(GetPageAsync, id);
 
-    public Task<NotionRequestResult<List<PageInfo>>> TryGetPagesAsync(DateTimeFull updatedSince)
+    public Task<RequestResult<List<PageInfo>>> TryGetPagesAsync(DateTimeFull updatedSince)
     {
         return Wrapper(GetPagesAsync, updatedSince);
     }
@@ -60,38 +60,38 @@ internal sealed class NotionHelper
         return new PageInfo(page, _clock);
     }
 
-    private async Task<NotionRequestResult<TResult>> Wrapper<TParam, TResult>(Func<TParam, Task<TResult>> method,
+    private async Task<RequestResult<TResult>> Wrapper<TParam, TResult>(Func<TParam, Task<TResult>> method,
         TParam param)
         where TResult : class
     {
         try
         {
             TResult result = await method(param);
-            return new NotionRequestResult<TResult>(result);
+            return new RequestResult<TResult>(result);
         }
         catch (NotionApiException ex) when (ex.NotionAPIErrorCode == NotionAPIErrorCode.ObjectNotFound)
         {
             _logger.LogError($"Method with parameter {param} resulted with ObjectNotFound");
             _logger.LogException(ex);
-            return new NotionRequestResult<TResult>(true);
+            return new RequestResult<TResult>(true);
         }
         catch (NotionApiException ex) when (ex.NotionAPIErrorCode.HasValue)
         {
             _logger.LogError($"Method with parameter {param} resulted with NotionApiException with NotionAPIErrorCode {ex.NotionAPIErrorCode} and StatusCode {ex.StatusCode}");
             _logger.LogException(ex);
-            return new NotionRequestResult<TResult>(false);
+            return new RequestResult<TResult>(false);
         }
         catch (NotionApiException ex)
         {
             _logger.LogError($"Method with parameter {param} resulted with NotionApiException with unspecified NotionAPIErrorCode and StatusCode {ex.StatusCode}");
             _logger.LogException(ex);
-            return new NotionRequestResult<TResult>(false);
+            return new RequestResult<TResult>(false);
         }
         catch (HttpRequestException ex)
         {
             _logger.LogError($"Method with parameter {param} resulted with HttpRequestException with HttpRequestError {ex.HttpRequestError}");
             _logger.LogException(ex);
-            return new NotionRequestResult<TResult>(false);
+            return new RequestResult<TResult>(false);
         }
     }
 

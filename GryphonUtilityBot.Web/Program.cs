@@ -85,8 +85,8 @@ internal static class Program
     private static void AddCalendarTo(IServiceCollection services, Config config)
     {
         services.AddNotionClient(options => options.AuthToken = config.NotionToken);
-        services.AddSingleton<NotionHelper>();
-        services.AddSingleton<GoogleCalendarHelper>();
+        services.AddSingleton<Models.Calendar.Notion.Provider>();
+        services.AddSingleton<GoogleCalendarProvider>();
         services.AddHostedService<Service>();
     }
 
