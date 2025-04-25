@@ -32,12 +32,12 @@ internal static class Program
             IServiceCollection services = builder.Services;
             services.AddControllersWithViews().AddNewtonsoftJson(); //  TODO remove after bot update
 
+            services.AddSingleton(clock);
             services.AddSingleton(logger);
 
             AddBotTo(services);
 
-            // TODO
-            // AddCalendarTo(services, config);
+            AddCalendarTo(services, config);
 
             WebApplication app = builder.Build();
 
@@ -87,7 +87,7 @@ internal static class Program
         services.AddNotionClient(options => options.AuthToken = config.NotionToken);
         services.AddSingleton<Models.Calendar.Notion.Provider>();
         services.AddSingleton<GoogleCalendarProvider>();
-        services.AddHostedService<Service>();
+        services.AddSingleton<IUpdatesSubscriber, Synchronizer>();
     }
 
     private static void UseUpdateEndpoint(IApplicationBuilder app, string token)

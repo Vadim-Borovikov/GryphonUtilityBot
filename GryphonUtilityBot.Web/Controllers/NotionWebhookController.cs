@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System;
 using System.Threading.Tasks;
+using GryphonUtilityBot.Web.Models.Calendar;
 using GryphonUtilityBot.Web.Models.Calendar.Notion;
 
 namespace GryphonUtilityBot.Web.Controllers;
@@ -15,9 +16,10 @@ namespace GryphonUtilityBot.Web.Controllers;
 [Route("webhook/notion")]
 public sealed class NotionWebhookController : Controller
 {
-    public NotionWebhookController(Config config, Logger logger)
+    public NotionWebhookController(Config config, Logger logger, IUpdatesSubscriber subscriber)
     {
         _logger = logger;
+        _subscriber = subscriber;
         _secret = config.NotionWebhookSecret;
     }
 
@@ -30,7 +32,7 @@ public sealed class NotionWebhookController : Controller
             JsonElement json = JsonSerializer.Deserialize<JsonElement>(rawBody);
             return json.TryGetProperty(VerificationTokenProperty, out JsonElement tokenJson)
                 ? HandleVerificationUpdate(tokenJson)
-                : HandleContentUpdate(rawBody);
+                : await HandleContentUpdate(rawBody);
         }
     }
 
@@ -41,7 +43,7 @@ public sealed class NotionWebhookController : Controller
         return Ok();
     }
 
-    private IActionResult HandleContentUpdate(string rawBody)
+    private async Task<IActionResult> HandleContentUpdate(string rawBody)
     {
         if (!VerifySignature(rawBody))
         {
@@ -57,6 +59,32 @@ public sealed class NotionWebhookController : Controller
         }
 
         _logger.LogTimedMessage($"Succesfully parsed webhook payload.{Environment.NewLine}{rawBody}");
+
+        switch (webhookEvent.Type)
+        {
+            case WebhookEvent.EventType.Created:
+                await _subscriber.OnCreatedAsync(webhookEvent.Entity.Id);
+                break;
+            case WebhookEvent.EventType.PropertiesUpdated:
+                if (webhookEvent.Data.UpdatedProperties is null)
+                {
+                    _logger.LogError("Updated properties are null.");
+                    return BadRequest();
+                }
+                await _subscriber.OnPropertiesUpdatedAsync(webhookEvent.Entity.Id, webhookEvent.Data.UpdatedProperties);
+                break;
+            case WebhookEvent.EventType.Moved:
+                await _subscriber.OnMovedAsync(webhookEvent.Entity.Id, webhookEvent.Data.Parent.Id);
+                break;
+            case WebhookEvent.EventType.Deleted:
+                await _subscriber.OnCreatedAsync(webhookEvent.Entity.Id);
+                break;
+            case WebhookEvent.EventType.Undeleted:
+                await _subscriber.OnCreatedAsync(webhookEvent.Entity.Id);
+                break;
+            default: throw new ArgumentOutOfRangeException();
+        }
+
         return Ok();
     }
 
@@ -102,6 +130,7 @@ public sealed class NotionWebhookController : Controller
 
     private readonly string? _secret;
     private readonly Logger _logger;
+    private readonly IUpdatesSubscriber _subscriber;
 
     private const string VerificationTokenProperty = "verification_token";
     private const string SignatureHeader = "X-Notion-Signature";

@@ -27,31 +27,32 @@ internal sealed class Provider
         return Wrapper(GetPagesAsync, updatedSince);
     }
 
-    public async Task UpdateAsync(PageInfo page, string eventId, Uri eventUri)
+    public async Task UpdateEventDataAsync(PageInfo page, string eventId, Uri? eventUri)
     {
-        if (page.GoogleEventId != eventId)
+        Dictionary<string, PropertyValue> toUpdate = new();
+
+        if (!page.GoogleEventId.Equals(eventId, StringComparison.Ordinal))
         {
-            await UpdateEventIdAsync(page.Page.Id, eventId);
+            toUpdate["Google Event Id"] = CreateTextValue(eventId);
         }
 
         if (page.GoogleEvent != eventUri)
         {
-            await UpdateEventUriAsync(page.Page.Id, eventUri);
-        }
-    }
-
-    public async Task ClearAsync(PageInfo page)
-    {
-        if (!string.IsNullOrWhiteSpace(page.GoogleEventId))
-        {
-            await UpdateEventIdAsync(page.Page.Id);
+            toUpdate["Google Event"] = eventUri is null
+                ? new UrlPropertyValue()
+                : new UrlPropertyValue { Url = eventUri.AbsoluteUri };
         }
 
-        if (page.GoogleEvent is not null)
+        if (toUpdate.Count == 0)
         {
-            await UpdateEventUriAsync(page.Page.Id);
+            return;
         }
+
+        DelayIfNeeded();
+        await _client.Pages.UpdatePropertiesAsync(page.Page.Id, toUpdate);
     }
+
+    public Task ClearEventDataAsync(PageInfo page) => UpdateEventDataAsync(page, string.Empty, null);
 
     private async Task<PageInfo> GetPageAsync(string id)
     {
@@ -115,26 +116,6 @@ internal sealed class Provider
         return result;
     }
 
-    private async Task UpdateEventIdAsync(string pageId, string? eventId = null)
-    {
-        Dictionary<string, PropertyValue> eventIdProperty = new()
-        {
-            { "Google Event Id", CreateTextValue(eventId) },
-        };
-        DelayIfNeeded();
-        await _client.Pages.UpdatePropertiesAsync(pageId, eventIdProperty);
-    }
-
-    private async Task UpdateEventUriAsync(string pageId, Uri? eventUri = null)
-    {
-        Dictionary<string, PropertyValue?> eventProperty = new()
-        {
-            { "Google Event", eventUri is null ? null : new UrlPropertyValue { Url = eventUri.AbsoluteUri } }
-        };
-        DelayIfNeeded();
-        await _client.Pages.UpdatePropertiesAsync(pageId, eventProperty);
-    }
-
     private static Filter GetQueryFilter(DateTimeFull updatedSince)
     {
         LastEditedTimeFilter lastEditedFilter = new(onOrAfter: updatedSince);
@@ -165,13 +146,13 @@ internal sealed class Provider
         }
     }
 
-    private static RichTextPropertyValue CreateTextValue(string? content)
+    private static RichTextPropertyValue CreateTextValue(string content)
     {
         RichTextPropertyValue result = new()
         {
             RichText = new List<RichTextBase>()
         };
-        Text text = new() { Content = content ?? "" };
+        Text text = new() { Content = content };
         RichTextText item = new() { Text = text };
         result.RichText.Add(item);
         return result;

@@ -63,13 +63,9 @@ internal sealed class GoogleCalendarProvider : IDisposable
         return request.ExecuteAsync();
     }
 
-    public Task DeleteEventAsync(Event calendarEvent)
+    public Task DeleteEventAsync(string id)
     {
-        if (IsDeleted(calendarEvent))
-        {
-            return Task.CompletedTask;
-        }
-        EventsResource.DeleteRequest request = _service.Events.Delete(_calendarId, calendarEvent.Id);
+        EventsResource.DeleteRequest request = _service.Events.Delete(_calendarId, id);
         return request.ExecuteAsync();
     }
 

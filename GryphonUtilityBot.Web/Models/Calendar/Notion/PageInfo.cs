@@ -14,7 +14,7 @@ internal sealed class PageInfo
     public readonly string GoogleEventId;
     public readonly Uri? GoogleEvent;
     public readonly bool IsCancelled;
-    public readonly bool IsDeleted;
+    public readonly bool MarkedAsMeeting;
 
     public PageInfo(Page page, Clock clock)
     {
@@ -25,7 +25,13 @@ internal sealed class PageInfo
         GoogleEventId = GetGoogleEventId(page);
         GoogleEvent = GetGoogleEvent(page);
         IsCancelled = GetStatus(page) == "Отменена";
-        IsDeleted = Page.InTrash;
+        MarkedAsMeeting = GetMeetingMark(page);
+    }
+
+    public bool IsRelevantMeeting()
+    {
+        return MarkedAsMeeting && !IsCancelled && !Page.InTrash && Dates.HasValue
+               && (Dates.Value.End > Dates.Value.Start) && (Dates.Value.End > _clock.Now());
     }
 
     private static string GetTitle(Page page)
@@ -40,21 +46,25 @@ internal sealed class PageInfo
 
     private (DateTimeFull, DateTimeFull)? GetDates(Page page)
     {
-        if (page.Properties["Дата"] is not FormulaPropertyValue formula)
+        if (page.Properties["Дата"] is not DatePropertyValue date)
         {
             throw new NullReferenceException("\"Дата\" does not contain FormulaPropertyValue.");
         }
 
-        Date? date = formula.Formula.Date;
-        if (date is null)
+        return date.Date.Start is null || date.Date.End is null
+            ? null
+            : (_clock.GetDateTimeFull(date.Date.Start.Value.ToUniversalTime()),
+                _clock.GetDateTimeFull(date.Date.End.Value.ToUniversalTime()));
+    }
+
+    private static bool GetMeetingMark(Page page)
+    {
+        if (page.Properties["Встреча"] is not CheckboxPropertyValue check)
         {
-            throw new NullReferenceException("\"Дата\" formula does not contain a date value.");
+            throw new NullReferenceException("\"Встреча\" does not contain CheckboxPropertyValue.");
         }
 
-        return date.Start is null || date.End is null
-            ? null
-            : (_clock.GetDateTimeFull(date.Start.Value.ToUniversalTime()),
-                _clock.GetDateTimeFull(date.End.Value.ToUniversalTime()));
+        return check.Checkbox;
     }
 
     private static string GetGoogleEventId(Page page)

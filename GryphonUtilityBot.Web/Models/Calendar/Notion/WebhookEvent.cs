@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using JetBrains.Annotations;
 
 namespace GryphonUtilityBot.Web.Models.Calendar.Notion;
 
@@ -8,23 +8,18 @@ public sealed class WebhookEvent
 {
     public sealed class EntityType
     {
-        [UsedImplicitly]
-        public string? Id { get; set; }
+        [Required]
+        public string Id { get; set; } = null!;
     }
 
     public sealed class PageType
     {
-        [UsedImplicitly]
-        public EntityType? Parent { get; set; }
+        [Required]
+        public EntityType Parent { get; set; } = null!;
 
-        [UsedImplicitly]
-        public List<string>? UpdatedProperties { get; set; }
-
-        [UsedImplicitly]
-        public List<EntityType>? UpdatedBlocks { get; set; }
+        public List<string>? UpdatedProperties { get; set; } = null!;
     }
 
-    [UsedImplicitly]
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum EventType
     {
@@ -44,12 +39,12 @@ public sealed class WebhookEvent
         Undeleted
     }
 
-    [UsedImplicitly]
-    public EventType? Type { get; set; }
+    [Required]
+    public EventType Type { get; set; }
 
-    [UsedImplicitly]
-    public EntityType? Entity { get; set; }
+    [Required]
+    public EntityType Entity { get; set; } = null!;
 
-    [UsedImplicitly]
-    public PageType? Data { get; set; }
+    [Required]
+    public PageType Data { get; set; } = null!;
 }

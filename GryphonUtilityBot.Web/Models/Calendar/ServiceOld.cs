@@ -10,9 +10,10 @@ using Microsoft.Extensions.Hosting;
 
 namespace GryphonUtilityBot.Web.Models.Calendar;
 
-internal sealed class Service : IHostedService, IDisposable
+// TODO Temp
+internal sealed class ServiceOld : IHostedService, IDisposable
 {
-    public Service(Provider notionProvider, GoogleCalendarProvider googleCalendarProvider, Config config,
+    public ServiceOld(Provider notionProvider, GoogleCalendarProvider googleCalendarProvider, Config config,
         BotSingleton botSingleton)
     {
         _notionProvider = notionProvider;
@@ -75,19 +76,19 @@ internal sealed class Service : IHostedService, IDisposable
                 }
 
                 PageInfo? info = result.Instance;
-                if (info?.Dates is null || info.IsDeleted)
+                if (info?.Dates is null || info.Page.InTrash)
                 {
                     if (!string.IsNullOrWhiteSpace(info?.GoogleEventId))
                     {
                         Event? calendarEvent = await GetEventAsync(info);
                         if (calendarEvent is not null)
                         {
-                            await DeleteEventAsync(calendarEvent, info);
+                            await DeleteEventAsync(info);
                         }
                     }
                     toRemove.Add(id);
                 }
-                if (info is { IsDeleted: false, Dates: null })
+                if (info is { Page.InTrash: false, Dates: null })
                 {
                     await ClearPageAsync(info);
                 }
@@ -133,7 +134,7 @@ internal sealed class Service : IHostedService, IDisposable
             }
             else if (page.IsCancelled)
             {
-                await DeleteEventAsync(calendarEvent, page);
+                await DeleteEventAsync(page);
                 await ClearPageAsync(page);
             }
             else
@@ -168,21 +169,21 @@ internal sealed class Service : IHostedService, IDisposable
     private async Task UpdatePageAsync(PageInfo page, Event calendarEvent, DateTimeFull end)
     {
         _logger.LogTimedMessage($"Updating page \"{page.Title}\" for event \"{calendarEvent.Id}\"");
-        await _notionProvider.UpdateAsync(page, calendarEvent.Id, new Uri(calendarEvent.HtmlLink));
+        await _notionProvider.UpdateEventDataAsync(page, calendarEvent.Id, new Uri(calendarEvent.HtmlLink));
         _saveManager.SaveData.Meetings[page.Page.Id] = end;
     }
 
     private async Task ClearPageAsync(PageInfo page)
     {
         _logger.LogTimedMessage($"Clearing page \"{page.Title}\" of event \"{page.GoogleEventId}\"");
-        await _notionProvider.ClearAsync(page);
+        await _notionProvider.ClearEventDataAsync(page);
         _saveManager.SaveData.Meetings.Remove(page.Page.Id);
     }
 
-    private async Task DeleteEventAsync(Event calendarEvent, PageInfo page)
+    private async Task DeleteEventAsync(PageInfo page)
     {
         _logger.LogTimedMessage($"Deleting event \"{page.GoogleEventId}\" for page \"{page.Title}\".");
-        await _googleCalendarProvider.DeleteEventAsync(calendarEvent);
+        await _googleCalendarProvider.DeleteEventAsync(page.GoogleEventId);
     }
 
     private readonly Provider _notionProvider;
