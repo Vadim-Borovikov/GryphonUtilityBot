@@ -59,7 +59,7 @@ internal sealed class PageInfo
     {
         if (page.Properties["Дата"] is not DatePropertyValue date)
         {
-            throw new NullReferenceException("\"Дата\" does not contain FormulaPropertyValue.");
+            throw new NullReferenceException("\"Дата\" does not contain DatePropertyValue.");
         }
 
         return date.Date.Start is null || date.Date.End is null
