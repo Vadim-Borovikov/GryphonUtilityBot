@@ -35,7 +35,7 @@ internal sealed class Synchronizer : IUpdatesSubscriber
         }
     }
 
-    public async Task OnPropertiesUpdatedAsync(string id, List<string> properties)
+    public async Task OnPropertiesUpdatedAsync(string id, IEnumerable<string> properties)
     {
         if (!_relevantProperties.Overlaps(properties))
         {
