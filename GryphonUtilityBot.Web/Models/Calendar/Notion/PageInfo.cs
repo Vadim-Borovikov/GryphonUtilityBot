@@ -14,6 +14,7 @@ internal sealed class PageInfo
     public readonly string GoogleEventId;
     public readonly Uri? GoogleEvent;
     public readonly bool IsCancelled;
+    public readonly Uri? Link;
 
     public PageInfo(Page page, Clock clock)
     {
@@ -24,7 +25,18 @@ internal sealed class PageInfo
         GoogleEventId = GetGoogleEventId(page);
         GoogleEvent = GetGoogleEvent(page);
         IsCancelled = GetStatus(page) == "Отменена";
+        Link = GetLink(page);
         _markedAsMeeting = GetMeetingMark(page);
+    }
+
+    private static Uri? GetLink(Page page)
+    {
+        if (page.Properties["Ссылка"] is not UrlPropertyValue eventUrl)
+        {
+            throw new NullReferenceException("\"Ссылка\" does not contain UrlPropertyValue.");
+        }
+
+        return string.IsNullOrWhiteSpace(eventUrl.Url) ? null : new Uri(eventUrl.Url);
     }
 
     public bool IsRelevantMeeting()

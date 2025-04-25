@@ -93,8 +93,8 @@ internal sealed class Synchronizer : IUpdatesSubscriber
     private async Task CreateEventAndUpdatePageAsync(PageInfo page, (DateTimeFull Start, DateTimeFull End) dates)
     {
         _logger.LogTimedMessage($"Creating event for page \"{page.Title}\"...");
-        Event calendarEvent =
-            await _googleCalendarProvider.CreateEventAsync(page.Title, dates.Start, dates.End, page.Page.Url);
+        Event calendarEvent = await _googleCalendarProvider.CreateEventAsync(page.Title, dates.Start, dates.End,
+            page.Page.Url, page.Link?.ToString());
 
         _logger.LogTimedMessage($"Updating page \"{page.Title}\" with data from event \"{calendarEvent.Id}\"...");
         Uri uri = new(calendarEvent.HtmlLink);
@@ -105,7 +105,7 @@ internal sealed class Synchronizer : IUpdatesSubscriber
     {
         _logger.LogTimedMessage($"Updating event \"{calendarEvent.Id}\" for page \"{page.Title}\".");
         return _googleCalendarProvider.UpdateEventAsync(page.GoogleEventId, calendarEvent, page.Title, dates.Start,
-            dates.End, page.Page.Url);
+            dates.End, page.Page.Url, page.Link?.ToString());
     }
 
     private async Task DeleteEventAndClearPageAsync(PageInfo page)

@@ -147,7 +147,7 @@ internal sealed class ServiceOld : IHostedService, IDisposable
     private Task<Event> CreateEventAsync(PageInfo page, DateTimeFull start, DateTimeFull end)
     {
         _logger.LogTimedMessage($"Creating event for page \"{page.Title}\".");
-        return _googleCalendarProvider.CreateEventAsync(page.Title, start, end, page.Page.Url);
+        return _googleCalendarProvider.CreateEventAsync(page.Title, start, end, page.Page.Url, page.Link?.ToString());
     }
 
     private async Task<Event?> GetEventAsync(PageInfo page)
@@ -162,7 +162,7 @@ internal sealed class ServiceOld : IHostedService, IDisposable
     {
         _logger.LogTimedMessage($"Updating event \"{calendarEvent.Id}\" for page \"{page.Title}\".");
         await _googleCalendarProvider.UpdateEventAsync(page.GoogleEventId, calendarEvent, page.Title, start, end,
-            page.Page.Url);
+            page.Page.Url, page.Link?.ToString());
         _saveManager.SaveData.Meetings[page.Page.Id] = end;
     }
 
