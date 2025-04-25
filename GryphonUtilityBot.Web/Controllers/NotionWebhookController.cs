@@ -77,10 +77,10 @@ public sealed class NotionWebhookController : Controller
                 await _subscriber.OnMovedAsync(webhookEvent.Entity.Id, webhookEvent.Data.Parent.Id);
                 break;
             case WebhookEvent.EventType.Deleted:
-                await _subscriber.OnCreatedAsync(webhookEvent.Entity.Id);
+                await _subscriber.OnDeletedAsync(webhookEvent.Entity.Id);
                 break;
             case WebhookEvent.EventType.Undeleted:
-                await _subscriber.OnCreatedAsync(webhookEvent.Entity.Id);
+                await _subscriber.OnUndeletedAsync(webhookEvent.Entity.Id);
                 break;
             default: throw new ArgumentOutOfRangeException();
         }
