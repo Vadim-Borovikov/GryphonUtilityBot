@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using GryphonUtilities;
@@ -15,17 +14,11 @@ internal sealed class Provider
     {
         _client = client;
         _clock = botSingleton.Bot.Clock;
-        _databaseId = config.NotionDatabaseId;
         _updatePeriod = TimeSpan.FromSeconds(config.NotionUpdatesPerSecondLimit);
         _logger = botSingleton.Bot.Logger;
     }
 
     public Task<RequestResult<PageInfo>> TryGetPageAsync(string id) => Wrapper(GetPageAsync, id);
-
-    public Task<RequestResult<List<PageInfo>>> TryGetPagesAsync(DateTimeFull updatedSince)
-    {
-        return Wrapper(GetPagesAsync, updatedSince);
-    }
 
     public async Task UpdateEventDataAsync(PageInfo page, string eventId, Uri? eventUri)
     {
@@ -96,40 +89,6 @@ internal sealed class Provider
         }
     }
 
-    private async Task<List<PageInfo>> GetPagesAsync(DateTimeFull updatedSince)
-    {
-        DatabasesQueryParameters query = new() { Filter = GetQueryFilter(updatedSince) };
-        List<PageInfo> result = new();
-        do
-        {
-            DelayIfNeeded();
-            DatabaseQueryResponse? response = await _client.Databases.QueryAsync(_databaseId, query);
-            if (response is null)
-            {
-                break;
-            }
-            result.AddRange(response.Results.OfType<Page>().Select(p => new PageInfo(p, _clock)));
-            query.StartCursor = response.HasMore ? response.NextCursor : null;
-        }
-        while (query.StartCursor is not null);
-
-        return result;
-    }
-
-    private static Filter GetQueryFilter(DateTimeFull updatedSince)
-    {
-        LastEditedTimeFilter lastEditedFilter = new(onOrAfter: updatedSince);
-        CheckboxFilter meetingFilter = new("Встреча", true);
-        DateFilter dateFilter = new("Дата", onOrAfter: updatedSince.UtcDateTime);
-        List<Filter> filters = new()
-        {
-            lastEditedFilter,
-            meetingFilter,
-            dateFilter
-        };
-        return new CompoundFilter(and: filters);
-    }
-
     private void DelayIfNeeded()
     {
         lock (_delayLocker)
@@ -160,7 +119,6 @@ internal sealed class Provider
 
     private readonly INotionClient _client;
     private readonly Clock _clock;
-    private readonly string _databaseId;
     private readonly object _delayLocker = new();
     private readonly TimeSpan _updatePeriod;
     private DateTimeFull? _lastUpdate;

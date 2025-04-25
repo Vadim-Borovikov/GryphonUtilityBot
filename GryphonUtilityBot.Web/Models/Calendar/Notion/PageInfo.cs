@@ -13,7 +13,6 @@ internal sealed class PageInfo
     public readonly (DateTimeFull Start, DateTimeFull End)? Dates;
     public readonly string GoogleEventId;
     public readonly Uri? GoogleEvent;
-    public readonly bool IsCancelled;
     public readonly Uri? Link;
 
     public PageInfo(Page page, Clock clock)
@@ -24,7 +23,7 @@ internal sealed class PageInfo
         Dates = GetDates(page);
         GoogleEventId = GetGoogleEventId(page);
         GoogleEvent = GetGoogleEvent(page);
-        IsCancelled = GetStatus(page) == "Отменена";
+        _isCancelled = GetStatus(page) == "Отменена";
         Link = GetLink(page);
         _markedAsMeeting = GetMeetingMark(page);
     }
@@ -41,7 +40,7 @@ internal sealed class PageInfo
 
     public bool IsRelevantMeeting()
     {
-        return _markedAsMeeting && !IsCancelled && !Page.InTrash && Dates.HasValue
+        return _markedAsMeeting && !_isCancelled && !Page.InTrash && Dates.HasValue
                && (Dates.Value.End > Dates.Value.Start) && (Dates.Value.End > _clock.Now());
     }
 
@@ -115,4 +114,5 @@ internal sealed class PageInfo
 
     private readonly Clock _clock;
     private readonly bool _markedAsMeeting;
+    private readonly bool _isCancelled;
 }
