@@ -51,4 +51,7 @@ public sealed class WebhookEvent
 
     [Required]
     public PageType Data { get; set; } = null!;
+
+    [Required]
+    public int AttemptNumber { get; set; }
 }

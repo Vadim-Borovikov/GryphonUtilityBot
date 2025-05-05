@@ -66,6 +66,11 @@ public sealed class NotionWebhookController : Controller
             return Ok();
         }
 
+        if (webhookEvent.AttemptNumber > 1)
+        {
+            _logger.LogError($"Webhook event came again! Attempt number: {webhookEvent.AttemptNumber}.{Environment.NewLine}{rawBody}");
+        }
+
         switch (webhookEvent.Type)
         {
             case WebhookEvent.EventType.Created:
