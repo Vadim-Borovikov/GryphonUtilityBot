@@ -6,6 +6,7 @@ using GryphonUtilities.Time;
 using GryphonUtilityBot.Web.Models;
 using GryphonUtilityBot.Web.Models.Calendar;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -30,7 +31,8 @@ internal static class Program
             logger.LogStartup();
 
             IServiceCollection services = builder.Services;
-            services.AddControllersWithViews().AddNewtonsoftJson(); //  TODO remove after bot update
+            IMvcBuilder mvc = services.AddControllersWithViews(AddEsceptionFilter);
+            mvc.AddNewtonsoftJson(); //  TODO remove after bot update
 
             services.AddSingleton(clock);
             services.AddSingleton(logger);
@@ -75,6 +77,8 @@ internal static class Program
 
         return config;
     }
+
+    private static void AddEsceptionFilter(MvcOptions options) => options.Filters.Add<GlobalExceptionFilter>();
 
     private static void AddBotTo(IServiceCollection services)
     {
