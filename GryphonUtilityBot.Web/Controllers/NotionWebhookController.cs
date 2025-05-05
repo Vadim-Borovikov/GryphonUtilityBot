@@ -21,6 +21,7 @@ public sealed class NotionWebhookController : Controller
         _logger = logger;
         _subscriber = subscriber;
         _secret = config.NotionWebhookSecret;
+        _relevatnParent = config.NotionDatabaseId;
     }
 
     public async Task<IActionResult> Post()
@@ -47,7 +48,7 @@ public sealed class NotionWebhookController : Controller
     {
         if (!VerifySignature(rawBody))
         {
-              _logger.LogError("Signature verification failed.");
+            _logger.LogError("Signature verification failed.");
             return Unauthorized();
         }
 
@@ -59,6 +60,11 @@ public sealed class NotionWebhookController : Controller
         }
 
         _logger.LogTimedMessage($"Succesfully parsed webhook payload.{Environment.NewLine}{rawBody}");
+
+        if (!webhookEvent.Data.Parent.Id.Equals(_relevatnParent, StringComparison.OrdinalIgnoreCase))
+        {
+            return Ok();
+        }
 
         switch (webhookEvent.Type)
         {
@@ -129,6 +135,7 @@ public sealed class NotionWebhookController : Controller
     }
 
     private readonly string? _secret;
+    private readonly string _relevatnParent;
     private readonly Logger _logger;
     private readonly IUpdatesSubscriber _subscriber;
 
