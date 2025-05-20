@@ -98,7 +98,11 @@ internal sealed class Synchronizer : IUpdatesSubscriber
 
         _logger.LogTimedMessage($"Updating page \"{page.Title}\" with data from event \"{calendarEvent.Id}\"...");
         Uri uri = new(calendarEvent.HtmlLink);
-        await _notionProvider.UpdateEventDataAsync(page, calendarEvent.Id, uri);
+        bool updated = await _notionProvider.TryUpdateEventDataAsync(page, calendarEvent.Id, uri);
+        if (!updated)
+        {
+            _logger.LogError($"Failed to update page \"{page.Title}\" with event data due to conflicts.");
+        }
     }
 
     private Task UpdateEventAsync(Event calendarEvent, PageInfo page, (DateTimeFull Start, DateTimeFull End) dates)
@@ -111,7 +115,11 @@ internal sealed class Synchronizer : IUpdatesSubscriber
     private async Task DeleteEventAndClearPageAsync(PageInfo page)
     {
         await _googleCalendarProvider.DeleteEventAsync(page.GoogleEventId);
-        await _notionProvider.ClearEventDataAsync(page);
+        bool cleared = await _notionProvider.TryClearEventDataAsync(page);
+        if (!cleared)
+        {
+            _logger.LogError($"Failed to clear page \"{page.Title}\" event data due to conflicts.");
+        }
     }
 
     private async Task<PageInfo> GetPageInfoAsync(string id)

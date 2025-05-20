@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using GryphonUtilities;
@@ -16,11 +17,12 @@ internal sealed class Provider
         _clock = botSingleton.Bot.Clock;
         _updatePeriod = TimeSpan.FromSeconds(config.NotionUpdatesPerSecondLimit);
         _logger = botSingleton.Bot.Logger;
+        _conflictReties = config.NotionConflictReties;
     }
 
     public Task<RequestResult<PageInfo>> TryGetPageAsync(string id) => Wrapper(GetPageAsync, id);
 
-    public async Task UpdateEventDataAsync(PageInfo page, string eventId, Uri? eventUri)
+    public async Task<bool> TryUpdateEventDataAsync(PageInfo page, string eventId, Uri? eventUri)
     {
         Dictionary<string, PropertyValue> toUpdate = new();
 
@@ -38,14 +40,27 @@ internal sealed class Provider
 
         if (toUpdate.Count == 0)
         {
-            return;
+            return true;
         }
 
-        DelayIfNeeded();
-        await _client.Pages.UpdatePropertiesAsync(page.Page.Id, toUpdate);
+        for (int i = 0; i < _conflictReties; ++i)
+        {
+            try
+            {
+                DelayIfNeeded();
+                await _client.Pages.UpdatePropertiesAsync(page.Page.Id, toUpdate);
+                return true;
+            }
+            catch (NotionApiException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
+            {
+                _logger.LogException(ex);
+            }
+        }
+
+        return false;
     }
 
-    public Task ClearEventDataAsync(PageInfo page) => UpdateEventDataAsync(page, string.Empty, null);
+    public Task<bool> TryClearEventDataAsync(PageInfo page) => TryUpdateEventDataAsync(page, string.Empty, null);
 
     private async Task<PageInfo> GetPageAsync(string id)
     {
@@ -120,6 +135,7 @@ internal sealed class Provider
     private readonly INotionClient _client;
     private readonly Clock _clock;
     private readonly object _delayLocker = new();
+    private readonly byte _conflictReties;
     private readonly TimeSpan _updatePeriod;
     private DateTimeFull? _lastUpdate;
     private readonly Logger _logger;

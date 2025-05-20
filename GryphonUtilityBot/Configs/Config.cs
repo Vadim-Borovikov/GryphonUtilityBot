@@ -43,4 +43,7 @@ public class Config : ConfigWithSheets<Texts>
 
     [Required]
     public long MistressId { get; init; }
+
+    [Required]
+    public byte NotionConflictReties { get; init; }
 }
