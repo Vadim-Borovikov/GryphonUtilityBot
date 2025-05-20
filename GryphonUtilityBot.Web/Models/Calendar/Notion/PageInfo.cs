@@ -61,7 +61,7 @@ internal sealed class PageInfo
             throw new NullReferenceException("\"Дата\" does not contain DatePropertyValue.");
         }
 
-        return date.Date.Start is null || date.Date.End is null
+        return date.Date?.Start is null || date.Date.End is null
             ? null
             : (_clock.GetDateTimeFull(date.Date.Start.Value.ToUniversalTime()),
                 _clock.GetDateTimeFull(date.Date.End.Value.ToUniversalTime()));
