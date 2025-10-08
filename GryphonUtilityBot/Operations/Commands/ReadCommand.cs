@@ -1,19 +1,19 @@
-﻿using System;
-using System.Threading.Tasks;
-using AbstractBot.Operations.Commands;
+﻿using AbstractBot.Interfaces.Modules;
+using AbstractBot.Interfaces.Modules.Config;
+using AbstractBot.Models.Operations.Commands;
 using GryphonUtilityBot.Articles;
+using System;
+using System.Threading.Tasks;
 using Telegram.Bot.Types;
 
 namespace GryphonUtilityBot.Operations.Commands;
 
-internal sealed class ReadCommand : CommandSimple
+internal sealed class ReadCommand : Command
 {
-    protected override byte Order => 3;
+    public override Enum AccessRequired => Bot.AccessType.Admin;
 
-    public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.Admin;
-
-    public ReadCommand(Bot bot, Manager manager)
-        : base(bot, "read", bot.Config.Texts.ReadCommandDescription)
+    public ReadCommand(Bot bot, ITextsProvider<ITexts> textsProvider, Manager manager)
+        : base(bot.Core.Accesses, bot.Core.UpdateSender, "read", textsProvider, bot.Core.SelfUsername)
     {
         _manager = manager;
     }

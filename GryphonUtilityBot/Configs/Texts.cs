@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using AbstractBot.Configs.MessageTemplates;
+using AbstractBot.Models.MessageTemplates;
 using JetBrains.Annotations;
 
 namespace GryphonUtilityBot.Configs;
 
 [PublicAPI]
-public class Texts : AbstractBot.Configs.Texts
+public class Texts : AbstractBot.Models.Config.Texts
 {
     [Required]
     public MessageTemplateText ArticleAddedFormat { get; init; } = null!;

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Globalization;
-using System.Threading.Tasks;
-using GryphonUtilities;
+﻿using GryphonUtilities;
 using GryphonUtilities.Time;
 using GryphonUtilityBot.Web.Models;
 using GryphonUtilityBot.Web.Models.Calendar;
@@ -11,6 +8,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using System;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using GryphonUtilityBot.Configs;
 
 namespace GryphonUtilityBot.Web;
 
@@ -25,19 +29,21 @@ internal static class Program
         {
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-            Config config = Configure(builder) ?? throw new NullReferenceException("Can't load config.");
+            Models.Config config = Configure(builder) ?? throw new NullReferenceException("Can't load config.");
             clock = new Clock(config.SystemTimeZoneIdLogs);
             logger = new Logger(clock);
             logger.LogStartup();
 
             IServiceCollection services = builder.Services;
-            IMvcBuilder mvc = services.AddControllersWithViews(AddEsceptionFilter);
-            mvc.AddNewtonsoftJson(); //  TODO remove after bot update
+            services.AddControllersWithViews(AddExceptionFilter);
+            services.ConfigureTelegramBotMvc();
 
-            services.AddSingleton(clock);
             services.AddSingleton(logger);
 
-            AddBotTo(services);
+            Bot bot = await Bot.TryCreateAsync(config, CancellationToken.None)
+                                                                ?? throw new InvalidOperationException("Failed to initialize bot due to invalid configuration.");
+            services.AddSingleton(bot);
+            services.AddHostedService<BotService>();
 
             AddCalendarTo(services, config);
 
@@ -61,32 +67,45 @@ internal static class Program
         }
     }
 
-    private static Config? Configure(WebApplicationBuilder builder)
+    private static Models.Config? Configure(WebApplicationBuilder builder)
     {
         ConfigurationManager configuration = builder.Configuration;
-        Config? config = configuration.Get<Config>();
+        Models.Config? config = configuration.Get<Models.Config>();
         if (config is null)
         {
             return null;
         }
 
-        builder.Services.AddOptions<Config>().Bind(configuration).ValidateDataAnnotations();
-        builder.Services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<Config>>().Value);
+        builder.Services.AddOptions<Models.Config>().Bind(configuration).ValidateDataAnnotations();
+        builder.Services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<Models.Config>>().Value);
+
+        LoadTextsFile(builder, config);
 
         CultureInfo.DefaultThreadCurrentCulture = new CultureInfo(config.CultureInfoName);
 
         return config;
     }
 
-    private static void AddEsceptionFilter(MvcOptions options) => options.Filters.Add<GlobalExceptionFilter>();
-
-    private static void AddBotTo(IServiceCollection services)
+    private static void LoadTextsFile(WebApplicationBuilder builder, Configs.Config config)
     {
-        services.AddSingleton<BotSingleton>();
-        services.AddHostedService<BotService>();
+        string? file = Directory.GetFiles(builder.Environment.ContentRootPath, "texts.*.json").SingleOrDefault();
+        if (file is null)
+        {
+            return;
+        }
+
+        builder.Configuration.AddJsonFile(file, true, true);
+
+        Texts? texts = builder.Configuration.Get<Texts>();
+        if (texts is not null)
+        {
+            config.Texts = texts;
+        }
     }
 
-    private static void AddCalendarTo(IServiceCollection services, Config config)
+    private static void AddExceptionFilter(MvcOptions options) => options.Filters.Add<GlobalExceptionFilter>();
+
+    private static void AddCalendarTo(IServiceCollection services, Models.Config config)
     {
         services.AddNotionClient(options => options.AuthToken = config.NotionToken);
         services.AddSingleton<Models.Calendar.Notion.Provider>();

@@ -1,20 +1,25 @@
-﻿using System;
+﻿using AbstractBot.Interfaces.Modules;
+using AbstractBot.Models.MessageTemplates;
+using GoogleSheetsManager.Documents;
+using GoogleSheetsManager.Extensions;
+using GryphonUtilityBot.Configs;
+using GryphonUtilityBot.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AbstractBot.Configs.MessageTemplates;
-using GoogleSheetsManager.Documents;
-using GoogleSheetsManager.Extensions;
-using GryphonUtilityBot.Extensions;
 using Telegram.Bot.Types;
 
 namespace GryphonUtilityBot.Articles;
 
 internal sealed class Manager
 {
-    public Manager(Bot bot, GoogleSheetsManager.Documents.Manager documentsManager)
+    public Manager(Bot bot, Config config, ITextsProvider<Texts> textsProvider,
+        GoogleSheetsManager.Documents.Manager documentsManager)
     {
         _bot = bot;
+        _config = config;
+        _textsProvider = textsProvider;
         _articles = new SortedSet<Article>();
 
         Dictionary<Type, Func<object?, object?>> additionalConverters = new()
@@ -22,10 +27,10 @@ internal sealed class Manager
             { typeof(Uri), o => o.ToUri() }
         };
         additionalConverters[typeof(DateOnly)] = additionalConverters[typeof(DateOnly?)] =
-            o => o.ToDateOnly(_bot.Clock);
+            o => o.ToDateOnly(_bot.Core.Clock);
 
-        GoogleSheetsManager.Documents.Document document = documentsManager.GetOrAdd(_bot.Config.GoogleSheetIdArticles);
-        _sheet = document.GetOrAddSheet(bot.Config.GoogleTitleArticles, additionalConverters);
+        GoogleSheetsManager.Documents.Document document = documentsManager.GetOrAdd(_config.GoogleSheetIdArticles);
+        _sheet = document.GetOrAddSheet(_config.GoogleTitleArticles, additionalConverters);
     }
 
 
@@ -33,9 +38,10 @@ internal sealed class Manager
     {
         await AddArticleAsync(article);
 
-        MessageTemplateText articleText = GetArticleMessageTemplate(article);
-        MessageTemplateText messageTemplate = _bot.Config.Texts.ArticleAddedFormat.Format(articleText);
-        await messageTemplate.SendAsync(_bot, chat);
+        Texts texts = _textsProvider.GetTextsFor(chat.Id);
+        MessageTemplateText articleText = GetArticleMessageTemplate(article, texts);
+        MessageTemplateText messageTemplate = _config.Texts.ArticleAddedFormat.Format(articleText);
+        await messageTemplate.SendAsync(_bot.Core.UpdateSender, chat);
         await SendFirstArticleAsync(chat);
     }
 
@@ -44,20 +50,23 @@ internal sealed class Manager
         await LoadAsync();
 
         Article? article = _articles.FirstOrDefault();
+        Texts texts = _textsProvider.GetTextsFor(chat.Id);
         MessageTemplateText messageTemplate = article is null
-            ? _bot.Config.Texts.NoMoreArticles
-            : _bot.Config.Texts.ArticleWithNumberFormat.Format(_articles.Count, GetArticleMessageTemplate(article));
-        await messageTemplate.SendAsync(_bot, chat);
+            ? texts.NoMoreArticles
+            : texts.ArticleWithNumberFormat.Format(_articles.Count, GetArticleMessageTemplate(article, texts));
+        await messageTemplate.SendAsync(_bot.Core.UpdateSender, chat);
     }
 
     public async Task DeleteFirstArticleAsync(Chat chat)
     {
         await LoadAsync();
 
+        Texts texts = _textsProvider.GetTextsFor(chat.Id);
+
         Article? article = _articles.FirstOrDefault();
         if (article is null)
         {
-            await _bot.Config.Texts.AllArticlesDeletedAlready.SendAsync(_bot, chat);
+            await texts.AllArticlesDeletedAlready.SendAsync(_bot.Core.UpdateSender, chat);
             return;
         }
 
@@ -69,9 +78,9 @@ internal sealed class Manager
         }
         await SaveAsync();
 
-        MessageTemplateText articleText = GetArticleMessageTemplate(article);
-        MessageTemplateText messageTemplate = _bot.Config.Texts.ArticleDeletedFormat.Format(articleText);
-        await messageTemplate.SendAsync(_bot, chat);
+        MessageTemplateText articleText = GetArticleMessageTemplate(article, texts);
+        MessageTemplateText messageTemplate = texts.ArticleDeletedFormat.Format(articleText);
+        await messageTemplate.SendAsync(_bot.Core.UpdateSender, chat);
         await SendFirstArticleAsync(chat);
     }
 
@@ -90,23 +99,25 @@ internal sealed class Manager
 
     private async Task LoadAsync()
     {
-        List<Article> data = await _sheet.LoadAsync<Article>(_bot.Config.GoogleRangeArticles);
+        List<Article> data = await _sheet.LoadAsync<Article>(_config.GoogleRangeArticles);
         _articles = new SortedSet<Article>(data);
     }
 
     private async Task SaveAsync()
     {
-        await _sheet.ClearAsync(_bot.Config.GoogleRangeArticlesClear);
-        await _sheet.SaveAsync(_bot.Config.GoogleRangeArticles, _articles.ToList());
+        await _sheet.ClearAsync(_config.GoogleRangeArticlesClear);
+        await _sheet.SaveAsync(_config.GoogleRangeArticles, _articles.ToList());
     }
 
-    private MessageTemplateText GetArticleMessageTemplate(Article article)
+    private static MessageTemplateText GetArticleMessageTemplate(Article article, Texts texts)
     {
-        string date = article.Date.ToString(_bot.Config.Texts.DateOnlyFormat);
-        return _bot.Config.Texts.ArticleFormat.Format(date, article.Uri);
+        string date = article.Date.ToString(texts.DateOnlyFormat);
+        return texts.ArticleFormat.Format(date, article.Uri);
     }
 
     private SortedSet<Article> _articles;
     private readonly Bot _bot;
+    private readonly Config _config;
+    private readonly ITextsProvider<Texts> _textsProvider;
     private readonly Sheet _sheet;
 }

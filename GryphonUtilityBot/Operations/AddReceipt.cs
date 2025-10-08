@@ -1,8 +1,10 @@
-﻿using System;
-using AbstractBot.Operations;
-using System.Threading.Tasks;
+﻿using AbstractBot.Interfaces.Modules;
+using AbstractBot.Models.Operations;
 using GryphonUtilities.Time;
 using GryphonUtilityBot.Money;
+using System;
+using System.Threading.Tasks;
+using GryphonUtilityBot.Configs;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -10,13 +12,14 @@ namespace GryphonUtilityBot.Operations;
 
 internal sealed class AddReceipt : Operation<Transaction>
 {
-    protected override byte Order => 5;
+    public override Enum AccessRequired => Bot.AccessType.Admin;
 
-    public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.Admin;
-
-    public AddReceipt(Bot bot, Manager manager) : base(bot, bot.Config.Texts.AddReceiptDescription)
+    public AddReceipt(Bot bot, ITextsProvider<Texts> textsProvider, string defaultCurrency, Manager manager)
+        : base(bot.Core.Accesses, bot.Core.UpdateSender)
     {
         _bot = bot;
+        _textsProvider = textsProvider;
+        _defaultCurrency = defaultCurrency;
         _manager = manager;
     }
 
@@ -34,9 +37,11 @@ internal sealed class AddReceipt : Operation<Transaction>
             return false;
         }
 
-        DateTimeFull dateTimeFull = _bot.Clock.GetDateTimeFull(message.ForwardDate.Value);
-        data = Transaction.TryParseReceipt(message.Text, dateTimeFull.DateOnly, _bot.Config.Texts,
-            _bot.Clock, _bot.Config.DefaultCurrency);
+        Texts texts = _textsProvider.GetTextsFor(sender.Id);
+
+        DateTimeFull dateTimeFull = _bot.Core.Clock.GetDateTimeFull(message.ForwardDate.Value);
+        data = Transaction.TryParseReceipt(message.Text, dateTimeFull.DateOnly, texts, _bot.Core.Clock,
+            _defaultCurrency);
         return data is not null;
     }
 
@@ -46,5 +51,7 @@ internal sealed class AddReceipt : Operation<Transaction>
     }
 
     private readonly Bot _bot;
+    private readonly ITextsProvider<Texts> _textsProvider;
+    private readonly string _defaultCurrency;
     private readonly Manager _manager;
 }
