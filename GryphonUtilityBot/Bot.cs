@@ -66,12 +66,16 @@ public sealed class Bot : AbstractBot.Bot, IDisposable
         _sheetsManager = new GoogleSheetsManager.Documents.Manager(_config);
 
         _financemanager = new Manager(this, _config, _textsProvider, _sheetsManager);
+
+        _timelineManager = new Timeline.Manager(this, _config, _sheetsManager);
     }
 
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
         await _core.Connection.StartAsync(cancellationToken);
         await _core.Logging.StartAsync(cancellationToken);
+
+        _core.UpdateReceiver.Operations.Add(new AcceptTimelineMessage(this, _timelineManager));
 
         Articles.Manager articlesManager = new(this, _config, _textsProvider, _sheetsManager);
 
@@ -86,7 +90,11 @@ public sealed class Bot : AbstractBot.Bot, IDisposable
         await Commands.UpdateForAll(cancellationToken);
     }
 
-    public void Dispose() => _core.Dispose();
+    public void Dispose()
+    {
+        _timelineManager.Dispose();
+        _core.Dispose();
+    }
 
     public Task AddSimultaneousTransactionsAsync(List<Transaction> transactions, DateOnly date, string note)
     {
@@ -96,6 +104,7 @@ public sealed class Bot : AbstractBot.Bot, IDisposable
     private readonly GoogleSheetsManager.Documents.Manager _sheetsManager;
 
     private readonly Manager _financemanager;
+    private readonly Timeline.Manager _timelineManager;
 
     private readonly ITextsProvider<Texts> _textsProvider;
 

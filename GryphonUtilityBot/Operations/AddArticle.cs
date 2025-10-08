@@ -13,9 +13,15 @@ internal sealed class AddArticle : Operation<Article>
 
     public AddArticle(Bot bot, Manager manager) : base(bot.Core.Accesses, bot.Core.UpdateSender) => _manager = manager;
 
-    protected override bool IsInvokingBy(Message message, User sender, out Article? data)
+    protected override bool IsInvokingBy(Message message, User? sender, out Article? data)
     {
         data = null;
+
+        if (sender is null)
+        {
+            return false;
+        }
+
         if ((message.Type != MessageType.Text) || string.IsNullOrWhiteSpace(message.Text))
         {
             return false;

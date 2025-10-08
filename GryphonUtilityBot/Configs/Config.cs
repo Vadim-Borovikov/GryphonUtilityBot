@@ -21,6 +21,18 @@ public class Config : ConfigWithSheets
 
     [Required]
     [MinLength(1)]
+    public string GoogleSheetIdTimeline { get; init; } = null!;
+
+    [Required]
+    [MinLength(1)]
+    public string GoogleTitleTimeline { get; init; } = null!;
+
+    [Required]
+    [MinLength(1)]
+    public string GoogleRangeTimeline { get; init; } = null!;
+
+    [Required]
+    [MinLength(1)]
     public string GoogleRangeArticlesClear { get; init; } = null!;
 
     [Required]
@@ -42,7 +54,13 @@ public class Config : ConfigWithSheets
     public long TransactionLogsChatId { get; init; }
 
     [Required]
+    public long TimelineInputChannelId { get; init; }
+
+    [Required]
     public byte NotionConflictReties { get; init; }
 
     public Texts Texts { get; set; } = new();
+
+    [Required]
+    public double TimelineWriteIntervalSeconds { get; set; }
 }

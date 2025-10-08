@@ -23,9 +23,14 @@ internal sealed class AddReceipt : Operation<Transaction>
         _manager = manager;
     }
 
-    protected override bool IsInvokingBy(Message message, User sender, out Transaction? data)
+    protected override bool IsInvokingBy(Message message, User? sender, out Transaction? data)
     {
         data = null;
+
+        if (sender is null)
+        {
+            return false;
+        }
 
         if (message.ForwardDate is null)
         {
