@@ -10,7 +10,7 @@ internal sealed class ArticleCommand : CommandSimple
 {
     protected override byte Order => 2;
 
-    public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.OtherFeatures;
+    public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.Admin;
 
     public ArticleCommand(Bot bot, Manager manager)
         : base(bot, "article", bot.Config.Texts.ArticleCommandDescription)

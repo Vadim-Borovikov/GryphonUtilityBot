@@ -42,8 +42,5 @@ public class Config : ConfigWithSheets<Texts>
     public long TransactionLogsChatId { get; init; }
 
     [Required]
-    public long MistressId { get; init; }
-
-    [Required]
     public byte NotionConflictReties { get; init; }
 }

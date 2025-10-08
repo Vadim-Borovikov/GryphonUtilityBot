@@ -10,7 +10,7 @@ internal sealed class ReadCommand : CommandSimple
 {
     protected override byte Order => 3;
 
-    public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.OtherFeatures;
+    public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.Admin;
 
     public ReadCommand(Bot bot, Manager manager)
         : base(bot, "read", bot.Config.Texts.ReadCommandDescription)

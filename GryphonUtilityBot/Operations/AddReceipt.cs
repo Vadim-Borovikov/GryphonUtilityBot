@@ -12,7 +12,7 @@ internal sealed class AddReceipt : Operation<Transaction>
 {
     protected override byte Order => 5;
 
-    public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.OtherFeatures;
+    public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.Admin;
 
     public AddReceipt(Bot bot, Manager manager) : base(bot, bot.Config.Texts.AddReceiptDescription)
     {

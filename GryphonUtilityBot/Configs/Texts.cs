@@ -11,21 +11,6 @@ namespace GryphonUtilityBot.Configs;
 public class Texts : AbstractBot.Configs.Texts
 {
     [Required]
-    public MessageTemplateText RecordAdded { get; init; } = null!;
-
-    [Required]
-    public MessageTemplateText RecordUpdated { get; init; } = null!;
-
-    [Required]
-    public MessageTemplateText RecordNotFound { get; init; } = null!;
-
-    [Required]
-    public MessageTemplateText RecordsNotFound { get; init; } = null!;
-
-    [Required]
-    public MessageTemplateText ForbiddenForMistress { get; init; } = null!;
-
-    [Required]
     public MessageTemplateText ArticleAddedFormat { get; init; } = null!;
 
     [Required]
@@ -56,18 +41,6 @@ public class Texts : AbstractBot.Configs.Texts
 
     [Required]
     public MessageTemplateText AddArticleDescription { get; init; } = null!;
-
-    [Required]
-    public MessageTemplateText AddRecordDescription { get; init; } = null!;
-
-    [Required]
-    public MessageTemplateText FindRecordDescription { get; init; } = null!;
-
-    [Required]
-    public MessageTemplateText RememberTagDescription { get; init; } = null!;
-
-    [Required]
-    public MessageTemplateText TagRecordDescription { get; init; } = null!;
 
     [Required]
     public MessageTemplateText TransactionAddedFormat { get; init; } = null!;

@@ -11,7 +11,7 @@ internal sealed class AddArticle : Operation<Article>
 {
     protected override byte Order => 4;
 
-    public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.OtherFeatures;
+    public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.Admin;
 
     public AddArticle(Bot bot, Manager manager)
         : base(bot, bot.Config.Texts.AddArticleDescription)
