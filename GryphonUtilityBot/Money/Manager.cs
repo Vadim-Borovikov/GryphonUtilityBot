@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 
 namespace GryphonUtilityBot.Money;
 
@@ -22,11 +21,6 @@ internal sealed class Manager
 
         GoogleSheetsManager.Documents.Document document = documentsManager.GetOrAdd(_config.GoogleSheetIdTransactions);
         _sheet = document.GetOrAddSheet(_config.GoogleTitleTransactions);
-        _transactionLogsChat = new Chat
-        {
-            Id = _config.TransactionLogsChatId,
-            Type = ChatType.Private
-        };
     }
 
     public async Task AddSimultaneousTransactionsAsync(List<Transaction> transactions, DateOnly date, string note)
@@ -53,7 +47,7 @@ internal sealed class Manager
         MessageTemplateText list = MessageTemplateText.JoinTexts(items);
 
         MessageTemplateText formatted = texts.TransactionAddedFormat.Format(dateString, list, note);
-        await formatted.SendAsync(_bot.Core.UpdateSender, _transactionLogsChat);
+        await formatted.SendAsync(_bot.Core.UpdateSender, _bot.Core.ReportsDefault);
     }
 
     public async Task AddTransactionAsync(Transaction transaction, Chat chat, int replyToMessageId)
@@ -81,5 +75,4 @@ internal sealed class Manager
     private readonly Config _config;
     private readonly ITextsProvider<Texts> _textsProvider;
     private readonly Sheet _sheet;
-    private readonly Chat _transactionLogsChat;
 }

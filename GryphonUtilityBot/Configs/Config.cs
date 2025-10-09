@@ -59,9 +59,6 @@ public class Config : ConfigWithSheets
     public string DefaultCurrency { get; init; } = null!;
 
     [Required]
-    public long TransactionLogsChatId { get; init; }
-
-    [Required]
     public long TimelineInputChannelId { get; init; }
 
     [Required]
