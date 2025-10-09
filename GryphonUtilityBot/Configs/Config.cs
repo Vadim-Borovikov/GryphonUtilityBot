@@ -25,15 +25,23 @@ public class Config : ConfigWithSheets
 
     [Required]
     [MinLength(1)]
-    public string GoogleTitleTimeline { get; init; } = null!;
+    public string GoogleTitleTimelineInput { get; init; } = null!;
 
     [Required]
     [MinLength(1)]
-    public string GoogleRangeTimeline { get; init; } = null!;
+    public string GoogleTitleTimelineInputStreamlined { get; init; } = null!;
 
     [Required]
     [MinLength(1)]
-    public string GoogleRangeArticlesClear { get; init; } = null!;
+    public string GoogleTitleTimelineOutput { get; init; } = null!;
+
+    [Required]
+    [MinLength(1)]
+    public string GoogleRangeTimelineInput { get; init; } = null!;
+
+    [Required]
+    [MinLength(1)]
+    public string GoogleRangeTimelineOutput { get; init; } = null!;
 
     [Required]
     [MinLength(1)]
@@ -55,6 +63,9 @@ public class Config : ConfigWithSheets
 
     [Required]
     public long TimelineInputChannelId { get; init; }
+
+    [Required]
+    public long TimelineOutputChannelId { get; init; }
 
     [Required]
     public byte NotionConflictReties { get; init; }

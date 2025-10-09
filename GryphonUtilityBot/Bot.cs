@@ -84,6 +84,7 @@ public sealed class Bot : AbstractBot.Bot, IDisposable
 
         _core.UpdateReceiver.Operations.Add(new ArticleCommand(this, _textsProvider, articlesManager));
         _core.UpdateReceiver.Operations.Add(new ReadCommand(this, _textsProvider, articlesManager));
+        _core.UpdateReceiver.Operations.Add(new UpdateTimelineCommand(this, _textsProvider, _timelineManager));
 
         _core.UpdateReceiver.Operations.Add(new AddArticle(this, articlesManager));
 

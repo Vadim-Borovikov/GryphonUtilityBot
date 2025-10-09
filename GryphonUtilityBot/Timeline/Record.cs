@@ -5,7 +5,7 @@ using JetBrains.Annotations;
 
 namespace GryphonUtilityBot.Timeline;
 
-internal sealed class Record : IComparable<Record>
+internal sealed class Record
 {
     [UsedImplicitly]
     [Required]
@@ -17,7 +17,6 @@ internal sealed class Record : IComparable<Record>
     public DateOnly? Date;
 
     [UsedImplicitly]
-    [Required]
     [SheetField(GroupIdTitle)]
     public string? GroupId;
 
@@ -26,7 +25,6 @@ internal sealed class Record : IComparable<Record>
     public long? AuthorId;
 
     [UsedImplicitly]
-    [Required]
     [SheetField(ReplyToIdTitle)]
     public int? ReplyToId;
 
@@ -39,21 +37,6 @@ internal sealed class Record : IComparable<Record>
         GroupId = groupId;
         AuthorId = authorId;
         ReplyToId = replyToId;
-    }
-
-    public int CompareTo(Record? other)
-    {
-        if (ReferenceEquals(this, other))
-        {
-            return 0;
-        }
-
-        if (other is null)
-        {
-            return -1;
-        }
-
-        return Id.CompareTo(other.Id);
     }
 
     private const string DateTitle = "Дата";

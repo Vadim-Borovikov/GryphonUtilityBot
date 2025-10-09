@@ -76,7 +76,7 @@ internal sealed class Manager
         {
             next.Current = true;
         }
-        await SaveAsync();
+        await _sheet.SaveAsync(_config.GoogleRangeArticles, _articles);
 
         MessageTemplateText articleText = GetArticleMessageTemplate(article, texts);
         MessageTemplateText messageTemplate = texts.ArticleDeletedFormat.Format(articleText);
@@ -94,19 +94,13 @@ internal sealed class Manager
         }
         _articles.Add(article);
 
-        await SaveAsync();
+        await _sheet.SaveAsync(_config.GoogleRangeArticles, _articles);
     }
 
     private async Task LoadAsync()
     {
         List<Article> data = await _sheet.LoadAsync<Article>(_config.GoogleRangeArticles);
         _articles = new SortedSet<Article>(data);
-    }
-
-    private async Task SaveAsync()
-    {
-        await _sheet.ClearAsync(_config.GoogleRangeArticlesClear);
-        await _sheet.SaveAsync(_config.GoogleRangeArticles, _articles.ToList());
     }
 
     private static MessageTemplateText GetArticleMessageTemplate(Article article, Texts texts)
