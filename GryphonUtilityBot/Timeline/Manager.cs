@@ -207,7 +207,7 @@ internal sealed class Manager : IDisposable
 
         List<int> newIds = ids.Select(id => id.Id).Order().ToList();
         return newIds.Count == batch.Count
-            ? batch.Zip(newIds, (inputId, id) => new IdLine(inputId, id))
+            ? batch.Zip(newIds, (inputId, id) => new IdLine(id, inputId))
             : throw new InvalidOperationException("Sent message count does not match the batch count!");
     }
 
@@ -233,7 +233,6 @@ internal sealed class Manager : IDisposable
         }
 
         await _sheetInput.AddAsync(_config.GoogleRangeTimelineInput, updates);
-        await UpdateOutputChannelAsync();
     }
 
     private bool _recentlyAdded;

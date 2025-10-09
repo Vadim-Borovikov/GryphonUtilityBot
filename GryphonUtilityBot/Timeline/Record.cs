@@ -5,7 +5,7 @@ using JetBrains.Annotations;
 
 namespace GryphonUtilityBot.Timeline;
 
-internal sealed class Record
+internal sealed class Record : IComparable<Record>
 {
     [UsedImplicitly]
     [Required]
@@ -37,6 +37,21 @@ internal sealed class Record
         GroupId = groupId;
         AuthorId = authorId;
         ReplyToId = replyToId;
+    }
+
+    public int CompareTo(Record? other)
+    {
+        if (ReferenceEquals(this, other))
+        {
+            return 0;
+        }
+
+        if (other is null)
+        {
+            return -1;
+        }
+
+        return Id.CompareTo(other.Id);
     }
 
     private const string DateTitle = "Дата";
