@@ -62,6 +62,9 @@ public class Texts : AbstractBot.Models.Config.Texts
     [Required]
     public MessageTemplateText NoTimelineUpdates { get; init; } = null!;
 
+    [Required]
+    public MessageTemplateText UpdatingTimeline { get; init; } = null!;
+
     public string? TryGetAgent(string tag)
     {
         List<string> keys =

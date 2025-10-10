@@ -1,4 +1,7 @@
-﻿using GoogleSheetsManager.Documents;
+﻿using AbstractBot.Interfaces.Modules;
+using AbstractBot.Models;
+using GoogleSheetsManager.Documents;
+using GoogleSheetsManager.Extensions;
 using GryphonUtilities;
 using GryphonUtilityBot.Configs;
 using System;
@@ -6,8 +9,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using AbstractBot.Interfaces.Modules;
-using GoogleSheetsManager.Extensions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -60,44 +61,48 @@ internal sealed class Manager : IDisposable
             return;
         }
 
-        List<RecordStreamlined> streamlined =
-            await _sheetStreamlined.LoadAsync<RecordStreamlined>(_config.GoogleRangeTimeline);
-
-        StreamlineRecords(input, streamlined);
-
-        if (streamlined.Count > 0)
+        await using (await StatusMessage.CreateAsync(_bot.Core.UpdateSender, chat, texts.UpdatingTimeline,
+                         texts.StatusMessageStartFormat, texts.StatusMessageEndFormat))
         {
-            await _sheetStreamlined.SaveAsync(_config.GoogleRangeTimeline, streamlined);
+            List<RecordStreamlined> streamlined =
+                await _sheetStreamlined.LoadAsync<RecordStreamlined>(_config.GoogleRangeTimeline);
 
-            int? moveFrom = null;
-            for (int i = 0; i < (streamlined.Count - 1); ++i)
+            StreamlineRecords(input, streamlined);
+
+            if (streamlined.Count > 0)
             {
-                if (streamlined[i].Id < streamlined[i + 1].Id)
-                {
-                    continue;
-                }
+                await _sheetStreamlined.SaveAsync(_config.GoogleRangeTimeline, streamlined);
 
-                moveFrom = 0;
-                for (int j = i - 1; j >= 0; --j)
+                int? moveFrom = null;
+                for (int i = 0; i < (streamlined.Count - 1); ++i)
                 {
-                    if (streamlined[j].Id < streamlined[i + 1].Id)
+                    if (streamlined[i].Id < streamlined[i + 1].Id)
                     {
-                        moveFrom = j + 1;
-                        break;
+                        continue;
                     }
+
+                    moveFrom = 0;
+                    for (int j = i - 1; j >= 0; --j)
+                    {
+                        if (streamlined[j].Id < streamlined[i + 1].Id)
+                        {
+                            moveFrom = j + 1;
+                            break;
+                        }
+                    }
+                    break;
                 }
-                break;
+
+                if (moveFrom.HasValue)
+                {
+                    await MoveMessages(streamlined, moveFrom.Value);
+                }
             }
 
-            if (moveFrom.HasValue)
+            if (input.Count > 0)
             {
-                await MoveMessages(streamlined, moveFrom.Value);
+                await _sheetInput.ClearAsync(_config.GoogleRangeTimelineClear);
             }
-        }
-
-        if (input.Count > 0)
-        {
-            await _sheetInput.ClearAsync(_config.GoogleRangeTimelineClear);
         }
     }
 
