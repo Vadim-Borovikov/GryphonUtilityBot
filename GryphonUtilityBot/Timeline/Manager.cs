@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AbstractBot.Interfaces.Modules;
 using GoogleSheetsManager.Extensions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -48,9 +49,17 @@ internal sealed class Manager : IDisposable
         }
     }
 
-    public async Task UpdateChannelAsync()
+    public async Task UpdateChannelAsync(Chat chat, User sender, ITextsProvider<Texts> textsProvider)
     {
+        Texts texts = textsProvider.GetTextsFor(sender.Id);
+
         List<RecordInput> input = await _sheetInput.LoadAsync<RecordInput>(_config.GoogleRangeTimeline);
+        if (input.Count == 0)
+        {
+            await texts.NoTimelineUpdates.SendAsync(_bot.Core.UpdateSender, chat);
+            return;
+        }
+
         List<RecordStreamlined> streamlined =
             await _sheetStreamlined.LoadAsync<RecordStreamlined>(_config.GoogleRangeTimeline);
 
