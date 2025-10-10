@@ -1,20 +1,15 @@
 ﻿using GoogleSheetsManager;
-using System;
-using System.ComponentModel.DataAnnotations;
 using JetBrains.Annotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace GryphonUtilityBot.Timeline;
 
-internal sealed class Record : IComparable<Record>
+internal abstract class Record
 {
     [UsedImplicitly]
     [Required]
     [SheetField(IdTitle)]
     public int Id;
-
-    [UsedImplicitly]
-    [SheetField(DateTitle)]
-    public DateOnly? Date;
 
     [UsedImplicitly]
     [SheetField(GroupIdTitle)]
@@ -28,33 +23,16 @@ internal sealed class Record : IComparable<Record>
     [SheetField(ReplyToIdTitle)]
     public int? ReplyToId;
 
-    public Record() { }
+    protected Record() { }
 
-    public Record(int id, DateOnly? date, string? groupId, long? authorId, int? replyToId)
+    protected Record(int id, string? groupId, long? authorId, int? replyToId)
     {
         Id = id;
-        Date = date;
         GroupId = groupId;
         AuthorId = authorId;
         ReplyToId = replyToId;
     }
 
-    public int CompareTo(Record? other)
-    {
-        if (ReferenceEquals(this, other))
-        {
-            return 0;
-        }
-
-        if (other is null)
-        {
-            return -1;
-        }
-
-        return Id.CompareTo(other.Id);
-    }
-
-    private const string DateTitle = "Дата";
     private const string IdTitle = "Id";
     private const string GroupIdTitle = "Группа";
     private const string AuthorIdTitle = "Автор";

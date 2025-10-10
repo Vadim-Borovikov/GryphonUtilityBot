@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using GoogleSheetsManager.Extensions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -13,8 +14,7 @@ namespace GryphonUtilityBot.Timeline;
 
 internal sealed class Manager : IDisposable
 {
-    public readonly Chat InputChannel;
-    private readonly Chat _outputChannel;
+    public readonly Chat Channel;
 
     public Manager(Bot bot, Config config, GoogleSheetsManager.Documents.Manager documentsManager)
     {
@@ -23,16 +23,10 @@ internal sealed class Manager : IDisposable
 
         GoogleSheetsManager.Documents.Document document = documentsManager.GetOrAdd(_config.GoogleSheetIdTimeline);
         _sheetInput = document.GetOrAddSheet(_config.GoogleTitleTimelineInput);
-        _sheetInputStreamlined = document.GetOrAddSheet(_config.GoogleTitleTimelineInputStreamlined);
-        _sheetOutput = document.GetOrAddSheet(_config.GoogleTitleTimelineOutput);
-        InputChannel = new Chat
+        _sheetStreamlined = document.GetOrAddSheet(_config.GoogleTitleTimelineStreamlined);
+        Channel = new Chat
         {
-            Id = _config.TimelineInputChannelId,
-            Type = ChatType.Channel
-        };
-        _outputChannel = new Chat
-        {
-            Id = _config.TimelineOutputChannelId,
+            Id = _config.TimelineChannelId,
             Type = ChatType.Channel
         };
 
@@ -46,68 +40,115 @@ internal sealed class Manager : IDisposable
     public void AddRecord(int id, DateOnly? date = null, string? groupId = null, long? authorId = null,
         int? replyToId = null)
     {
-        Record record = new(id, date, groupId, authorId, replyToId);
+        RecordInput record = new(id, date, groupId, authorId, replyToId);
         lock (_locker)
         {
-            _currentRecords.Add(record);
+            _inputRecords.Add(record);
             _recentlyAdded = true;
         }
     }
 
-    public async Task UpdateOutputChannelAsync()
+    public async Task UpdateChannelAsync()
     {
-        List<Record> inputRecords = await _sheetInput.LoadAsync<Record>(_config.GoogleRangeTimelineInput);
-        inputRecords = StreamlineRecords(inputRecords);
-        if (inputRecords.Count == 0)
+        List<RecordInput> input = await _sheetInput.LoadAsync<RecordInput>(_config.GoogleRangeTimeline);
+        List<RecordStreamlined> streamlined =
+            await _sheetStreamlined.LoadAsync<RecordStreamlined>(_config.GoogleRangeTimeline);
+
+        StreamlineRecords(input, streamlined);
+
+        if (streamlined.Count > 0)
+        {
+            await _sheetStreamlined.SaveAsync(_config.GoogleRangeTimeline, streamlined);
+
+            int? moveFrom = null;
+            for (int i = 0; i < (streamlined.Count - 1); ++i)
+            {
+                if (streamlined[i].Id < streamlined[i + 1].Id)
+                {
+                    continue;
+                }
+
+                moveFrom = 0;
+                for (int j = i - 1; j >= 0; --j)
+                {
+                    if (streamlined[j].Id < streamlined[i + 1].Id)
+                    {
+                        moveFrom = j + 1;
+                        break;
+                    }
+                }
+                break;
+            }
+
+            if (moveFrom.HasValue)
+            {
+                await MoveMessages(streamlined, moveFrom.Value);
+            }
+        }
+
+        if (input.Count > 0)
+        {
+            await _sheetInput.ClearAsync(_config.GoogleRangeTimelineClear);
+        }
+    }
+
+    private async Task MoveMessages(List<RecordStreamlined> streamlined, int moveFrom)
+    {
+        List<RecordStreamlined> toMove = streamlined.Skip(moveFrom).ToList();
+        foreach ((IList<RecordStreamlined> batch, bool copy) in Split(toMove))
+        {
+            IList<int> oldIds = GetIdsList(batch);
+
+            Dictionary<int, int> oldToNew = await SendBatchAsync(oldIds, copy);
+            List<RecordStreamlined> newRecords = new();
+            foreach (RecordStreamlined oldRecord in batch)
+            {
+                string? groupId = oldRecord.GroupId;
+                int? threadId = groupId?.ToInt();
+                if (threadId.HasValue && oldToNew.ContainsKey(threadId.Value))
+                {
+                    groupId = oldToNew[threadId.Value].ToString();
+                }
+
+                int? replyToId = oldRecord.ReplyToId;
+                if (replyToId.HasValue && oldToNew.ContainsKey(replyToId.Value))
+                {
+                    replyToId = oldToNew[replyToId.Value];
+                }
+
+                RecordStreamlined newRecord =
+                    new(oldRecord, oldRecord.Date, groupId, oldToNew[oldRecord.Id], replyToId);
+                newRecords.Add(newRecord);
+            }
+            streamlined.AddRange(newRecords);
+            await _sheetStreamlined.AddAsync(_config.GoogleRangeTimeline, newRecords);
+        }
+
+        await _bot.Core.UpdateSender.DeleteMessagesAsync(Channel, GetIdsList(toMove));
+        streamlined.RemoveRange(moveFrom, toMove.Count);
+        await _sheetStreamlined.SaveAsync(_config.GoogleRangeTimeline, streamlined);
+    }
+
+    private static IList<int> GetIdsList(IEnumerable<Record> records) => records.Select(r => r.Id).ToList();
+
+    private static void StreamlineRecords(List<RecordInput> input, List<RecordStreamlined> streamlined)
+    {
+        if (input.Count == 0)
         {
             return;
         }
 
-        await _sheetInputStreamlined.SaveAsync(_config.GoogleRangeTimelineInput, inputRecords);
+        HashSet<DateOnly> dates = new(streamlined.Select(r => r.Date));
+        DateOnly date = GetDate(dates, input.First());
 
-        List<IdLine> idMapLines = await _sheetOutput.LoadAsync<IdLine>(_config.GoogleRangeTimelineOutput);
+        string? groupId = null;
 
-        (int? deleteFrom, int? postFrom) = СorrelateRecords(inputRecords, idMapLines);
-
-        if (deleteFrom.HasValue)
+        foreach (RecordInput data in input)
         {
-            List<int> toDelete = idMapLines.Skip(deleteFrom.Value).Select(l => l.Id).ToList();
-            await _bot.Core.UpdateSender.DeleteMessagesAsync(_outputChannel, toDelete);
-            idMapLines.RemoveRange(deleteFrom.Value, toDelete.Count);
-            await _sheetOutput.SaveAsync(_config.GoogleRangeTimelineOutput, idMapLines);
-        }
-
-        if (postFrom.HasValue)
-        {
-            List<Record> toPost = inputRecords.Skip(postFrom.Value).ToList();
-            await SendNeededMessagesAsync(toPost);
-        }
-    }
-
-    private static List<Record> StreamlineRecords(List<Record> records)
-    {
-        if (records.Count == 0)
-        {
-            return records;
-        }
-
-        List<Record> result = new();
-
-        Record first = records.First();
-        if (first.Date is null || first.AuthorId.HasValue)
-        {
-            throw new InvalidOperationException("The first record must contain a date and must not contain an author");
-        }
-
-        DateOnly date = first.Date.Value;
-        string? group = null;
-        HashSet<DateOnly> dates = new();
-        foreach (Record record in records)
-        {
-            if (record.Date.HasValue)
+            if (data.TextDate.HasValue)
             {
-                date = record.Date.Value;
-                group = null;
+                date = data.TextDate.Value;
+                groupId = null;
                 if (dates.Contains(date))
                 {
                     continue;
@@ -115,77 +156,49 @@ internal sealed class Manager : IDisposable
                 dates.Add(date);
             }
 
-            record.Date = date;
-            result.Add(record);
-
-            if (record.AuthorId.HasValue)
+            if (data.AuthorId.HasValue)
             {
-                group ??= record.Id.ToString();
-                record.GroupId = group;
+                groupId ??= data.Id.ToString();
             }
             else
             {
-                group = null;
+                groupId = null;
             }
+            RecordStreamlined record = new(data, date, groupId);
+            streamlined.Add(record);
         }
-        return result.OrderBy(r => r.Date).ThenBy(r => r.Id).ToList();
+        streamlined.Sort();
     }
 
-    private static (int? DeleteFrom, int? PostFrom) СorrelateRecords(IReadOnlyList<Record> inputRecords,
-        IReadOnlyList<IdLine> idMapLines)
+    private static DateOnly GetDate(IReadOnlyCollection<DateOnly> dates, RecordInput first)
     {
-        int? deleteFrom = null;
-        int? postFrom = null;
-        for (int i = 0; i < inputRecords.Count; ++i)
+        if (dates.Count > 0)
         {
-            if (idMapLines.Count <= i)
-            {
-                postFrom = i;
-                break;
-            }
-
-            if (idMapLines[i].InputId != inputRecords[i].Id)
-            {
-                deleteFrom = i;
-                postFrom = i;
-                break;
-            }
+            return dates.Max();
         }
 
-        if (deleteFrom is null && (idMapLines.Count > inputRecords.Count))
-        {
-            deleteFrom = inputRecords.Count;
-        }
-
-        return (deleteFrom, postFrom);
+        return first.TextDate is null || first.AuthorId.HasValue
+            ? throw new InvalidOperationException("The first input record must be a date")
+            : first.TextDate.Value;
     }
 
-    private async Task SendNeededMessagesAsync(IReadOnlyList<Record> records)
+    private static IEnumerable<(IList<RecordStreamlined> Ids, bool Copy)> Split(IReadOnlyList<RecordStreamlined> records)
     {
-        foreach ((IList<int>? ids, bool copy) in Split(records))
-        {
-            IEnumerable<IdLine> newLines = await SendBatchAsync(ids, copy);
-            await _sheetOutput.AddAsync(_config.GoogleRangeTimelineOutput, newLines);
-        }
-    }
-
-    private static IEnumerable<(IList<int> Ids, bool Copy)> Split(IReadOnlyList<Record> records)
-    {
-        List<int> batch = new();
-        Record previous = records.First();
+        List<RecordStreamlined> batch = new();
+        RecordStreamlined previous = records.First();
         string? groupId = records.First().GroupId;
         bool copy = records.First().AuthorId is null;
-        foreach (Record record in records)
+        foreach (RecordStreamlined record in records)
         {
             if ((record.Id < previous.Id) || (record.GroupId != groupId))
             {
-                yield return (new List<int>(batch), copy);
+                yield return (new List<RecordStreamlined>(batch), copy);
                 batch.Clear();
                 groupId = record.GroupId;
                 copy = record.AuthorId is null;
             }
 
-            batch.Add(record.Id);
+            batch.Add(record);
             previous = record;
         }
         if (batch.Count > 0)
@@ -194,26 +207,35 @@ internal sealed class Manager : IDisposable
         }
     }
 
-    private async Task<IEnumerable<IdLine>> SendBatchAsync(IList<int> batch, bool copy)
+    private async Task<Dictionary<int, int>> SendBatchAsync(IList<int> batch, bool copy)
     {
+        Dictionary<int, int> oldToNew = new();
+
         if (batch.Count == 0)
         {
-            return Enumerable.Empty<IdLine>();
+            return oldToNew;
         }
 
         MessageId[] ids = copy
-            ? await _bot.Core.UpdateSender.CopyMessagesAsync(_outputChannel, InputChannel, batch)
-            : await _bot.Core.UpdateSender.ForwardMessagesAsync(_outputChannel, InputChannel, batch);
+            ? await _bot.Core.UpdateSender.CopyMessagesAsync(Channel, Channel, batch)
+            : await _bot.Core.UpdateSender.ForwardMessagesAsync(Channel, Channel, batch);
 
-        List<int> newIds = ids.Select(id => id.Id).Order().ToList();
-        return newIds.Count == batch.Count
-            ? batch.Zip(newIds, (inputId, id) => new IdLine(id, inputId))
-            : throw new InvalidOperationException("Sent message count does not match the batch count!");
+        if (ids.Length != batch.Count)
+        {
+            throw new InvalidOperationException("Sent message count does not match the batch count!");
+        }
+
+        for (int i = 0; i < ids.Length; ++i)
+        {
+            oldToNew[batch[i]] = ids[i].Id;
+        }
+
+        return oldToNew;
     }
 
     private async Task TickAsync(CancellationToken cancellationToken)
     {
-        List<Record>? updates;
+        List<RecordInput>? updates;
 
         lock (_locker)
         {
@@ -223,29 +245,28 @@ internal sealed class Manager : IDisposable
                 return;
             }
 
-            if (_currentRecords.Count == 0)
+            if (_inputRecords.Count == 0)
             {
                 return;
             }
 
-            updates = new List<Record>(_currentRecords);
-            _currentRecords.Clear();
+            updates = new List<RecordInput>(_inputRecords);
+            _inputRecords.Clear();
         }
 
-        await _sheetInput.AddAsync(_config.GoogleRangeTimelineInput, updates);
+        await _sheetInput.AddAsync(_config.GoogleRangeTimeline, updates);
     }
 
     private bool _recentlyAdded;
 
     private readonly object _locker = new();
 
-    private readonly SortedSet<Record> _currentRecords = new();
+    private readonly SortedSet<RecordInput> _inputRecords = new();
 
     private readonly Invoker _invoker;
 
     private readonly Bot _bot;
     private readonly Config _config;
     private readonly Sheet _sheetInput;
-    private readonly Sheet _sheetInputStreamlined;
-    private readonly Sheet _sheetOutput;
+    private readonly Sheet _sheetStreamlined;
 }

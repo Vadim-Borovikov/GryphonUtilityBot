@@ -21,7 +21,7 @@ internal sealed class AcceptTimelineMessage : Operation
 
     protected override bool IsInvokingBy(Message message, User? sender)
     {
-        return sender is null && (message.Chat.Id == _manager.InputChannel.Id)
+        return sender is null && (message.Chat.Id == _manager.Channel.Id)
                               && (message.Photo is not null || message.Video is not null || message.Voice is not null
                                   || message.VideoNote is not null || !string.IsNullOrWhiteSpace(message.Text)
                                   || message.Sticker is not null);

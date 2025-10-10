@@ -18,7 +18,7 @@ internal sealed class UpdateTimelineCommand : Command
         _manager = manager;
     }
 
-    protected override Task ExecuteAsync(Message message, User _) => _manager.UpdateOutputChannelAsync();
+    protected override Task ExecuteAsync(Message message, User _) => _manager.UpdateChannelAsync();
 
     private readonly Manager _manager;
 }
