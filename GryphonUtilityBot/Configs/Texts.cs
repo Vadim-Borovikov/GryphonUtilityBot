@@ -76,6 +76,8 @@ public class Texts : AbstractBot.Models.Config.Texts
     public MessageTemplateText TimelineMessageHypertextFormat { get; set; } = null!;
     [Required]
     public string TimelineDuplicatesDeletionConfirmationButton { get; set; } = null!;
+    [Required]
+    public MessageTemplateText TimelineDuplicatesDeleted { get; set; } = null!;
 
     public string? TryGetAgent(string tag)
     {

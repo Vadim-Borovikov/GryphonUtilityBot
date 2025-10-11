@@ -173,5 +173,11 @@
     "MarkdownV2": true
   },
 
+  "TimelineDuplicatesDeleted": {
+    "Text": [
+      "Лишние записи удалены."
+    ]
+  },
+
   "TimelineDuplicatesDeletionConfirmationButton": "✅ Подтверждаю"
 }

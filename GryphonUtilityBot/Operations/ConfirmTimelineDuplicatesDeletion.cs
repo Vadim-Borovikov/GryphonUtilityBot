@@ -25,7 +25,7 @@ internal sealed class ConfirmTimelineDuplicatesDeletion : Operation<ConfirmTimel
 
     protected override Task ExecuteAsync(ConfirmTimelineDuplicatesDeletionData data, Message message, User sender)
     {
-        return _manager.DeleteOldTimelinePart(data.DeleteFrom, data.DeleteAmount);
+        return _manager.DeleteOldTimelinePart(message.Chat, sender, data.DeleteFrom, data.DeleteAmount);
     }
 
     private readonly Manager _manager;

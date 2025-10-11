@@ -119,7 +119,7 @@ internal sealed class Manager : IDisposable
         return almostUpdated.SendAsync(_bot.Core.UpdateSender, chat);
     }
 
-    public async Task DeleteOldTimelinePart(int deleteFrom, int deleteAmount)
+    public async Task DeleteOldTimelinePart(Chat chat, User sender, int deleteFrom, int deleteAmount)
     {
         List<RecordStreamlined> streamlined =
             await _sheetStreamlined.LoadAsync<RecordStreamlined>(_config.GoogleRangeTimeline);
@@ -129,6 +129,9 @@ internal sealed class Manager : IDisposable
 
         streamlined.RemoveRange(deleteFrom, deleteAmount);
         await _sheetStreamlined.SaveAsync(_config.GoogleRangeTimeline, streamlined);
+
+        Texts texts = _textsProvider.GetTextsFor(sender.Id);
+        await texts.TimelineDuplicatesDeleted.SendAsync(_bot.Core.UpdateSender, chat);
     }
 
     private static int? FindIndexToMoveFrom(IReadOnlyList<Record> records)
