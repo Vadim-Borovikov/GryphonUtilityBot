@@ -13,6 +13,7 @@ internal sealed class ConfirmTimelineDuplicatesDeletion : Operation<ConfirmTimel
 
     public ConfirmTimelineDuplicatesDeletion(Bot bot, Manager manager) : base(bot.Core.Accesses, bot.Core.UpdateSender)
     {
+        _bot = bot;
         _manager = manager;
     }
 
@@ -23,10 +24,13 @@ internal sealed class ConfirmTimelineDuplicatesDeletion : Operation<ConfirmTimel
         return sender is not null && data is not null;
     }
 
-    protected override Task ExecuteAsync(ConfirmTimelineDuplicatesDeletionData data, Message message, User sender)
+    protected override async Task ExecuteAsync(ConfirmTimelineDuplicatesDeletionData data, Message message,
+        User sender)
     {
-        return _manager.DeleteOldTimelinePart(message.Chat, sender, data.DeleteFrom, data.DeleteAmount);
+        await _bot.Core.UpdateSender.DeleteMessageAsync(message.Chat, message.MessageId);
+        await _manager.DeleteOldTimelinePart(message.Chat, sender, data.DeleteFrom, data.DeleteAmount);
     }
 
+    private readonly Bot _bot;
     private readonly Manager _manager;
 }
