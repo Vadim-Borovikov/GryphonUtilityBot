@@ -11,12 +11,12 @@ namespace GryphonUtilityBot.Web.Models.Calendar.Notion;
 
 internal sealed class Provider
 {
-    public Provider(INotionClient client, Config config, BotSingleton botSingleton)
+    public Provider(INotionClient client, Config config, Bot bot)
     {
         _client = client;
-        _clock = botSingleton.Bot.Clock;
+        _clock = bot.Core.Clock;
         _updatePeriod = TimeSpan.FromSeconds(config.NotionUpdatesPerSecondLimit);
-        _logger = botSingleton.Bot.Logger;
+        _logger = bot.Core.Logging.Logger;
         _conflictReties = config.NotionConflictReties;
     }
 

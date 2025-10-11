@@ -1,0 +1,183 @@
+﻿{
+  "MenuDescriptions": {
+    "start": "приветствие",
+    "help": "инструкция",
+    "article": "первая статья",
+    "read": "удалить статью и выдать следующую",
+    "timeline": "обновить канал с таймлайном"
+  },
+
+  "StartFormat": {
+    "Text": [
+      "Привет! Я помогаю делать разные штуки.",
+      "Инструкция: /help."
+    ]
+  },
+
+  "HelpFormat": {
+    "Text": [
+      "Привет\\! Я помогаю делать разные штуки\\.",
+      "",
+      "{0}",
+      "",
+      "*дата и ссылка* – добавить статью",
+      "*ссылка* – добавить статью сегодняшним числом",
+      "",
+      "*переслать сообщение с \\#чеком* – добавить транзакцию в динарах"
+    ],
+    "MarkdownV2": true
+  },
+
+  "DateOnlyFormat": "d MMMM yyyy",
+
+  "ArticleAddedFormat": {
+    "Text": [
+      "Добавлено: `{0}`\\."
+    ],
+    "MarkdownV2": true
+  },
+
+  "ArticleDeletedFormat": {
+    "Text": [
+      "Удалено: `{0}`\\."
+    ],
+    "MarkdownV2": true
+  },
+
+  "ArticleFormat": {
+    "Text": [
+      "{0}",
+      "{1}"
+    ],
+    "MarkdownV2": true
+  },
+
+  "ArticleWithNumberFormat": {
+    "Text": [
+      "{0}\\. {1}\\."
+    ],
+    "MarkdownV2": true
+  },
+
+  "NoMoreArticles": {
+    "Text": [
+      "Больше статей нет."
+    ]
+  },
+
+  "AllArticlesDeletedAlready": {
+    "Text": [
+      "Список статей уже пуст."
+    ]
+  },
+
+  "TransactionAddedFormat": {
+    "Text": [
+      "Я записал, что {0}",
+      "{1}",
+      "{2}"
+    ]
+  },
+
+  "TransactionCoreFormat": {
+    "Text": [
+      "{0} {1} {2} {3} {4}"
+    ]
+  },
+
+  "Agents": {
+    "Дима": {
+      "Partner": "Рита",
+      "Tag": "#чеки_Димы",
+      "Verb": "передал",
+      "To": "Диме"
+    },
+    "Рита": {
+      "Partner": "Дима",
+      "Tag": "#чеки_Риты",
+      "Verb": "передала",
+      "To": "Рите"
+    },
+    "Care Space": {
+      "Verb": "передал",
+      "To": "Care Space"
+    },
+    "Илья": {
+      "Verb": "передал",
+      "To": "Илье"
+    }
+  },
+
+  "ListItemFormat": {
+    "Text": [
+      "• {0}"
+    ]
+  },
+
+  "PaymentSlipButtonCaption": "Квитанция",
+  "PaymentSlipButtonFormat": "{0} №{1}",
+  "PaymentConfirmationButton": "✅ Подтверждаю",
+
+  "CommandDescriptionFormat": {
+    "Text": [
+      "/{0} – {1}"
+    ]
+  },
+  "StatusMessageStartFormat": {
+    "Text": [
+      "_{0}…_"
+    ],
+    "MarkdownV2": true
+  },
+  "StatusMessageEndFormat": {
+    "Text": [
+      "{0}{1}\\."
+    ],
+    "MarkdownV2": true
+  },
+
+  "TimelineUpdatedFormat": {
+    "Text": [
+      "Готово"
+    ]
+  },
+  "TimelineAlmostUpdatedFormat": {
+    "Text": [
+      "Почти готово"
+    ]
+  },
+
+  "NoTimelineUpdates": {
+    "Text": [
+      "Обновления таймлайна не найдены."
+    ]
+  },
+
+  "UpdatingTimeline": {
+    "Text": [
+      "Обновляю таймлайн"
+    ]
+  },
+
+  "ConfirmTimelineDuplicatesDeletionFormat": {
+    "Text": [
+      "Добавлено записей: {0}, начиная с {1}.",
+      "Нужно удалить их старые дубликаты: {2}, с {3} по {4}."
+    ]
+  },
+
+  "TimelineMessageHypertextFormat": {
+    "Text": [
+      "[{0}](https://t.me/c/{1}/{0})"
+    ],
+    "MarkdownV2": true
+  },
+
+  "TimelineDuplicatesDeleted": {
+    "Text": [
+      "Лишние записи удалены."
+    ]
+  },
+
+  "TimelineDuplicatesDeletionConfirmationButton": "✅ Подтверждаю"
+}

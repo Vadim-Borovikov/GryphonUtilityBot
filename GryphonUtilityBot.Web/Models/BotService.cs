@@ -1,12 +1,15 @@
-﻿using System.Threading;
+﻿using Microsoft.Extensions.Hosting;
+using System;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
 
 namespace GryphonUtilityBot.Web.Models;
 
-internal sealed class BotService : IHostedService
+public sealed class BotService : IHostedService, IDisposable
 {
-    public BotService(BotSingleton singleton) => _bot = singleton.Bot;
+    public BotService(Bot bot) => _bot = bot;
+
+    public void Dispose() => _bot.Dispose();
 
     public Task StartAsync(CancellationToken cancellationToken) => _bot.StartAsync(cancellationToken);
 

@@ -13,7 +13,7 @@ public class PurchaseController : ControllerBase
     public PurchaseController(Config config) => _config = config;
 
     [HttpPost]
-    public async Task<ActionResult> Post([FromServices] BotSingleton singleton, [FromBody] Purchase model)
+    public async Task<ActionResult> Post([FromServices] Bot bot, [FromBody] Purchase model)
     {
         foreach (Item item in model.Items)
         {
@@ -22,7 +22,7 @@ public class PurchaseController : ControllerBase
             List<Transaction> transactions = item.GetTransactions(_config.PrimaryAgent, secondary.To, primary.To,
                 _config.PurchaseCurrency).ToList();
             string note = string.Format(_config.ProductSoldNoteFormat, model.ClientName, item.Name);
-            await singleton.Bot.AddSimultaneousTransactionsAsync(transactions, model.Date, note);
+            await bot.AddSimultaneousTransactionsAsync(transactions, model.Date, note);
         }
 
         return Ok();

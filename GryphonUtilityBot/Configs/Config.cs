@@ -1,11 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
-using AbstractBot.Configs;
+﻿using AbstractBot.Models.Config;
 using JetBrains.Annotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace GryphonUtilityBot.Configs;
 
 [PublicAPI]
-public class Config : ConfigWithSheets<Texts>
+public class Config : ConfigWithSheets
 {
     [Required]
     [MinLength(1)]
@@ -21,7 +21,23 @@ public class Config : ConfigWithSheets<Texts>
 
     [Required]
     [MinLength(1)]
-    public string GoogleRangeArticlesClear { get; init; } = null!;
+    public string GoogleSheetIdTimeline { get; init; } = null!;
+
+    [Required]
+    [MinLength(1)]
+    public string GoogleTitleTimelineInput { get; init; } = null!;
+
+    [Required]
+    [MinLength(1)]
+    public string GoogleTitleTimelineStreamlined { get; init; } = null!;
+
+    [Required]
+    [MinLength(1)]
+    public string GoogleRangeTimeline { get; init; } = null!;
+
+    [Required]
+    [MinLength(1)]
+    public string GoogleRangeTimelineClear { get; init; } = null!;
 
     [Required]
     [MinLength(1)]
@@ -39,11 +55,16 @@ public class Config : ConfigWithSheets<Texts>
     public string DefaultCurrency { get; init; } = null!;
 
     [Required]
-    public long TransactionLogsChatId { get; init; }
+    public long TimelineChannelId { get; init; }
 
     [Required]
-    public long MistressId { get; init; }
+    public string TimelineChannelIdPrefix { get; init; } = null!;
 
     [Required]
     public byte NotionConflictReties { get; init; }
+
+    public Texts Texts { get; set; } = new();
+
+    [Required]
+    public double TimelineWriteIntervalSeconds { get; set; }
 }

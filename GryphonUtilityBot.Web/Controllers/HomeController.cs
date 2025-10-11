@@ -1,5 +1,4 @@
-﻿using GryphonUtilityBot.Web.Models;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace GryphonUtilityBot.Web.Controllers;
 
@@ -7,5 +6,5 @@ namespace GryphonUtilityBot.Web.Controllers;
 public sealed class HomeController : Controller
 {
     [HttpGet]
-    public IActionResult Index([FromServices] BotSingleton singleton) => View(singleton.Bot.User);
+    public IActionResult Index([FromServices] Bot bot) => View(bot.Core.Self);
 }

@@ -2,29 +2,14 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using AbstractBot.Configs.MessageTemplates;
+using AbstractBot.Models.MessageTemplates;
 using JetBrains.Annotations;
 
 namespace GryphonUtilityBot.Configs;
 
 [PublicAPI]
-public class Texts : AbstractBot.Configs.Texts
+public class Texts : AbstractBot.Models.Config.Texts
 {
-    [Required]
-    public MessageTemplateText RecordAdded { get; init; } = null!;
-
-    [Required]
-    public MessageTemplateText RecordUpdated { get; init; } = null!;
-
-    [Required]
-    public MessageTemplateText RecordNotFound { get; init; } = null!;
-
-    [Required]
-    public MessageTemplateText RecordsNotFound { get; init; } = null!;
-
-    [Required]
-    public MessageTemplateText ForbiddenForMistress { get; init; } = null!;
-
     [Required]
     public MessageTemplateText ArticleAddedFormat { get; init; } = null!;
 
@@ -58,18 +43,6 @@ public class Texts : AbstractBot.Configs.Texts
     public MessageTemplateText AddArticleDescription { get; init; } = null!;
 
     [Required]
-    public MessageTemplateText AddRecordDescription { get; init; } = null!;
-
-    [Required]
-    public MessageTemplateText FindRecordDescription { get; init; } = null!;
-
-    [Required]
-    public MessageTemplateText RememberTagDescription { get; init; } = null!;
-
-    [Required]
-    public MessageTemplateText TagRecordDescription { get; init; } = null!;
-
-    [Required]
     public MessageTemplateText TransactionAddedFormat { get; init; } = null!;
 
     [Required]
@@ -85,6 +58,26 @@ public class Texts : AbstractBot.Configs.Texts
 
     [Required]
     public MessageTemplateText ListItemFormat { get; init; } = null!;
+
+    [Required]
+    public MessageTemplateText NoTimelineUpdates { get; init; } = null!;
+
+    [Required]
+    public MessageTemplateText UpdatingTimeline { get; init; } = null!;
+
+    [Required]
+    public MessageTemplateText TimelineUpdatedFormat { get; set; } = null!;
+    [Required]
+    public MessageTemplateText TimelineAlmostUpdatedFormat { get; set; } = null!;
+
+    [Required]
+    public MessageTemplateText ConfirmTimelineDuplicatesDeletionFormat { get; set; } = null!;
+    [Required]
+    public MessageTemplateText TimelineMessageHypertextFormat { get; set; } = null!;
+    [Required]
+    public string TimelineDuplicatesDeletionConfirmationButton { get; set; } = null!;
+    [Required]
+    public MessageTemplateText TimelineDuplicatesDeleted { get; set; } = null!;
 
     public string? TryGetAgent(string tag)
     {

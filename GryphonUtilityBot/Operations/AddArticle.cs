@@ -1,7 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using AbstractBot.Operations;
+﻿using AbstractBot.Models.Operations;
 using GryphonUtilityBot.Articles;
+using System;
+using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -9,19 +9,19 @@ namespace GryphonUtilityBot.Operations;
 
 internal sealed class AddArticle : Operation<Article>
 {
-    protected override byte Order => 4;
+    public override Enum AccessRequired => Bot.AccessType.Admin;
 
-    public override Enum AccessRequired => GryphonUtilityBot.Bot.AccessType.OtherFeatures;
+    public AddArticle(Bot bot, Manager manager) : base(bot.Core.Accesses, bot.Core.UpdateSender) => _manager = manager;
 
-    public AddArticle(Bot bot, Manager manager)
-        : base(bot, bot.Config.Texts.AddArticleDescription)
-    {
-        _manager = manager;
-    }
-
-    protected override bool IsInvokingBy(Message message, User sender, out Article? data)
+    protected override bool IsInvokingBy(Message message, User? sender, out Article? data)
     {
         data = null;
+
+        if (sender is null)
+        {
+            return false;
+        }
+
         if ((message.Type != MessageType.Text) || string.IsNullOrWhiteSpace(message.Text))
         {
             return false;
