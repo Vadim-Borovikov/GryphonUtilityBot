@@ -73,10 +73,15 @@ internal sealed class Manager : IDisposable
             List<RecordStreamlined> streamlined =
                 await _sheetStreamlined.LoadAsync<RecordStreamlined>(_config.GoogleRangeTimeline);
 
-            StreamlineRecords(input, streamlined);
+            IList<int> excessInput = StreamlineRecords(input, streamlined);
 
             if (streamlined.Count > 0)
             {
+                if (excessInput.Count > 0)
+                {
+                    await _bot.Core.UpdateSender.DeleteMessagesAsync(Channel, excessInput);
+                }
+
                 await _sheetStreamlined.SaveAsync(_config.GoogleRangeTimeline, streamlined);
 
                 int? moveFrom = null;
@@ -184,17 +189,19 @@ internal sealed class Manager : IDisposable
 
     private static IList<int> GetIdsList(IEnumerable<Record> records) => records.Select(r => r.Id).ToList();
 
-    private static void StreamlineRecords(List<RecordInput> input, List<RecordStreamlined> streamlined)
+    private static IList<int> StreamlineRecords(List<RecordInput> input, List<RecordStreamlined> streamlined)
     {
         if (input.Count == 0)
         {
-            return;
+            return Array.Empty<int>();
         }
 
         HashSet<DateOnly> dates = new(streamlined.Select(r => r.Date));
         DateOnly date = GetDate(dates, input.First());
 
         string? groupId = null;
+
+        List<int> excessIds = new();
 
         foreach (RecordInput data in input)
         {
@@ -204,6 +211,7 @@ internal sealed class Manager : IDisposable
                 groupId = null;
                 if (dates.Contains(date))
                 {
+                    excessIds.Add(data.Id);
                     continue;
                 }
                 dates.Add(date);
@@ -221,6 +229,8 @@ internal sealed class Manager : IDisposable
             streamlined.Add(record);
         }
         streamlined.Sort();
+
+        return excessIds;
     }
 
     private static DateOnly GetDate(IReadOnlyCollection<DateOnly> dates, RecordInput first)
