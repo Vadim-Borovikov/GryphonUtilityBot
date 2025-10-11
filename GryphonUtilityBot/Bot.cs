@@ -76,6 +76,7 @@ public sealed class Bot : AbstractBot.Bot, IDisposable
         await _core.Logging.StartAsync(cancellationToken);
 
         _core.UpdateReceiver.Operations.Add(new AcceptTimelineMessage(this, _timelineManager));
+        _core.UpdateReceiver.Operations.Add(new ConfirmTimelineDeletion(this, _timelineManager));
 
         Articles.Manager articlesManager = new(this, _config, _textsProvider, _sheetsManager);
 

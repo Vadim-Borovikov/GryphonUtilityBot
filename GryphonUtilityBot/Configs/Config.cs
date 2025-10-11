@@ -58,6 +58,9 @@ public class Config : ConfigWithSheets
     public long TimelineChannelId { get; init; }
 
     [Required]
+    public string TimelineChannelIdPrefix { get; init; } = null!;
+
+    [Required]
     public byte NotionConflictReties { get; init; }
 
     public Texts Texts { get; set; } = new();

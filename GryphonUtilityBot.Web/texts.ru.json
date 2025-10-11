@@ -131,9 +131,20 @@
   },
   "StatusMessageEndFormat": {
     "Text": [
-      "{0} Готово\\."
+      "{0}{1}\\."
     ],
     "MarkdownV2": true
+  },
+
+  "TimelineUpdatedFormat": {
+    "Text": [
+      "Готово"
+    ]
+  },
+  "TimelineAlmostUpdatedFormat": {
+    "Text": [
+      "Почти готово"
+    ]
   },
 
   "NoTimelineUpdates": {
@@ -146,5 +157,21 @@
     "Text": [
       "Обновляю таймлайн"
     ]
-  }
+  },
+
+  "ConfirmTimelineDeletionFormat": {
+    "Text": [
+      "Добавлено записей: {0}, начиная с {1}.",
+      "Нужно удалить их старые дубликаты: {2}, с {3} по {4}."
+    ]
+  },
+
+  "TimelineMessageHypertextFormat": {
+    "Text": [
+      "[{0}](https://t.me/c/{1}/{0})"
+    ],
+    "MarkdownV2": true
+  },
+
+  "TimelineDeletionConfirmationButton": "✅ Подтверждаю"
 }

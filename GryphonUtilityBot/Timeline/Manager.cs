@@ -1,16 +1,20 @@
 ﻿using AbstractBot.Interfaces.Modules;
 using AbstractBot.Models;
+using AbstractBot.Models.MessageTemplates;
 using GoogleSheetsManager.Documents;
 using GoogleSheetsManager.Extensions;
 using GryphonUtilities;
 using GryphonUtilityBot.Configs;
+using GryphonUtilityBot.Operations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace GryphonUtilityBot.Timeline;
 
@@ -31,6 +35,7 @@ internal sealed class Manager : IDisposable
             Id = _config.TimelineChannelId,
             Type = ChatType.Channel
         };
+        _channelLinksId = Channel.Id.ToString().Remove(0, _config.TimelineChannelIdPrefix.Length);
 
         TimeSpan interval = TimeSpan.FromSeconds(config.TimelineWriteIntervalSeconds);
         _invoker = new Invoker(bot.Core.Logging.Logger);
@@ -61,8 +66,9 @@ internal sealed class Manager : IDisposable
             return;
         }
 
+        StrongBox<MessageTemplateText> prefixBox = new(texts.TimelineUpdatedFormat);
         await using (await StatusMessage.CreateAsync(_bot.Core.UpdateSender, chat, texts.UpdatingTimeline,
-                         texts.StatusMessageStartFormat, texts.StatusMessageEndFormat))
+                         texts.StatusMessageStartFormat, texts.StatusMessageEndFormat, () => prefixBox.Value!))
         {
             List<RecordStreamlined> streamlined =
                 await _sheetStreamlined.LoadAsync<RecordStreamlined>(_config.GoogleRangeTimeline);
@@ -90,25 +96,60 @@ internal sealed class Manager : IDisposable
                             break;
                         }
                     }
+
                     break;
                 }
 
                 if (moveFrom.HasValue)
                 {
-                    await MoveMessages(streamlined, moveFrom.Value);
+                    List<RecordStreamlined> toMove = streamlined.Skip(moveFrom.Value).ToList();
+                    IList<int> newIds = await RepostMessages(streamlined, toMove);
+
+                    MessageTemplateText firstNew =
+                        texts.TimelineMessageHypertextFormat.Format(newIds.Min(), _channelLinksId);
+
+                    int deleteFrom = moveFrom.Value;
+                    int deleteAmount = toMove.Count;
+
+                    IList<int> oldIds = GetIdsList(toMove);
+                    int deleteFromId = oldIds.Min();
+                    int deleteToId = oldIds.Max();
+
+                    MessageTemplateText deleteFromMessage =
+                        texts.TimelineMessageHypertextFormat.Format(deleteFromId, _channelLinksId);
+                    MessageTemplateText deleteToMessage =
+                        texts.TimelineMessageHypertextFormat.Format(deleteToId, _channelLinksId);
+
+                    MessageTemplateText almostUpdated =
+                        texts.ConfirmTimelineDeletionFormat.Format(newIds.Count, firstNew, deleteAmount,
+                            deleteFromMessage, deleteToMessage);
+                    almostUpdated.KeyboardProvider = CreateConfirmationKeyboard(texts, deleteFrom, deleteAmount);
+                    await almostUpdated.SendAsync(_bot.Core.UpdateSender, chat);
+
+                    prefixBox.Value = texts.TimelineAlmostUpdatedFormat;
                 }
             }
 
-            if (input.Count > 0)
-            {
-                await _sheetInput.ClearAsync(_config.GoogleRangeTimelineClear);
-            }
+            await _sheetInput.ClearAsync(_config.GoogleRangeTimelineClear);
         }
     }
 
-    private async Task MoveMessages(List<RecordStreamlined> streamlined, int moveFrom)
+    public async Task DeleteOldTimelinePart(int deleteFrom, int deleteAmount)
     {
-        List<RecordStreamlined> toMove = streamlined.Skip(moveFrom).ToList();
+        List<RecordStreamlined> streamlined =
+            await _sheetStreamlined.LoadAsync<RecordStreamlined>(_config.GoogleRangeTimeline);
+        IEnumerable<RecordStreamlined> toDelete = streamlined.Skip(deleteFrom).Take(deleteAmount);
+
+        await _bot.Core.UpdateSender.DeleteMessagesAsync(Channel, GetIdsList(toDelete));
+
+        streamlined.RemoveRange(deleteFrom, deleteAmount);
+        await _sheetStreamlined.SaveAsync(_config.GoogleRangeTimeline, streamlined);
+    }
+
+    private async Task<IList<int>> RepostMessages(List<RecordStreamlined> streamlined,
+        IReadOnlyList<RecordStreamlined> toMove)
+    {
+        List<int> newIds = new();
         foreach ((IList<RecordStreamlined> batch, bool copy) in Split(toMove))
         {
             IList<int> oldIds = GetIdsList(batch);
@@ -130,17 +171,15 @@ internal sealed class Manager : IDisposable
                     replyToId = oldToNew[replyToId.Value];
                 }
 
-                RecordStreamlined newRecord =
-                    new(oldRecord, oldRecord.Date, groupId, oldToNew[oldRecord.Id], replyToId);
+                int id = oldToNew[oldRecord.Id];
+                newIds.Add(id);
+                RecordStreamlined newRecord = new(oldRecord, oldRecord.Date, groupId, id, replyToId);
                 newRecords.Add(newRecord);
             }
             streamlined.AddRange(newRecords);
             await _sheetStreamlined.AddAsync(_config.GoogleRangeTimeline, newRecords);
         }
-
-        await _bot.Core.UpdateSender.DeleteMessagesAsync(Channel, GetIdsList(toMove));
-        streamlined.RemoveRange(moveFrom, toMove.Count);
-        await _sheetStreamlined.SaveAsync(_config.GoogleRangeTimeline, streamlined);
+        return newIds;
     }
 
     private static IList<int> GetIdsList(IEnumerable<Record> records) => records.Select(r => r.Id).ToList();
@@ -271,6 +310,29 @@ internal sealed class Manager : IDisposable
         await _sheetInput.AddAsync(_config.GoogleRangeTimeline, updates);
     }
 
+    private static InlineKeyboardMarkup CreateConfirmationKeyboard(Texts texts, int deleteFrom, int deleteAmount)
+    {
+        List<List<InlineKeyboardButton>> keyboard = new()
+        {
+            CreateOneButtonRow<ConfirmTimelineDeletion>(texts.TimelineDeletionConfirmationButton, deleteFrom,
+                deleteAmount)
+        };
+        return new InlineKeyboardMarkup(keyboard);
+    }
+    private static List<InlineKeyboardButton> CreateOneButtonRow<TData>(string caption, params object[] args)
+    {
+        return new List<InlineKeyboardButton> { CreateButton<TData>(caption, args) };
+    }
+    private static InlineKeyboardButton CreateButton<TCallback>(string caption, params object[] fields)
+    {
+        return new InlineKeyboardButton(caption)
+        {
+            CallbackData = typeof(TCallback).Name + string.Join(FieldSeparator, fields)
+        };
+    }
+
+    public const string FieldSeparator = ";";
+
     private bool _recentlyAdded;
 
     private readonly object _locker = new();
@@ -278,6 +340,8 @@ internal sealed class Manager : IDisposable
     private readonly SortedSet<RecordInput> _inputRecords = new();
 
     private readonly Invoker _invoker;
+
+    private readonly string _channelLinksId;
 
     private readonly Bot _bot;
     private readonly Config _config;

@@ -65,6 +65,18 @@ public class Texts : AbstractBot.Models.Config.Texts
     [Required]
     public MessageTemplateText UpdatingTimeline { get; init; } = null!;
 
+    [Required]
+    public MessageTemplateText TimelineUpdatedFormat { get; set; } = null!;
+    [Required]
+    public MessageTemplateText TimelineAlmostUpdatedFormat { get; set; } = null!;
+
+    [Required]
+    public MessageTemplateText ConfirmTimelineDeletionFormat { get; set; } = null!;
+    [Required]
+    public MessageTemplateText TimelineMessageHypertextFormat { get; set; } = null!;
+    [Required]
+    public string TimelineDeletionConfirmationButton { get; set; } = null!;
+
     public string? TryGetAgent(string tag)
     {
         List<string> keys =
