@@ -84,59 +84,37 @@ internal sealed class Manager : IDisposable
 
                 await _sheetStreamlined.SaveAsync(_config.GoogleRangeTimeline, streamlined);
 
-                int? moveFrom = null;
-                for (int i = 0; i < (streamlined.Count - 1); ++i)
-                {
-                    if (streamlined[i].Id < streamlined[i + 1].Id)
-                    {
-                        continue;
-                    }
-
-                    moveFrom = 0;
-                    for (int j = i - 1; j >= 0; --j)
-                    {
-                        if (streamlined[j].Id < streamlined[i + 1].Id)
-                        {
-                            moveFrom = j + 1;
-                            break;
-                        }
-                    }
-
-                    break;
-                }
-
+                int? moveFrom = FindIndexToMoveFrom(streamlined);
                 if (moveFrom.HasValue)
                 {
                     List<RecordStreamlined> toMove = streamlined.Skip(moveFrom.Value).ToList();
                     IList<int> newIds = await RepostMessages(streamlined, toMove);
-
-                    MessageTemplateText firstNew =
-                        texts.TimelineMessageHypertextFormat.Format(newIds.Min(), _channelLinksId);
-
-                    int deleteFrom = moveFrom.Value;
-                    int deleteAmount = toMove.Count;
-
-                    IList<int> oldIds = GetIdsList(toMove);
-                    int deleteFromId = oldIds.Min();
-                    int deleteToId = oldIds.Max();
-
-                    MessageTemplateText deleteFromMessage =
-                        texts.TimelineMessageHypertextFormat.Format(deleteFromId, _channelLinksId);
-                    MessageTemplateText deleteToMessage =
-                        texts.TimelineMessageHypertextFormat.Format(deleteToId, _channelLinksId);
-
-                    MessageTemplateText almostUpdated =
-                        texts.ConfirmTimelineDeletionFormat.Format(newIds.Count, firstNew, deleteAmount,
-                            deleteFromMessage, deleteToMessage);
-                    almostUpdated.KeyboardProvider = CreateConfirmationKeyboard(texts, deleteFrom, deleteAmount);
-                    await almostUpdated.SendAsync(_bot.Core.UpdateSender, chat);
-
+                    await SendAlmostUpdatedMessageAsync(chat, texts, moveFrom.Value, GetIdsList(toMove), newIds);
                     prefixBox.Value = texts.TimelineAlmostUpdatedFormat;
                 }
             }
 
             await _sheetInput.ClearAsync(_config.GoogleRangeTimelineClear);
         }
+    }
+
+    private Task SendAlmostUpdatedMessageAsync(Chat chat, Texts texts, int deleteFrom, ICollection<int> oldIds,
+        ICollection<int> newIds)
+    {
+        MessageTemplateText firstNew = texts.TimelineMessageHypertextFormat.Format(newIds.Min(), _channelLinksId);
+
+        MessageTemplateText deleteFromMessage =
+            texts.TimelineMessageHypertextFormat.Format(oldIds.Min(), _channelLinksId);
+        MessageTemplateText deleteToMessage =
+            texts.TimelineMessageHypertextFormat.Format(oldIds.Max(), _channelLinksId);
+
+        MessageTemplateText almostUpdated =
+            texts.ConfirmTimelineDeletionFormat.Format(newIds.Count, firstNew, oldIds.Count, deleteFromMessage,
+                deleteToMessage);
+
+        almostUpdated.KeyboardProvider = CreateConfirmationKeyboard(texts, deleteFrom, oldIds.Count);
+
+        return almostUpdated.SendAsync(_bot.Core.UpdateSender, chat);
     }
 
     public async Task DeleteOldTimelinePart(int deleteFrom, int deleteAmount)
@@ -149,6 +127,27 @@ internal sealed class Manager : IDisposable
 
         streamlined.RemoveRange(deleteFrom, deleteAmount);
         await _sheetStreamlined.SaveAsync(_config.GoogleRangeTimeline, streamlined);
+    }
+
+    private static int? FindIndexToMoveFrom(IReadOnlyList<Record> records)
+    {
+        for (int i = 0; i < (records.Count - 1); ++i)
+        {
+            if (records[i].Id < records[i + 1].Id)
+            {
+                continue;
+            }
+
+            for (int j = i - 1; j >= 0; --j)
+            {
+                if (records[j].Id < records[i + 1].Id)
+                {
+                    return j + 1;
+                }
+            }
+            return 0;
+        }
+        return null;
     }
 
     private async Task<IList<int>> RepostMessages(List<RecordStreamlined> streamlined,
