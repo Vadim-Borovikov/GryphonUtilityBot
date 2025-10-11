@@ -2,12 +2,12 @@
 
 namespace GryphonUtilityBot.Operations.Data;
 
-internal sealed class ConfirmTimelineDeletionData
+internal sealed class ConfirmTimelineDuplicatesDeletionData
 {
     public readonly int DeleteFrom;
     public readonly int DeleteAmount;
 
-    public static ConfirmTimelineDeletionData? From(string callbackQueryDataCore)
+    public static ConfirmTimelineDuplicatesDeletionData? From(string callbackQueryDataCore)
     {
         string[] parts = callbackQueryDataCore.Split(Manager.FieldSeparator);
         if ((parts.Length != 2) || !int.TryParse(parts[0], out int deleteFrom)
@@ -15,10 +15,10 @@ internal sealed class ConfirmTimelineDeletionData
         {
             return null;
         }
-        return new ConfirmTimelineDeletionData(deleteFrom, deleteAmount);
+        return new ConfirmTimelineDuplicatesDeletionData(deleteFrom, deleteAmount);
     }
 
-    private ConfirmTimelineDeletionData(int deleteFrom, int deleteAmount)
+    private ConfirmTimelineDuplicatesDeletionData(int deleteFrom, int deleteAmount)
     {
         DeleteFrom = deleteFrom;
         DeleteAmount = deleteAmount;

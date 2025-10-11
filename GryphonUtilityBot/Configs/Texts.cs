@@ -71,11 +71,11 @@ public class Texts : AbstractBot.Models.Config.Texts
     public MessageTemplateText TimelineAlmostUpdatedFormat { get; set; } = null!;
 
     [Required]
-    public MessageTemplateText ConfirmTimelineDeletionFormat { get; set; } = null!;
+    public MessageTemplateText ConfirmTimelineDuplicatesDeletionFormat { get; set; } = null!;
     [Required]
     public MessageTemplateText TimelineMessageHypertextFormat { get; set; } = null!;
     [Required]
-    public string TimelineDeletionConfirmationButton { get; set; } = null!;
+    public string TimelineDuplicatesDeletionConfirmationButton { get; set; } = null!;
 
     public string? TryGetAgent(string tag)
     {

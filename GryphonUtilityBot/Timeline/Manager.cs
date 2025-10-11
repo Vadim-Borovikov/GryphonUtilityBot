@@ -109,8 +109,8 @@ internal sealed class Manager : IDisposable
             texts.TimelineMessageHypertextFormat.Format(oldIds.Max(), _channelLinksId);
 
         MessageTemplateText almostUpdated =
-            texts.ConfirmTimelineDeletionFormat.Format(newIds.Count, firstNew, oldIds.Count, deleteFromMessage,
-                deleteToMessage);
+            texts.ConfirmTimelineDuplicatesDeletionFormat.Format(newIds.Count, firstNew, oldIds.Count,
+                deleteFromMessage, deleteToMessage);
 
         almostUpdated.KeyboardProvider = CreateConfirmationKeyboard(texts, deleteFrom, oldIds.Count);
 
@@ -323,7 +323,7 @@ internal sealed class Manager : IDisposable
     {
         List<List<InlineKeyboardButton>> keyboard = new()
         {
-            CreateOneButtonRow<ConfirmTimelineDeletion>(texts.TimelineDeletionConfirmationButton, deleteFrom,
+            CreateOneButtonRow<ConfirmTimelineDuplicatesDeletion>(texts.TimelineDuplicatesDeletionConfirmationButton, deleteFrom,
                 deleteAmount)
         };
         return new InlineKeyboardMarkup(keyboard);

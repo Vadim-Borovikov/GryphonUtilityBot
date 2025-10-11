@@ -159,7 +159,7 @@
     ]
   },
 
-  "ConfirmTimelineDeletionFormat": {
+  "ConfirmTimelineDuplicatesDeletionFormat": {
     "Text": [
       "Добавлено записей: {0}, начиная с {1}.",
       "Нужно удалить их старые дубликаты: {2}, с {3} по {4}."
@@ -173,5 +173,5 @@
     "MarkdownV2": true
   },
 
-  "TimelineDeletionConfirmationButton": "✅ Подтверждаю"
+  "TimelineDuplicatesDeletionConfirmationButton": "✅ Подтверждаю"
 }
