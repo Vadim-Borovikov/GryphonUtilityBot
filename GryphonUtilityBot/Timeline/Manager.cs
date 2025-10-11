@@ -22,10 +22,12 @@ internal sealed class Manager : IDisposable
 {
     public readonly Chat Channel;
 
-    public Manager(Bot bot, Config config, GoogleSheetsManager.Documents.Manager documentsManager)
+    public Manager(Bot bot, Config config, ITextsProvider<Texts> textsProvider,
+        GoogleSheetsManager.Documents.Manager documentsManager)
     {
         _bot = bot;
         _config = config;
+        _textsProvider = textsProvider;
 
         GoogleSheetsManager.Documents.Document document = documentsManager.GetOrAdd(_config.GoogleSheetIdTimeline);
         _sheetInput = document.GetOrAddSheet(_config.GoogleTitleTimelineInput);
@@ -55,9 +57,9 @@ internal sealed class Manager : IDisposable
         }
     }
 
-    public async Task UpdateChannelAsync(Chat chat, User sender, ITextsProvider<Texts> textsProvider)
+    public async Task UpdateChannelAsync(Chat chat, User sender)
     {
-        Texts texts = textsProvider.GetTextsFor(sender.Id);
+        Texts texts = _textsProvider.GetTextsFor(sender.Id);
 
         List<RecordInput> input = await _sheetInput.LoadAsync<RecordInput>(_config.GoogleRangeTimeline);
         if (input.Count == 0)
@@ -354,6 +356,7 @@ internal sealed class Manager : IDisposable
 
     private readonly Bot _bot;
     private readonly Config _config;
+    private readonly ITextsProvider<Texts> _textsProvider;
     private readonly Sheet _sheetInput;
     private readonly Sheet _sheetStreamlined;
 }

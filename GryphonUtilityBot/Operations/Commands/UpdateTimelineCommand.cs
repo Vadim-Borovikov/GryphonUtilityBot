@@ -15,15 +15,13 @@ internal sealed class UpdateTimelineCommand : Command
     public UpdateTimelineCommand(Bot bot, ITextsProvider<Texts> textsProvider, Manager manager)
         : base(bot.Core.Accesses, bot.Core.UpdateSender, "timeline", textsProvider, bot.Core.SelfUsername)
     {
-        _textsProvider = textsProvider;
         _manager = manager;
     }
 
     protected override Task ExecuteAsync(Message message, User sender)
     {
-        return _manager.UpdateChannelAsync(message.Chat, sender, _textsProvider);
+        return _manager.UpdateChannelAsync(message.Chat, sender);
     }
 
-    private readonly ITextsProvider<Texts> _textsProvider;
     private readonly Manager _manager;
 }

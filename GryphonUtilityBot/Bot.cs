@@ -67,7 +67,7 @@ public sealed class Bot : AbstractBot.Bot, IDisposable
 
         _financemanager = new Manager(this, _config, _textsProvider, _sheetsManager);
 
-        _timelineManager = new Timeline.Manager(this, _config, _sheetsManager);
+        _timelineManager = new Timeline.Manager(this, _config, _textsProvider, _sheetsManager);
     }
 
     public override async Task StartAsync(CancellationToken cancellationToken)
