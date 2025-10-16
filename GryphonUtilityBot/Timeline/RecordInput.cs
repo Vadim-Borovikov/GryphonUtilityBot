@@ -4,7 +4,7 @@ using System;
 
 namespace GryphonUtilityBot.Timeline;
 
-internal class RecordInput : Record, IComparable<RecordInput>
+internal sealed class RecordInput : Record, IComparable<RecordInput>
 {
     [UsedImplicitly]
     [SheetField(TextDateTitle)]
