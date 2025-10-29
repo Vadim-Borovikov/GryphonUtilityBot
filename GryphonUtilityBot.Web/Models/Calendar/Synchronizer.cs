@@ -87,7 +87,8 @@ internal sealed class Synchronizer : BackgroundService, IUpdatesSubscriber
         {
             if (!string.IsNullOrWhiteSpace(page.GoogleEventId))
             {
-                await DeleteEventAndClearPageAsync(page);
+                await _googleCalendarProvider.DeleteEventAsync(page.GoogleEventId);
+                await ClearPageAsync(page);
             }
         }
     }
@@ -107,9 +108,9 @@ internal sealed class Synchronizer : BackgroundService, IUpdatesSubscriber
     {
         PageInfo page = await GetPageInfoAsync(id);
         LogPageInfo(page, eventType);
-        if (page.IsRelevantMeeting() && !string.IsNullOrWhiteSpace(page.GoogleEventId))
+        if (!string.IsNullOrWhiteSpace(page.GoogleEventId))
         {
-            await DeleteEventAndClearPageAsync(page);
+            await _googleCalendarProvider.DeleteEventAsync(page.GoogleEventId);
         }
     }
 
@@ -156,9 +157,8 @@ internal sealed class Synchronizer : BackgroundService, IUpdatesSubscriber
             dates.End, page.Page.Url, page.Link?.ToString());
     }
 
-    private async Task DeleteEventAndClearPageAsync(PageInfo page)
+    private async Task ClearPageAsync(PageInfo page)
     {
-        await _googleCalendarProvider.DeleteEventAsync(page.GoogleEventId);
         bool cleared = await _notionProvider.TryClearEventDataAsync(page);
         if (!cleared)
         {
