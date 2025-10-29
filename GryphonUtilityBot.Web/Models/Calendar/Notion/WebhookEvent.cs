@@ -36,10 +36,10 @@ public sealed class WebhookEvent
         [JsonStringEnumMemberName("page.moved")]
         Moved,
 
-        [JsonStringEnumMemberName("page.undeleted")]
+        [JsonStringEnumMemberName("page.deleted")]
         Deleted,
 
-        [JsonStringEnumMemberName("page.deleted")]
+        [JsonStringEnumMemberName("page.undeleted")]
         Undeleted
     }
 
