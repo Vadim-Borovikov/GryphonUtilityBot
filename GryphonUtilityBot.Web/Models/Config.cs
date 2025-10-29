@@ -60,7 +60,7 @@ public sealed class Config : Configs.Config
 
     [Required]
     [MinLength(1)]
-    public Dictionary<string, string> RelevantProperties { get; init; } = null!;
+    public List<string> RelevantProperties { get; init; } = null!;
 
     public static readonly JsonSerializerOptions JsonOptions = new()
     {

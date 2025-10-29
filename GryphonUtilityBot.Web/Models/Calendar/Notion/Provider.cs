@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -61,6 +62,12 @@ internal sealed class Provider
     }
 
     public Task<bool> TryClearEventDataAsync(PageInfo page) => TryUpdateEventDataAsync(page, string.Empty, null);
+
+    public async Task<Dictionary<string, string>?> TryGetDatabasePropertyIdsAsync(string id)
+    {
+        Database? database = await _client.Databases.RetrieveAsync(id);
+        return database?.Properties?.ToDictionary(p => p.Key, p => p.Value.Id);
+    }
 
     private async Task<PageInfo> GetPageAsync(string id)
     {

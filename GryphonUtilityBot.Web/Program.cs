@@ -110,7 +110,10 @@ internal static class Program
         services.AddNotionClient(options => options.AuthToken = config.NotionToken);
         services.AddSingleton<Models.Calendar.Notion.Provider>();
         services.AddSingleton<GoogleCalendarProvider>();
-        services.AddSingleton<IUpdatesSubscriber, Synchronizer>();
+
+        services.AddSingleton<Synchronizer>();
+        services.AddSingleton<IHostedService>(sp => sp.GetRequiredService<Synchronizer>());
+        services.AddSingleton<IUpdatesSubscriber>(sp => sp.GetRequiredService<Synchronizer>());
     }
 
     private static void UseUpdateEndpoint(IApplicationBuilder app, string token)
