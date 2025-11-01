@@ -28,7 +28,7 @@ internal sealed class ConfirmTimelineDuplicatesDeletion : Operation<ConfirmTimel
         User sender)
     {
         await _bot.Core.UpdateSender.DeleteMessageAsync(message.Chat, message.MessageId);
-        await _manager.DeleteOldTimelinePart(message.Chat, sender, data.DeleteFrom, data.DeleteAmount);
+        await _manager.TryToDeleteOldTimelinePart(message.Chat, sender, data.DeleteFrom, data.DeleteAmount);
     }
 
     private readonly Bot _bot;

@@ -1,6 +1,7 @@
 ﻿using GoogleSheetsManager;
 using JetBrains.Annotations;
 using System;
+using GryphonUtilities.Time;
 
 namespace GryphonUtilityBot.Timeline;
 
@@ -12,8 +13,9 @@ internal sealed class RecordStreamlined : Record, IComparable<RecordStreamlined>
 
     public RecordStreamlined() { }
 
-    public RecordStreamlined(Record data, DateOnly date, string? groupId, int? id = null, int? replyToId = null)
-        : base(id ?? data.Id, groupId ?? data.GroupId, data.AuthorId, replyToId ?? data.ReplyToId)
+    public RecordStreamlined(Record data, DateOnly date, string? groupId, int? id = null, DateTimeFull? added = null,
+        int? replyToId = null)
+        : base(id ?? data.Id, added ?? data.Added, groupId ?? data.GroupId, data.AuthorId, replyToId ?? data.ReplyToId)
     {
         Date = date;
     }

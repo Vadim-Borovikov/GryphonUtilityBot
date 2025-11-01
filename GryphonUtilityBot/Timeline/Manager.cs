@@ -12,6 +12,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using GryphonUtilities.Time;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -42,14 +43,17 @@ internal sealed class Manager : IDisposable
         TimeSpan interval = TimeSpan.FromSeconds(config.TimelineWriteIntervalSeconds);
         _invoker = new Invoker(bot.Core.Logging.Logger);
         _invoker.DoPeriodically(TickAsync, interval, false);
+
+        _deletionWindow = TimeSpan.FromDays(config.TimelinePostsDeletionAvailabilityDays)
+                          - TimeSpan.FromSeconds(config.TimelinePostsDeletionThresholdSeconds);
     }
 
     public void Dispose() => _invoker.Dispose();
 
-    public void AddRecord(int id, DateOnly? date = null, string? groupId = null, long? authorId = null,
-        int? replyToId = null)
+    public void AddRecord(int id, DateTimeFull added, DateOnly? date = null, string? groupId = null,
+        long? authorId = null, int? replyToId = null)
     {
-        RecordInput record = new(id, date, groupId, authorId, replyToId);
+        RecordInput record = new(id, added, date, groupId, authorId, replyToId);
         lock (_locker)
         {
             _inputRecords.Add(record);
@@ -92,7 +96,6 @@ internal sealed class Manager : IDisposable
                     List<RecordStreamlined> toMove = streamlined.Skip(moveFrom.Value).ToList();
                     IList<int> newIds = await RepostMessages(streamlined, toMove);
                     await SendAlmostUpdatedMessageAsync(chat, texts, moveFrom.Value, GetIdsList(toMove), newIds);
-                    prefixBox.Value = texts.TimelineAlmostUpdatedFormat;
                 }
             }
 
@@ -119,19 +122,50 @@ internal sealed class Manager : IDisposable
         return almostUpdated.SendAsync(_bot.Core.UpdateSender, chat);
     }
 
-    public async Task DeleteOldTimelinePart(Chat chat, User sender, int deleteFrom, int deleteAmount)
+    private Task SendManualDeletionRequiredMessageAsync(Chat chat, Texts texts, ICollection<int> ids)
+    {
+        MessageTemplateText deleteFromMessage =
+            texts.TimelineMessageHypertextFormat.Format(ids.Min(), _channelLinksId);
+        MessageTemplateText deleteToMessage =
+            texts.TimelineMessageHypertextFormat.Format(ids.Max(), _channelLinksId);
+
+        MessageTemplateText almostUpdated =
+            texts.TimelineDuplicatesRequireManualDeletion.Format(ids.Count, deleteFromMessage, deleteToMessage);
+
+        return almostUpdated.SendAsync(_bot.Core.UpdateSender, chat);
+    }
+
+    public async Task TryToDeleteOldTimelinePart(Chat chat, User sender, int deleteFrom, int deleteAmount)
     {
         List<RecordStreamlined> streamlined =
             await _sheetStreamlined.LoadAsync<RecordStreamlined>(_config.GoogleRangeTimeline);
-        IEnumerable<RecordStreamlined> toDelete = streamlined.Skip(deleteFrom).Take(deleteAmount);
 
-        await _bot.Core.UpdateSender.DeleteMessagesAsync(Channel, GetIdsList(toDelete));
+        DateTimeFull deletionLimit = DateTimeFull.CreateUtcNow() - _deletionWindow;
+
+        Dictionary<bool, IList<int>> grouped = streamlined.Skip(deleteFrom)
+                                                          .Take(deleteAmount)
+                                                          .GroupBy(r => r.Added >= deletionLimit)
+                                                          .ToDictionary(g => g.Key, GetIdsList);
+
+        if (grouped.ContainsKey(true))
+        {
+            IList<int> deleteAutomaticly = grouped[true];
+            await _bot.Core.UpdateSender.DeleteMessagesAsync(Channel, deleteAutomaticly);
+        }
 
         streamlined.RemoveRange(deleteFrom, deleteAmount);
         await _sheetStreamlined.SaveAsync(_config.GoogleRangeTimeline, streamlined);
 
         Texts texts = _textsProvider.GetTextsFor(sender.Id);
-        await texts.TimelineDuplicatesDeleted.SendAsync(_bot.Core.UpdateSender, chat);
+        if (grouped.ContainsKey(false))
+        {
+            IList<int> deleteManually = grouped[false];
+            await SendManualDeletionRequiredMessageAsync(chat, texts, deleteManually);
+        }
+        else
+        {
+            await texts.TimelineDuplicatesDeleted.SendAsync(_bot.Core.UpdateSender, chat);
+        }
     }
 
     private static int? FindIndexToMoveFrom(IReadOnlyList<Record> records)
@@ -163,6 +197,7 @@ internal sealed class Manager : IDisposable
         {
             IList<int> oldIds = GetIdsList(batch);
 
+            DateTimeFull now = DateTimeFull.CreateUtcNow();
             Dictionary<int, int> oldToNew = await SendBatchAsync(oldIds, copy);
             List<RecordStreamlined> newRecords = new();
             foreach (RecordStreamlined oldRecord in batch)
@@ -182,7 +217,7 @@ internal sealed class Manager : IDisposable
 
                 int id = oldToNew[oldRecord.Id];
                 newIds.Add(id);
-                RecordStreamlined newRecord = new(oldRecord, oldRecord.Date, groupId, id, replyToId);
+                RecordStreamlined newRecord = new(oldRecord, oldRecord.Date, groupId, id, now, replyToId);
                 newRecords.Add(newRecord);
             }
             streamlined.AddRange(newRecords);
@@ -282,7 +317,6 @@ internal sealed class Manager : IDisposable
         {
             return oldToNew;
         }
-
         MessageId[] ids = copy
             ? await _bot.Core.UpdateSender.CopyMessagesAsync(Channel, Channel, batch)
             : await _bot.Core.UpdateSender.ForwardMessagesAsync(Channel, Channel, batch);
@@ -362,4 +396,5 @@ internal sealed class Manager : IDisposable
     private readonly ITextsProvider<Texts> _textsProvider;
     private readonly Sheet _sheetInput;
     private readonly Sheet _sheetStreamlined;
+    private readonly TimeSpan _deletionWindow;
 }

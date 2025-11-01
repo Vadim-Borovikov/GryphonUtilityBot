@@ -67,4 +67,10 @@ public class Config : ConfigWithSheets
 
     [Required]
     public double TimelineWriteIntervalSeconds { get; set; }
+
+    [Required]
+    public byte TimelinePostsDeletionAvailabilityDays { get; set; }
+
+    [Required]
+    public double TimelinePostsDeletionThresholdSeconds { get; set; }
 }

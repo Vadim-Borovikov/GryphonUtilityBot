@@ -1,6 +1,7 @@
 ﻿using GoogleSheetsManager;
 using JetBrains.Annotations;
 using System;
+using GryphonUtilities.Time;
 
 namespace GryphonUtilityBot.Timeline;
 
@@ -12,9 +13,10 @@ internal sealed class RecordInput : Record, IComparable<RecordInput>
 
     public RecordInput() { }
 
-    public RecordInput(int id, DateOnly? textDate, string? groupId, long? authorId, int? replyToId)
+    public RecordInput(int id, DateTimeFull added, DateOnly? textDate, string? groupId, long? authorId, int? replyToId)
     {
         Id = id;
+        Added = added;
         TextDate = textDate;
         GroupId = groupId;
         AuthorId = authorId;

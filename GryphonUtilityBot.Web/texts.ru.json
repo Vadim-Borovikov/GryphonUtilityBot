@@ -179,5 +179,11 @@
     ]
   },
 
+  "TimelineDuplicatesRequireManualDeletion": {
+    "Text": [
+      "{0} записей, с {1} по {2}, отправлены давно, так что их нужно удалить вручную."
+    ]
+  },
+
   "TimelineDuplicatesDeletionConfirmationButton": "✅ Подтверждаю"
 }

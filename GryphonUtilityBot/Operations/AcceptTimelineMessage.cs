@@ -2,6 +2,7 @@
 using System;
 using System.Threading.Tasks;
 using GoogleSheetsManager.Extensions;
+using GryphonUtilities.Time;
 using GryphonUtilityBot.Timeline;
 using Telegram.Bot.Types;
 
@@ -30,7 +31,8 @@ internal sealed class AcceptTimelineMessage : Operation
     protected override Task ExecuteAsync(Message message)
     {
         DateOnly? date = message.Text?.ToDateOnly(_bot.Core.Clock);
-        _manager.AddRecord(message.MessageId, date, message.MediaGroupId, message.ForwardFrom?.Id,
+        DateTimeFull messageDate = DateTimeFull.CreateUtc(message.Date);
+        _manager.AddRecord(message.MessageId, messageDate, date, message.MediaGroupId, message.ForwardFrom?.Id,
             message.ReplyToMessage?.MessageId);
         return Task.CompletedTask;
     }
