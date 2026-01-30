@@ -80,6 +80,8 @@ public sealed class Bot : AbstractBot.Bot, IDisposable
 
         Articles.Manager articlesManager = new(this, _config, _textsProvider, _sheetsManager);
 
+        await _financemanager.InitializeExpenseCategoriesAndPlacesAsync();
+
         _core.UpdateReceiver.Operations.Add(new AddReceipt(this, _textsProvider, _config.DefaultCurrency,
             _financemanager));
 
@@ -98,7 +100,7 @@ public sealed class Bot : AbstractBot.Bot, IDisposable
         _core.Dispose();
     }
 
-    public Task AddSimultaneousTransactionsAsync(List<Transaction> transactions, DateOnly date, string note)
+    public Task AddSimultaneousTransactionsAsync(List<TransactionDebt> transactions, DateOnly date, string note)
     {
         return _financemanager.AddSimultaneousTransactionsAsync(transactions, date, note);
     }

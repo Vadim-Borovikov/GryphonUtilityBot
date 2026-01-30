@@ -71,6 +71,17 @@
     ]
   },
 
+  "TransactionExpenseAddedAmountFormat": "Дима потратил {0} {1}",
+
+  "TransactionExpenseAddedPlaceFormat": "{0} → {1}",
+
+  "TransactionExpenseAddedTailFormat": {
+    "Text": [
+      "{0}",
+      "{1}"
+    ]
+  },
+
   "TransactionAddedFormat": {
     "Text": [
       "Я записал, что {0}",

@@ -32,11 +32,6 @@ internal sealed class AddReceipt : Operation<Transaction>
             return false;
         }
 
-        if (message.ForwardDate is null)
-        {
-            return false;
-        }
-
         if ((message.Type != MessageType.Text) || string.IsNullOrWhiteSpace(message.Text))
         {
             return false;
@@ -44,15 +39,31 @@ internal sealed class AddReceipt : Operation<Transaction>
 
         Texts texts = _textsProvider.GetTextsFor(sender.Id);
 
-        DateTimeFull dateTimeFull = _bot.Core.Clock.GetDateTimeFull(message.ForwardDate.Value);
-        data = Transaction.TryParseReceipt(message.Text, dateTimeFull.DateOnly, texts, _bot.Core.Clock,
-            _defaultCurrency);
+        DateTimeFull dateTimeFull;
+        if (message.ForwardDate is null)
+        {
+            dateTimeFull = _bot.Core.Clock.GetDateTimeFull(message.Date);
+            data = TransactionExpense.TryParseReceipt(message.Text, dateTimeFull.DateOnly, _bot.Core.Clock,
+                _defaultCurrency);
+        }
+        else
+        {
+            dateTimeFull = _bot.Core.Clock.GetDateTimeFull(message.ForwardDate.Value);
+            data = TransactionDebt.TryParseReceipt(message.Text, dateTimeFull.DateOnly, texts, _bot.Core.Clock,
+                _defaultCurrency);
+        }
+
         return data is not null;
     }
 
-    protected override async Task ExecuteAsync(Transaction data, Message message, User sender)
+    protected override Task ExecuteAsync(Transaction data, Message message, User sender)
     {
-        await _manager.AddTransactionAsync(data, message.Chat, message.MessageId);
+        return data switch
+        {
+            TransactionExpense expense => _manager.AddExpenseAsync(expense, message.Chat, message.MessageId),
+            TransactionDebt debt       => _manager.AddDebtAsync(debt, message.Chat, message.MessageId),
+            _                          => throw new InvalidOperationException("Unknown transaction type.")
+        };
     }
 
     private readonly Bot _bot;

@@ -50,6 +50,15 @@ public class Texts : AbstractBot.Models.Config.Texts
 
     [Required]
     [MinLength(1)]
+    public string TransactionExpenseAddedAmountFormat { get; init; } = null!;
+    [Required]
+    [MinLength(1)]
+    public string TransactionExpenseAddedPlaceFormat { get; init; } = null!;
+    [Required]
+    public MessageTemplateText TransactionExpenseAddedTailFormat { get; init; } = null!;
+
+    [Required]
+    [MinLength(1)]
     public string DateOnlyFormat { get; init; } = null!;
 
     [Required]

@@ -19,26 +19,58 @@ internal sealed class Manager
         _config = config;
         _textsProvider = textsProvider;
 
-        GoogleSheetsManager.Documents.Document document = documentsManager.GetOrAdd(_config.GoogleSheetIdTransactions);
-        _sheet = document.GetOrAddSheet(_config.GoogleTitleTransactions);
+        GoogleSheetsManager.Documents.Document documentDebts = documentsManager.GetOrAdd(_config.GoogleSheetIdDebts);
+        _sheetDebts = documentDebts.GetOrAddSheet(_config.GoogleTitleDebts);
+
+        GoogleSheetsManager.Documents.Document documentExpences =
+            documentsManager.GetOrAdd(_config.GoogleSheetIdExpenses);
+        _sheetExpences = documentExpences.GetOrAddSheet(_config.GoogleTitleExpenses);
     }
 
-    public async Task AddSimultaneousTransactionsAsync(List<Transaction> transactions, DateOnly date, string note)
+    public async Task InitializeExpenseCategoriesAndPlacesAsync()
     {
-        foreach (Transaction t in transactions)
+        List<TransactionExpense> expenses =
+            await _sheetExpences.LoadAsync<TransactionExpense>(_config.GoogleRangeExpenses);
+        TransactionExpense.Categories.Clear();
+        TransactionExpense.Places.Clear();
+        HashSet<string> excludedPlaces = new();
+        foreach (TransactionExpense expense in expenses)
+        {
+            TransactionExpense.Categories.Add(expense.Category);
+
+            if (excludedPlaces.Contains(expense.To))
+            {
+                continue;
+            }
+            if (TransactionExpense.Places.ContainsKey(expense.To))
+            {
+                if (TransactionExpense.Places[expense.To] != expense.Category)
+                {
+                    TransactionExpense.Places.Remove(expense.To);
+                    excludedPlaces.Add(expense.To);
+                }
+                continue;
+            }
+            TransactionExpense.Places[expense.To] = expense.Category;
+        }
+    }
+
+    public async Task AddSimultaneousTransactionsAsync(List<TransactionDebt> transactions, DateOnly date, string note)
+    {
+        foreach (TransactionDebt t in transactions)
         {
             t.Date = date;
             t.Note = note;
         }
 
-        await _sheet.AddAsync(_config.GoogleRangeTransactions, transactions);
+        await _sheetDebts.AddAsync(_config.GoogleRangeDebts, transactions);
 
         Texts texts = _textsProvider.GetDefaultTexts();
 
         string dateString = date.ToString(texts.DateOnlyFormat);
 
         List<MessageTemplateText> items = new();
-        foreach (Transaction t in transactions)
+        foreach (TransactionDebt t in transactions)
         {
             MessageTemplateText core = GetCore(t);
             MessageTemplateText item = texts.ListItemFormat.Format(core);
@@ -50,19 +82,51 @@ internal sealed class Manager
         await formatted.SendAsync(_bot.Core.UpdateSender, _bot.Core.ReportsDefault);
     }
 
-    public async Task AddTransactionAsync(Transaction transaction, Chat chat, int replyToMessageId)
+    public async Task AddExpenseAsync(TransactionExpense transaction, Chat chat, int replyToMessageId)
     {
-        await _sheet.AddAsync(_config.GoogleRangeTransactions, transaction.WrapWithList());
+        await _sheetExpences.AddAsync(_config.GoogleRangeDebts, transaction.WrapWithList());
+
+        string dateString = transaction.Date.ToString(_config.Texts.DateOnlyFormat);
+
+        string amount =
+            string.Format(_config.Texts.TransactionExpenseAddedAmountFormat, transaction.Amount, transaction.Currency);
+
+        MessageTemplateText? tail;
+        if (string.IsNullOrWhiteSpace(transaction.Category))
+        {
+            tail = string.IsNullOrWhiteSpace(transaction.Note) ? null : new MessageTemplateText(transaction.Note);
+        }
+        else
+        {
+            string purpose = string.IsNullOrWhiteSpace(transaction.To)
+                ? transaction.Category
+                : string.Format(_config.Texts.TransactionExpenseAddedPlaceFormat, transaction.To,
+                    transaction.Category);
+
+            tail = string.IsNullOrWhiteSpace(transaction.Note)
+                ? new MessageTemplateText(purpose)
+                : _config.Texts.TransactionExpenseAddedTailFormat.Format(purpose, transaction.Note);
+        }
+
+        MessageTemplateText message =
+            _config.Texts.TransactionAddedFormat.Format(dateString, amount, tail);
+        message.ReplyParameters = new ReplyParameters { MessageId = replyToMessageId };
+        await message.SendAsync(_bot.Core.UpdateSender, chat);
+    }
+
+    public async Task AddDebtAsync(TransactionDebt transaction, Chat chat, int replyToMessageId)
+    {
+        await _sheetDebts.AddAsync(_config.GoogleRangeDebts, transaction.WrapWithList());
 
         string dateString = transaction.Date.ToString(_config.Texts.DateOnlyFormat);
         MessageTemplateText core = GetCore(transaction);
-        MessageTemplateText formatted =
+        MessageTemplateText message =
             _config.Texts.TransactionAddedFormat.Format(dateString, core, transaction.Note);
-        formatted.ReplyParameters = new ReplyParameters { MessageId = replyToMessageId };
-        await formatted.SendAsync(_bot.Core.UpdateSender, chat);
+        message.ReplyParameters = new ReplyParameters { MessageId = replyToMessageId };
+        await message.SendAsync(_bot.Core.UpdateSender, chat);
     }
 
-    private MessageTemplateText GetCore(Transaction transaction)
+    private MessageTemplateText GetCore(TransactionDebt transaction)
     {
         Texts texts = _textsProvider.GetDefaultTexts();
         string name = transaction.From;
@@ -74,5 +138,6 @@ internal sealed class Manager
     private readonly Bot _bot;
     private readonly Config _config;
     private readonly ITextsProvider<Texts> _textsProvider;
-    private readonly Sheet _sheet;
+    private readonly Sheet _sheetDebts;
+    private readonly Sheet _sheetExpences;
 }

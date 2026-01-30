@@ -41,15 +41,27 @@ public class Config : ConfigWithSheets
 
     [Required]
     [MinLength(1)]
-    public string GoogleSheetIdTransactions { get; init; } = null!;
+    public string GoogleSheetIdDebts { get; init; } = null!;
 
     [Required]
     [MinLength(1)]
-    public string GoogleTitleTransactions { get; init; } = null!;
+    public string GoogleSheetIdExpenses { get; init; } = null!;
 
     [Required]
     [MinLength(1)]
-    public string GoogleRangeTransactions { get; init; } = null!;
+    public string GoogleTitleDebts { get; init; } = null!;
+
+    [Required]
+    [MinLength(1)]
+    public string GoogleTitleExpenses { get; init; } = null!;
+
+    [Required]
+    [MinLength(1)]
+    public string GoogleRangeDebts { get; init; } = null!;
+
+    [Required]
+    [MinLength(1)]
+    public string GoogleRangeExpenses { get; init; } = null!;
 
     [Required]
     public string DefaultCurrency { get; init; } = null!;
