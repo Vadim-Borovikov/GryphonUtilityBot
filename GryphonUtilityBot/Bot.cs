@@ -7,6 +7,7 @@ using AbstractBot.Models.Operations.Commands.Start;
 using AbstractBot.Modules;
 using AbstractBot.Modules.TextProviders;
 using GryphonUtilityBot.Configs;
+using GryphonUtilityBot.Money;
 using GryphonUtilityBot.Operations;
 using GryphonUtilityBot.Operations.Commands;
 using JetBrains.Annotations;
@@ -14,7 +15,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using GryphonUtilityBot.Money;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace GryphonUtilityBot;
 
@@ -80,10 +82,16 @@ public sealed class Bot : AbstractBot.Bot, IDisposable
 
         Articles.Manager articlesManager = new(this, _config, _textsProvider, _sheetsManager);
 
-        await _financemanager.InitializeExpenseCategoriesAndPlacesAsync();
+        Chat adminChat = new()
+        {
+            Id = _config.ReportsDefaultChatId,
+            Type = ChatType.Private
+        };
+        await _financemanager.UpdateExpensesDataAsync(adminChat, _config.ReportsDefaultChatId);
 
         _core.UpdateReceiver.Operations.Add(new AddReceipt(this, _config, _textsProvider, _config.DefaultCurrency,
             _financemanager));
+        _core.UpdateReceiver.Operations.Add(new UpdateExpensesCommand(this, _textsProvider, _financemanager));
 
         _core.UpdateReceiver.Operations.Add(new ArticleCommand(this, _textsProvider, articlesManager));
         _core.UpdateReceiver.Operations.Add(new ReadCommand(this, _textsProvider, articlesManager));

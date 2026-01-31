@@ -1,4 +1,5 @@
 ﻿using AbstractBot.Interfaces.Modules;
+using AbstractBot.Models;
 using AbstractBot.Models.MessageTemplates;
 using GoogleSheetsManager.Documents;
 using GryphonUtilities.Extensions;
@@ -27,16 +28,22 @@ internal sealed class Manager
         _sheetExpences = documentExpences.GetOrAddSheet(_config.GoogleTitleExpenses);
     }
 
-    public async Task InitializeExpenseCategoriesAndPlacesAsync()
+    public async Task UpdateExpensesDataAsync(Chat chat, long userId)
     {
-        List<TransactionExpense> expenses =
-            await _sheetExpences.LoadAsync<TransactionExpense>(_config.GoogleRangeExpenses);
-        TransactionExpense.Categories.Clear();
-        TransactionExpense.Venues.Clear();
-        TransactionExpense.SmsNames.Clear();
-        foreach (TransactionExpense expense in expenses)
+        Texts texts = _textsProvider.GetTextsFor(userId);
+
+        await using (await StatusMessage.CreateAsync(_bot.Core.UpdateSender, chat, texts.UpdatingExpenses,
+                         texts.StatusMessageStartFormat, texts.StatusMessageEndFormat))
         {
-            expense.RegisterData();
+            List<TransactionExpense> expenses =
+                await _sheetExpences.LoadAsync<TransactionExpense>(_config.GoogleRangeExpenses);
+            TransactionExpense.Categories.Clear();
+            TransactionExpense.Venues.Clear();
+            TransactionExpense.SmsNames.Clear();
+            foreach (TransactionExpense expense in expenses)
+            {
+                expense.RegisterData();
+            }
         }
     }
 
