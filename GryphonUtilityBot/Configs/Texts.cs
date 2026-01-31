@@ -29,20 +29,6 @@ public class Texts : AbstractBot.Models.Config.Texts
     public MessageTemplateText ArticleWithNumberFormat { get; init; } = null!;
 
     [Required]
-    [MinLength(1)]
-    public string ArticleCommandDescription { get; init; } = null!;
-
-    [Required]
-    [MinLength(1)]
-    public string ReadCommandDescription { get; init; } = null!;
-
-    [Required]
-    public MessageTemplateText AddReceiptDescription { get; init; } = null!;
-
-    [Required]
-    public MessageTemplateText AddArticleDescription { get; init; } = null!;
-
-    [Required]
     public MessageTemplateText TransactionAddedFormat { get; init; } = null!;
 
     [Required]
