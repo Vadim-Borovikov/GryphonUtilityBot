@@ -14,10 +14,12 @@ internal sealed class AddReceipt : Operation<Transaction>
 {
     public override Enum AccessRequired => Bot.AccessType.Admin;
 
-    public AddReceipt(Bot bot, ITextsProvider<Texts> textsProvider, string defaultCurrency, Manager manager)
+    public AddReceipt(Bot bot, Config config, ITextsProvider<Texts> textsProvider, string defaultCurrency,
+        Manager manager)
         : base(bot.Core.Accesses, bot.Core.UpdateSender)
     {
         _bot = bot;
+        _config = config;
         _textsProvider = textsProvider;
         _defaultCurrency = defaultCurrency;
         _manager = manager;
@@ -43,8 +45,13 @@ internal sealed class AddReceipt : Operation<Transaction>
         if (message.ForwardDate is null)
         {
             dateTimeFull = _bot.Core.Clock.GetDateTimeFull(message.Date);
-            data = TransactionExpense.TryParseReceipt(message.Text, dateTimeFull.DateOnly, _bot.Core.Clock,
-                _defaultCurrency);
+            TransactionExpense? expense =
+                TransactionExpense.TryParseReceipt(message.Text, dateTimeFull.DateOnly, _bot.Core.Clock,
+                    _defaultCurrency)
+                ?? TransactionExpense.TryParseSms(message.Text, _bot.Core.Clock, _defaultCurrency,
+                    _config.SmsSeparator);
+            expense?.RegisterData();
+            data = expense;
         }
         else
         {
@@ -67,6 +74,7 @@ internal sealed class AddReceipt : Operation<Transaction>
     }
 
     private readonly Bot _bot;
+    private readonly Config _config;
     private readonly ITextsProvider<Texts> _textsProvider;
     private readonly string _defaultCurrency;
     private readonly Manager _manager;

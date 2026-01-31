@@ -82,7 +82,7 @@ public sealed class Bot : AbstractBot.Bot, IDisposable
 
         await _financemanager.InitializeExpenseCategoriesAndPlacesAsync();
 
-        _core.UpdateReceiver.Operations.Add(new AddReceipt(this, _textsProvider, _config.DefaultCurrency,
+        _core.UpdateReceiver.Operations.Add(new AddReceipt(this, _config, _textsProvider, _config.DefaultCurrency,
             _financemanager));
 
         _core.UpdateReceiver.Operations.Add(new ArticleCommand(this, _textsProvider, articlesManager));

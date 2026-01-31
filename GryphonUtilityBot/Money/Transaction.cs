@@ -8,9 +8,8 @@ namespace GryphonUtilityBot.Money;
 public abstract class Transaction
 {
     [UsedImplicitly]
-    [Required]
     [SheetField(ToTitle)]
-    public string To { get; set; } = null!;
+    public string? To { get; set; }
 
     [UsedImplicitly]
     [Required]
@@ -28,13 +27,12 @@ public abstract class Transaction
     public decimal Amount { get; set; }
 
     [UsedImplicitly]
-    [Required]
     [SheetField(NoteTitle)]
     public string? Note;
 
     protected Transaction() { }
 
-    protected Transaction(string to, DateOnly date, decimal amount, string currency, string? note = null)
+    protected Transaction(string? to, DateOnly date, decimal amount, string currency, string? note = null)
     {
         To = to;
         Date = date;

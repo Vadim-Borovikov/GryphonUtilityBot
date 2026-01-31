@@ -32,26 +32,11 @@ internal sealed class Manager
         List<TransactionExpense> expenses =
             await _sheetExpences.LoadAsync<TransactionExpense>(_config.GoogleRangeExpenses);
         TransactionExpense.Categories.Clear();
-        TransactionExpense.Places.Clear();
-        HashSet<string> excludedPlaces = new();
+        TransactionExpense.Venues.Clear();
+        TransactionExpense.SmsNames.Clear();
         foreach (TransactionExpense expense in expenses)
         {
-            TransactionExpense.Categories.Add(expense.Category);
-
-            if (excludedPlaces.Contains(expense.To))
-            {
-                continue;
-            }
-            if (TransactionExpense.Places.ContainsKey(expense.To))
-            {
-                if (TransactionExpense.Places[expense.To] != expense.Category)
-                {
-                    TransactionExpense.Places.Remove(expense.To);
-                    excludedPlaces.Add(expense.To);
-                }
-                continue;
-            }
-            TransactionExpense.Places[expense.To] = expense.Category;
+            expense.RegisterData();
         }
     }
 

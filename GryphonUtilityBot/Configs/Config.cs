@@ -85,4 +85,7 @@ public class Config : ConfigWithSheets
 
     [Required]
     public double TimelinePostsDeletionThresholdSeconds { get; set; }
+
+    [Required]
+    public string SmsSeparator { get; init; } = null!;
 }
