@@ -66,11 +66,6 @@ public class Texts : AbstractBot.Models.Config.Texts
     public MessageTemplateText UpdatingTimeline { get; init; } = null!;
 
     [Required]
-    public MessageTemplateText TimelineUpdatedFormat { get; set; } = null!;
-    [Required]
-    public MessageTemplateText TimelineAlmostUpdatedFormat { get; set; } = null!;
-
-    [Required]
     public MessageTemplateText ConfirmTimelineDuplicatesDeletionFormat { get; set; } = null!;
     [Required]
     public MessageTemplateText TimelineMessageHypertextFormat { get; set; } = null!;

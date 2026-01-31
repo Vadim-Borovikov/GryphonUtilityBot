@@ -131,19 +131,7 @@
   },
   "StatusMessageEndFormat": {
     "Text": [
-      "{0}{1}\\."
-    ],
-    "MarkdownV2": true
-  },
-
-  "TimelineUpdatedFormat": {
-    "Text": [
-      "Готово"
-    ]
-  },
-  "TimelineAlmostUpdatedFormat": {
-    "Text": [
-      "Почти готово"
+      "{0} Готово."
     ]
   },
 

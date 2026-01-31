@@ -9,7 +9,6 @@ using GryphonUtilityBot.Operations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using GryphonUtilities.Time;
@@ -72,9 +71,8 @@ internal sealed class Manager : IDisposable
             return;
         }
 
-        StrongBox<MessageTemplateText> prefixBox = new(texts.TimelineUpdatedFormat);
         await using (await StatusMessage.CreateAsync(_bot.Core.UpdateSender, chat, texts.UpdatingTimeline,
-                         texts.StatusMessageStartFormat, texts.StatusMessageEndFormat, () => prefixBox.Value!))
+                         texts.StatusMessageStartFormat, texts.StatusMessageEndFormat))
         {
             List<RecordStreamlined> streamlined =
                 await _sheetStreamlined.LoadAsync<RecordStreamlined>(_config.GoogleRangeTimeline);
