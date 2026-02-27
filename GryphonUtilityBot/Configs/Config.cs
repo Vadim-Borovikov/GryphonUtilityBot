@@ -65,6 +65,8 @@ public class Config : ConfigWithSheets
 
     [Required]
     public string DefaultCurrency { get; init; } = null!;
+    [Required]
+    public string DefaultCity { get; init; } = null!;
 
     [Required]
     public long TimelineChannelId { get; init; }

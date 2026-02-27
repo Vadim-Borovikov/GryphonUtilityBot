@@ -90,7 +90,7 @@ public sealed class Bot : AbstractBot.Bot, IDisposable
         await _financemanager.UpdateExpensesDataAsync(adminChat, _config.ReportsDefaultChatId);
 
         _core.UpdateReceiver.Operations.Add(new AddReceipt(this, _config, _textsProvider, _config.DefaultCurrency,
-            _financemanager));
+            _config.DefaultCity, _financemanager));
         _core.UpdateReceiver.Operations.Add(new UpdateExpensesCommand(this, _textsProvider, _financemanager));
 
         _core.UpdateReceiver.Operations.Add(new ArticleCommand(this, _textsProvider, articlesManager));

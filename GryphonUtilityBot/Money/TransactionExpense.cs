@@ -19,14 +19,19 @@ public sealed class TransactionExpense : Transaction
     public string? SmsName { get; set; }
 
     [UsedImplicitly]
+    [SheetField(CityTitle)]
+    public string? City { get; set; }
+
+    [UsedImplicitly]
     public TransactionExpense() { }
 
     private TransactionExpense(string? category, string? to, DateOnly date, decimal amount, string currency,
-        string? note = null, string? smsName = null)
+        string city, string? note = null, string? smsName = null)
         : base(to, date, amount, currency, note)
     {
         Category = category;
         SmsName = smsName;
+        City = city;
     }
 
     internal void RegisterData()
@@ -53,7 +58,7 @@ public sealed class TransactionExpense : Transaction
     }
 
     internal static TransactionExpense? TryParseReceipt(string s, DateOnly defaultDate, Clock clock,
-        string defaultCurrency)
+        string defaultCurrency, string defaultCity)
     {
         List<string> parts = s.Split(null).Where(p => p.Length > 0).ToList();
 
@@ -101,10 +106,11 @@ public sealed class TransactionExpense : Transaction
 
         string note = string.Join(" ", parts.Skip(index));
 
-        return new TransactionExpense(category, venue, date, amount.Value, defaultCurrency, note);
+        return new TransactionExpense(category, venue, date, amount.Value, defaultCurrency, defaultCity, note);
     }
 
-    internal static TransactionExpense? TryParseSms(string s, Clock clock, string defaultCurrency, string smsSeparator)
+    internal static TransactionExpense? TryParseSms(string s, Clock clock, string defaultCurrency, string defaultCity,
+        string smsSeparator)
     {
         List<string> parts = s.Split(smsSeparator).Where(p => p.Length > 0).ToList();
 
@@ -144,12 +150,10 @@ public sealed class TransactionExpense : Transaction
         string datePart = parts[index].Replace("dana ", "");
         subParts = datePart.Split(null).Where(p => p.Length > 0).ToList();
         DateOnly? date = subParts.FirstOrDefault().ToDateOnly(clock);
-        if (!date.HasValue)
-        {
-            return null;
-        }
-
-        return new TransactionExpense(category, venue, date.Value, amount.Value, defaultCurrency, null, smsName);
+        return date.HasValue
+            ? new TransactionExpense(category, venue, date.Value, amount.Value, defaultCurrency, defaultCity, null,
+                smsName)
+            : null;
     }
 
     private static string? GetCategoryIfSingle(string venue)
@@ -161,6 +165,7 @@ public sealed class TransactionExpense : Transaction
 
     private const string CategoryTitle = "Зачем";
     private const string SmsNameTitle = "SMS Name";
+    private const string CityTitle = "Город";
 
     internal static readonly HashSet<string> Categories = new();
     internal static readonly Dictionary<string, HashSet<string>> Venues = new();
