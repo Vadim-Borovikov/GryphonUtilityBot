@@ -97,6 +97,10 @@
     ]
   },
 
+  "PrimaryFoodAgent": "Дима",
+  "FoodCategory": "Еда",
+  "FoodTagPostfix": "_еда",
+
   "Agents": {
     "Дима": {
       "Partner": "Рита",

@@ -25,7 +25,7 @@ public sealed class TransactionExpense : Transaction
     [UsedImplicitly]
     public TransactionExpense() { }
 
-    private TransactionExpense(string? category, string? to, DateOnly date, decimal amount, string currency,
+    internal TransactionExpense(string? category, string? to, DateOnly date, decimal amount, string currency,
         string city, string? note = null, string? smsName = null)
         : base(to, date, amount, currency, note)
     {

@@ -17,10 +17,10 @@ public class PurchaseController : ControllerBase
     {
         foreach (Item item in model.Items)
         {
-            Configs.Agent primary = _config.Texts.Agents[_config.PrimaryAgent];
-            Configs.Agent secondary = _config.Texts.Agents[_config.SecondaryAgent];
-            List<TransactionDebt> transactions = item.GetTransactions(_config.PrimaryAgent, secondary.To, primary.To,
-                _config.PurchaseCurrency).ToList();
+            Configs.Agent primary = _config.Texts.Agents[_config.PrimaryPurchaseAgent];
+            Configs.Agent secondary = _config.Texts.Agents[_config.SecondaryPurchaseAgent];
+            List<TransactionDebt> transactions = item.GetTransactions(_config.PrimaryPurchaseAgent, secondary.To,
+                primary.To, _config.PurchaseCurrency).ToList();
             string note = string.Format(_config.ProductSoldNoteFormat, model.ClientName, item.Name);
             await bot.AddSimultaneousTransactionsAsync(transactions, model.Date, note);
         }

@@ -11,11 +11,11 @@ public sealed class Config : Configs.Config
 {
     [Required]
     [MinLength(1)]
-    public string PrimaryAgent { get; init; } = null!;
+    public string PrimaryPurchaseAgent { get; init; } = null!;
 
     [Required]
     [MinLength(1)]
-    public string SecondaryAgent { get; init; } = null!;
+    public string SecondaryPurchaseAgent { get; init; } = null!;
 
     [Required]
     [MinLength(1)]

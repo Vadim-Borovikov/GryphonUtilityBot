@@ -3,6 +3,7 @@ using AbstractBot.Models.Operations;
 using GryphonUtilities.Time;
 using GryphonUtilityBot.Money;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using GryphonUtilityBot.Configs;
 using Telegram.Bot.Types;
@@ -10,7 +11,7 @@ using Telegram.Bot.Types.Enums;
 
 namespace GryphonUtilityBot.Operations;
 
-internal sealed class AddReceipt : Operation<Transaction>
+internal sealed class AddReceipt : Operation<List<Transaction>>
 {
     public override Enum AccessRequired => Bot.AccessType.Admin;
 
@@ -26,7 +27,7 @@ internal sealed class AddReceipt : Operation<Transaction>
         _manager = manager;
     }
 
-    protected override bool IsInvokingBy(Message message, User? sender, out Transaction? data)
+    protected override bool IsInvokingBy(Message message, User? sender, out List<Transaction>? data)
     {
         data = null;
 
@@ -51,27 +52,37 @@ internal sealed class AddReceipt : Operation<Transaction>
                     _defaultCurrency, _defaultCity)
                 ?? TransactionExpense.TryParseSms(message.Text, _bot.Core.Clock, _defaultCurrency, _defaultCity,
                     _config.SmsSeparator);
-            expense?.RegisterData();
-            data = expense;
+            if (expense is not null)
+            {
+                expense.RegisterData();
+                data = new List<Transaction> { expense };
+            }
         }
         else
         {
             dateTimeFull = _bot.Core.Clock.GetDateTimeFull(message.ForwardDate.Value);
-            data = TransactionDebt.TryParseReceipt(message.Text, dateTimeFull.DateOnly, texts, _bot.Core.Clock,
-                _defaultCurrency);
+            data = _manager.TryParseReceipt(message.Text, dateTimeFull.DateOnly, texts, _bot.Core.Clock,
+                _defaultCurrency, _defaultCity);
         }
 
         return data is not null;
     }
 
-    protected override Task ExecuteAsync(Transaction data, Message message, User sender)
+    protected override async Task ExecuteAsync(List<Transaction> data, Message message, User sender)
     {
-        return data switch
+        foreach (Transaction transaction in data)
         {
-            TransactionExpense expense => _manager.AddExpenseAsync(expense, message.Chat, message.MessageId),
-            TransactionDebt debt       => _manager.AddDebtAsync(debt, message.Chat, message.MessageId),
-            _                          => throw new InvalidOperationException("Unknown transaction type.")
-        };
+            switch (transaction)
+            {
+                case TransactionExpense expense:
+                    await _manager.AddExpenseAsync(expense, message.Chat, message.MessageId);
+                    break;
+                case TransactionDebt debt:
+                    await _manager.AddDebtAsync(debt, message.Chat, message.MessageId);
+                    break;
+                default: throw new InvalidOperationException("Unknown transaction type.");
+            }
+        }
     }
 
     private readonly Bot _bot;

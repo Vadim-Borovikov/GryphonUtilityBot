@@ -49,6 +49,10 @@ public class Texts : AbstractBot.Models.Config.Texts
 
     [Required]
     [MinLength(1)]
+    public string FoodTagPostfix { get; init; } = null!;
+
+    [Required]
+    [MinLength(1)]
     public Dictionary<string, Agent> Agents { get; init; } = null!;
 
     [Required]
@@ -72,6 +76,14 @@ public class Texts : AbstractBot.Models.Config.Texts
     public MessageTemplateText TimelineDuplicatesRequireManualDeletion { get; set; } = null!;
     [Required]
     public MessageTemplateText TimelineDuplicatesDeleted { get; set; } = null!;
+
+    [Required]
+    [MinLength(1)]
+    public string PrimaryFoodAgent { get; init; } = null!;
+
+    [Required]
+    [MinLength(1)]
+    public string FoodCategory { get; init; } = null!;
 
     public string? TryGetAgent(string tag)
     {

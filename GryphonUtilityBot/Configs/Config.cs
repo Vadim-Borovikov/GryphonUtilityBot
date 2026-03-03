@@ -90,4 +90,7 @@ public class Config : ConfigWithSheets
 
     [Required]
     public string SmsSeparator { get; init; } = null!;
+
+    [Required]
+    public decimal PrimaryFoodAgentShare { get; init; }
 }

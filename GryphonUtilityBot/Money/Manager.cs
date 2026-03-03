@@ -2,10 +2,13 @@
 using AbstractBot.Models;
 using AbstractBot.Models.MessageTemplates;
 using GoogleSheetsManager.Documents;
+using GoogleSheetsManager.Extensions;
 using GryphonUtilities.Extensions;
+using GryphonUtilities.Time;
 using GryphonUtilityBot.Configs;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 
@@ -116,6 +119,81 @@ internal sealed class Manager
             _config.Texts.TransactionAddedFormat.Format(dateString, core, transaction.Note);
         message.ReplyParameters = new ReplyParameters { MessageId = replyToMessageId };
         await message.SendAsync(_bot.Core.UpdateSender, chat);
+    }
+
+    internal List<Transaction>? TryParseReceipt(string s, DateOnly defaultDate, Texts texts, Clock clock,
+        string defaultCurrency, string defaultCity)
+    {
+        List<string> parts = s.Split(null).Where(p => p.Length > 0).ToList();
+
+        int index = 0;
+        if (parts.Count <= index)
+        {
+            return null;
+        }
+
+        string tag = parts[index];
+        bool foodTransaction = tag.EndsWith(texts.FoodTagPostfix, StringComparison.Ordinal);
+        if (foodTransaction)
+        {
+            tag = tag.Substring(0, tag.Length - texts.FoodTagPostfix.Length);
+        }
+
+        string? name = texts.TryGetAgent(tag);
+        if (name is null)
+        {
+            return null;
+        }
+
+        string? partner = texts.TryGetPartner(texts.Agents[name]);
+        if (partner is null)
+        {
+            return null;
+        }
+
+        ++index;
+        if (parts.Count <= index)
+        {
+            return null;
+        }
+
+        decimal? amount = parts[index].ToDecimal();
+        if (amount is null)
+        {
+            return null;
+        }
+        ++index;
+
+        DateOnly date = defaultDate;
+        DateOnly? result = parts[index].ToDateOnly(clock);
+        if (result.HasValue)
+        {
+            date = result.Value;
+            ++index;
+            if (parts.Count <= index)
+            {
+                return null;
+            }
+        }
+
+        string note = string.Join(" ", parts.Skip(index));
+
+        TransactionDebt debt;
+        if (foodTransaction)
+        {
+            decimal primaryAmount = Math.Round(_config.PrimaryFoodAgentShare * amount.Value, 2);
+
+            decimal debtAmount = name == texts.PrimaryFoodAgent ? amount.Value - primaryAmount : primaryAmount;
+            debt = new TransactionDebt(name, texts.Agents[partner].To, date, debtAmount, defaultCurrency, note);
+
+            TransactionExpense expense = new(texts.FoodCategory, null, date, primaryAmount, defaultCurrency,
+                defaultCity, note);
+
+            return new List<Transaction> { debt, expense };
+        }
+
+        debt = new TransactionDebt(name, texts.Agents[partner].To, date, amount.Value, defaultCurrency, note);
+        return new List<Transaction> { debt };
     }
 
     private MessageTemplateText GetCore(TransactionDebt transaction)
