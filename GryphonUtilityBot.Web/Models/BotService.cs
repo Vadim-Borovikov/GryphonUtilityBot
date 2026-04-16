@@ -7,7 +7,7 @@ namespace GryphonUtilityBot.Web.Models;
 
 public sealed class BotService : IHostedService, IDisposable
 {
-    public BotService(Bot bot) => _bot = bot;
+    public BotService(BotHost bot) => _bot = bot;
 
     public void Dispose() => _bot.Dispose();
 
@@ -15,5 +15,5 @@ public sealed class BotService : IHostedService, IDisposable
 
     public Task StopAsync(CancellationToken cancellationToken) => _bot.StopAsync(cancellationToken);
 
-    private readonly Bot _bot;
+    private readonly BotHost _bot;
 }

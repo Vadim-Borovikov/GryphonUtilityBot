@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using GoogleSheetsManager;
-using GoogleSheetsManager.Extensions;
-using GryphonUtilities.Time;
-using GryphonUtilityBot.Configs;
 using JetBrains.Annotations;
 
 namespace GryphonUtilityBot.Money;

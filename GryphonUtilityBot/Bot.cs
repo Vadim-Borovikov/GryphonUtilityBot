@@ -20,7 +20,7 @@ using Telegram.Bot.Types.Enums;
 
 namespace GryphonUtilityBot;
 
-public sealed class Bot : AbstractBot.Bot, IDisposable
+internal sealed class Bot : AbstractBot.Bot, IDisposable
 {
     [Flags]
     internal enum AccessType
@@ -47,7 +47,8 @@ public sealed class Bot : AbstractBot.Bot, IDisposable
 
         Common<Texts> commonTexts = new(config.Texts);
 
-        ICommands commands = new Commands(core.Client, core.Accesses, core.UpdateReceiver, commonTexts);
+        ICommands commands =
+            new Commands(core.Client, core.Accesses, core.UpdateReceiver, commonTexts, core.Logging.Logger);
 
         Greeter greeter = new(core.UpdateSender, commonTexts);
         Start start = new(core.Accesses, core.UpdateSender, commands, commonTexts, core.SelfUsername, greeter);

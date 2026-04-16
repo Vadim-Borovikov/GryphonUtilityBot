@@ -4,7 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using GryphonUtilities;
+using GryphonUtilities.Logging;
 using GryphonUtilities.Time;
 using Notion.Client;
 
@@ -12,12 +12,12 @@ namespace GryphonUtilityBot.Web.Models.Calendar.Notion;
 
 internal sealed class Provider
 {
-    public Provider(INotionClient client, Config config, Bot bot)
+    public Provider(INotionClient client, Config config, BotHost bot)
     {
         _client = client;
-        _clock = bot.Core.Clock;
+        _clock = bot.Clock;
         _updatePeriod = TimeSpan.FromSeconds(config.NotionUpdatesPerSecondLimit);
-        _logger = bot.Core.Logging.Logger;
+        _logger = bot.Logger;
         _conflictReties = config.NotionConflictReties;
     }
 
@@ -54,7 +54,7 @@ internal sealed class Provider
             }
             catch (NotionApiException ex) when (ex.StatusCode == HttpStatusCode.Conflict)
             {
-                _logger.LogException(ex);
+                _logger.Errors.Log(ex);
             }
         }
 
@@ -87,26 +87,23 @@ internal sealed class Provider
         }
         catch (NotionApiException ex) when (ex.NotionAPIErrorCode == NotionAPIErrorCode.ObjectNotFound)
         {
-            _logger.LogError($"Method with parameter {param} resulted with ObjectNotFound");
-            _logger.LogException(ex);
+            _logger.Errors.Log($"Exception caught: method with parameter {param} resulted with ObjectNotFound", true);
             return new RequestResult<TResult>(true);
         }
         catch (NotionApiException ex) when (ex.NotionAPIErrorCode.HasValue)
         {
-            _logger.LogError($"Method with parameter {param} resulted with NotionApiException with NotionAPIErrorCode {ex.NotionAPIErrorCode} and StatusCode {ex.StatusCode}");
-            _logger.LogException(ex);
+            _logger.Errors.Log($"Exception caught: method with parameter {param} resulted with NotionApiException with NotionAPIErrorCode {ex.NotionAPIErrorCode} and StatusCode {ex.StatusCode}", true);
             return new RequestResult<TResult>(false);
         }
         catch (NotionApiException ex)
         {
-            _logger.LogError($"Method with parameter {param} resulted with NotionApiException with unspecified NotionAPIErrorCode and StatusCode {ex.StatusCode}");
-            _logger.LogException(ex);
+            _logger.Errors.Log($"Exception caught: method with parameter {param} resulted with NotionApiException with unspecified NotionAPIErrorCode and StatusCode {ex.StatusCode}", true);
             return new RequestResult<TResult>(false);
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogError($"Method with parameter {param} resulted with HttpRequestException with HttpRequestError {ex.HttpRequestError}");
-            _logger.LogException(ex);
+            _logger.Errors.Log($"Exception caught: method with parameter {param} resulted with HttpRequestException with HttpRequestError {ex.HttpRequestError}", true);
+            _logger.Errors.Log(ex);
             return new RequestResult<TResult>(false);
         }
     }

@@ -1,4 +1,4 @@
-﻿using GryphonUtilities;
+﻿using GryphonUtilities.Logging;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -12,7 +12,7 @@ internal sealed class GlobalExceptionFilter : IExceptionFilter
 
     public void OnException(ExceptionContext context)
     {
-        _logger.LogException(context.Exception);
+        _logger.Errors.Log(context.Exception);
         context.Result = new StatusCodeResult(500);
         context.ExceptionHandled = true;
     }

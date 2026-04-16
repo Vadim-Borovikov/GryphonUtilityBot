@@ -1,5 +1,4 @@
 ﻿using Google.Apis.Calendar.v3.Data;
-using GryphonUtilities;
 using GryphonUtilities.Time;
 using GryphonUtilityBot.Web.Models.Calendar.Notion;
 using Microsoft.Extensions.Hosting;
@@ -8,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using GryphonUtilities.Logging;
 
 namespace GryphonUtilityBot.Web.Models.Calendar;
 
@@ -42,7 +42,7 @@ internal sealed class Synchronizer : BackgroundService, IUpdatesSubscriber
             }
             else
             {
-                _logger.LogError($"Property \"{name}\" not found in database \"{_releventParentId}\".");
+                _logger.Errors.Log($"Property \"{name}\" not found in database \"{_releventParentId}\".", true);
             }
         }
     }
@@ -122,7 +122,7 @@ internal sealed class Synchronizer : BackgroundService, IUpdatesSubscriber
         {
             message += $" Properties: {string.Join(", ", propertyNames)}.";
         }
-        _logger.LogTimedMessage(message);
+        _logger.Messages.Log(message, true);
     }
 
     private async Task OnCreatedAsync(string id, WebhookEvent.EventType eventType)
@@ -137,22 +137,22 @@ internal sealed class Synchronizer : BackgroundService, IUpdatesSubscriber
 
     private async Task CreateEventAndUpdatePageAsync(PageInfo page, (DateTimeFull Start, DateTimeFull End) dates)
     {
-        _logger.LogTimedMessage($"Creating event for page \"{page.Title}\"...");
+        _logger.Messages.Log($"Creating event for page \"{page.Title}\"...", true);
         Event calendarEvent = await _googleCalendarProvider.CreateEventAsync(page.Title, dates.Start, dates.End,
             page.Page.Url, page.Link?.ToString());
 
-        _logger.LogTimedMessage($"Updating page \"{page.Title}\" with data from event \"{calendarEvent.Id}\"...");
+        _logger.Messages.Log($"Updating page \"{page.Title}\" with data from event \"{calendarEvent.Id}\"...", true);
         Uri uri = new(calendarEvent.HtmlLink);
         bool updated = await _notionProvider.TryUpdateEventDataAsync(page, calendarEvent.Id, uri);
         if (!updated)
         {
-            _logger.LogError($"Failed to update page \"{page.Title}\" with event data due to conflicts.");
+            _logger.Errors.Log($"Failed to update page \"{page.Title}\" with event data due to conflicts.", true);
         }
     }
 
     private Task UpdateEventAsync(Event calendarEvent, PageInfo page, (DateTimeFull Start, DateTimeFull End) dates)
     {
-        _logger.LogTimedMessage($"Updating event \"{calendarEvent.Id}\" for page \"{page.Title}\".");
+        _logger.Messages.Log($"Updating event \"{calendarEvent.Id}\" for page \"{page.Title}\".", true);
         return _googleCalendarProvider.UpdateEventAsync(page.GoogleEventId, calendarEvent, page.Title, dates.Start,
             dates.End, page.Page.Url, page.Link?.ToString());
     }
@@ -162,7 +162,7 @@ internal sealed class Synchronizer : BackgroundService, IUpdatesSubscriber
         bool cleared = await _notionProvider.TryClearEventDataAsync(page);
         if (!cleared)
         {
-            _logger.LogError($"Failed to clear page \"{page.Title}\" event data due to conflicts.");
+            _logger.Errors.Log($"Failed to clear page \"{page.Title}\" event data due to conflicts.", true);
         }
     }
 

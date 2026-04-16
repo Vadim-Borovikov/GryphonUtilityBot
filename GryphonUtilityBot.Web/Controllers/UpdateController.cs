@@ -5,7 +5,7 @@ namespace GryphonUtilityBot.Web.Controllers;
 
 public sealed class UpdateController : Controller
 {
-    public OkResult Post([FromServices] Bot bot, [FromBody] Update update)
+    public OkResult Post([FromServices] BotHost bot, [FromBody] Update update)
     {
         bot.Update(update);
         return Ok();

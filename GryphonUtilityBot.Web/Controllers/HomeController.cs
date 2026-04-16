@@ -6,5 +6,5 @@ namespace GryphonUtilityBot.Web.Controllers;
 public sealed class HomeController : Controller
 {
     [HttpGet]
-    public IActionResult Index([FromServices] Bot bot) => View(bot.Core.Self);
+    public IActionResult Index([FromServices] BotHost bot) => View(bot.Self);
 }

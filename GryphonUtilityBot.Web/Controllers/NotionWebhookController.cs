@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using GryphonUtilities;
 using System.Security.Cryptography;
 using System.Text;
 using System;
 using System.Threading.Tasks;
+using GryphonUtilities.Logging;
 using GryphonUtilityBot.Web.Models.Calendar;
 using GryphonUtilityBot.Web.Models.Calendar.Notion;
 
@@ -40,7 +40,7 @@ public sealed class NotionWebhookController : Controller
     private OkResult HandleVerificationUpdate(JsonElement tokenJson)
     {
         string? token = tokenJson.GetString();
-        _logger.LogTimedMessage($"Notion webhook verification token: {token}");
+        _logger.Messages.Log($"Notion webhook verification token: {token}", true);
         return Ok();
     }
 
@@ -48,18 +48,18 @@ public sealed class NotionWebhookController : Controller
     {
         if (!VerifySignature(rawBody))
         {
-            _logger.LogError("Signature verification failed.");
+            _logger.Errors.Log("Signature verification failed.", true);
             return Unauthorized();
         }
 
         WebhookEvent? webhookEvent = TryParseEvent(rawBody);
         if (webhookEvent is null)
         {
-            _logger.LogError($"Failed to parse Notion webhook payload.{Environment.NewLine}{rawBody}");
+            _logger.Errors.Log($"Failed to parse Notion webhook payload.{Environment.NewLine}{rawBody}", true);
             return BadRequest();
         }
 
-        _logger.LogTimedMessage($"Succesfully parsed webhook payload.{Environment.NewLine}{rawBody}");
+        _logger.Messages.Log($"Succesfully parsed webhook payload.{Environment.NewLine}{rawBody}", false);
 
         if (!webhookEvent.Data.Parent.Id.Equals(_relevatnParent, StringComparison.OrdinalIgnoreCase))
         {
@@ -68,7 +68,7 @@ public sealed class NotionWebhookController : Controller
 
         if (webhookEvent.AttemptNumber > 1)
         {
-            _logger.LogError($"Webhook event came again! Attempt number: {webhookEvent.AttemptNumber}.{Environment.NewLine}{rawBody}");
+            _logger.Errors.Log($"Webhook event came again! Attempt number: {webhookEvent.AttemptNumber}.{Environment.NewLine}{rawBody}", true);
         }
 
         switch (webhookEvent.Type)
@@ -79,7 +79,7 @@ public sealed class NotionWebhookController : Controller
             case WebhookEvent.EventType.PropertiesUpdated:
                 if (webhookEvent.Data.UpdatedProperties is null)
                 {
-                    _logger.LogError("Updated properties are null.");
+                    _logger.Errors.Log("Updated properties are null.", true);
                     return BadRequest();
                 }
                 await _subscriber.OnPropertiesUpdatedAsync(webhookEvent.Entity.Id, webhookEvent.Data.UpdatedProperties);
@@ -134,7 +134,7 @@ public sealed class NotionWebhookController : Controller
         }
         catch (JsonException ex)
         {
-            _logger.LogException(ex);
+            _logger.Errors.Log(ex);
             return null;
         }
     }

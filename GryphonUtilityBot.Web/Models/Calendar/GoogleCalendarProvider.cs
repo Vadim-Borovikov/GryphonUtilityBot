@@ -76,7 +76,8 @@ internal sealed class GoogleCalendarProvider : IDisposable
 
     private static BaseClientService.Initializer CreateInitializer(string credentialJson, string applicationName)
     {
-        GoogleCredential credential = GoogleCredential.FromJson(credentialJson).CreateScoped(Scopes);
+        ServiceAccountCredential credential = CredentialFactory.FromJson<ServiceAccountCredential>(credentialJson);
+        credential.Scopes = Scopes;
         return new BaseClientService.Initializer
         {
             HttpClientInitializer = credential,

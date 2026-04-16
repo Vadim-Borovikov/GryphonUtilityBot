@@ -1,5 +1,4 @@
-﻿using GryphonUtilities;
-using GryphonUtilities.Time;
+﻿using GryphonUtilities.Time;
 using GryphonUtilityBot.Web.Models;
 using GryphonUtilityBot.Web.Models.Calendar;
 using Microsoft.AspNetCore.Builder;
@@ -14,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using GryphonUtilities.Logging;
 using GryphonUtilityBot.Configs;
 
 namespace GryphonUtilityBot.Web;
@@ -22,9 +22,9 @@ internal static class Program
 {
     public static async Task Main(string[] args)
     {
-        Logger.DeleteExceptionLog();
         Clock clock = new();
         Logger logger = new(clock);
+        logger.Errors.DeleteLog();
         try
         {
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -36,13 +36,13 @@ internal static class Program
 
             IServiceCollection services = builder.Services;
             services.AddControllersWithViews(AddExceptionFilter);
-            services.ConfigureTelegramBotMvc();
 
             services.AddSingleton(logger);
 
-            Bot bot = await Bot.TryCreateAsync(config, CancellationToken.None)
-                                                                ?? throw new InvalidOperationException("Failed to initialize bot due to invalid configuration.");
-            services.AddSingleton(bot);
+            BotHost botHost =
+                await BotHost.TryCreateAsync(config, CancellationToken.None)
+                ?? throw new InvalidOperationException("Failed to initialize bot due to invalid configuration.");
+            services.AddSingleton(botHost);
             services.AddHostedService<BotService>();
 
             AddCalendarTo(services, config);
@@ -63,7 +63,7 @@ internal static class Program
         }
         catch (Exception ex)
         {
-            logger.LogException(ex);
+            logger.Errors.Log(ex);
         }
     }
 

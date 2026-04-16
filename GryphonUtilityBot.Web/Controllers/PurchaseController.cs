@@ -13,7 +13,7 @@ public class PurchaseController : ControllerBase
     public PurchaseController(Config config) => _config = config;
 
     [HttpPost]
-    public async Task<ActionResult> Post([FromServices] Bot bot, [FromBody] Purchase model)
+    public async Task<ActionResult> Post([FromServices] BotHost bot, [FromBody] Purchase model)
     {
         foreach (Item item in model.Items)
         {
