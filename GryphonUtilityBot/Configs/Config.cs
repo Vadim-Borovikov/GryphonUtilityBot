@@ -15,9 +15,7 @@ public class Config : ConfigWithSheets
     [MinLength(1)]
     public string GoogleTitleArticles { get; init; } = null!;
 
-    [Required]
-    [MinLength(1)]
-    public string GoogleRangeArticles { get; init; } = null!;
+    public string? GoogleRangeArticles { get; init; }
 
     [Required]
     [MinLength(1)]
@@ -31,12 +29,8 @@ public class Config : ConfigWithSheets
     [MinLength(1)]
     public string GoogleTitleTimelineStreamlined { get; init; } = null!;
 
-    [Required]
-    [MinLength(1)]
-    public string GoogleRangeTimeline { get; init; } = null!;
+    public string? GoogleRangeTimeline { get; init; }
 
-    [Required]
-    [MinLength(1)]
     public string GoogleRangeTimelineClear { get; init; } = null!;
 
     [Required]
@@ -55,13 +49,9 @@ public class Config : ConfigWithSheets
     [MinLength(1)]
     public string GoogleTitleExpenses { get; init; } = null!;
 
-    [Required]
-    [MinLength(1)]
-    public string GoogleRangeDebts { get; init; } = null!;
+    public string? GoogleRangeDebts { get; init; }
 
-    [Required]
-    [MinLength(1)]
-    public string GoogleRangeExpenses { get; init; } = null!;
+    public string? GoogleRangeExpenses { get; init; }
 
     [Required]
     public string DefaultCurrency { get; init; } = null!;

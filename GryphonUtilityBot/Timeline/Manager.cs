@@ -64,8 +64,8 @@ internal sealed class Manager : IDisposable
     {
         Texts texts = _textsProvider.GetTextsFor(sender.Id);
 
-        List<RecordInput> input = await _sheetInput.LoadAsync<RecordInput>(_config.GoogleRangeTimeline);
-        if (input.Count == 0)
+        SheetLoadedData<RecordInput> input = await _sheetInput.LoadAsync<RecordInput>(_config.GoogleRangeTimeline);
+        if (input.Instances.Count == 0)
         {
             await texts.NoTimelineUpdates.SendAsync(_bot.Core.UpdateSender, chat);
             return;
@@ -74,25 +74,25 @@ internal sealed class Manager : IDisposable
         await using (await StatusMessage.CreateAsync(_bot.Core.UpdateSender, chat, texts.UpdatingTimeline,
                          texts.StatusMessageStartFormat, texts.StatusMessageEndFormat))
         {
-            List<RecordStreamlined> streamlined =
+            SheetLoadedData<RecordStreamlined> streamlined =
                 await _sheetStreamlined.LoadAsync<RecordStreamlined>(_config.GoogleRangeTimeline);
 
-            IList<int> excessInput = StreamlineRecords(input, streamlined);
+            IList<int> excessInput = StreamlineRecords(input.Instances, streamlined.Instances);
 
-            if (streamlined.Count > 0)
+            if (streamlined.Instances.Count > 0)
             {
                 if (excessInput.Count > 0)
                 {
                     await _bot.Core.UpdateSender.DeleteMessagesAsync(Channel, excessInput);
                 }
 
-                await _sheetStreamlined.SaveAsync(_config.GoogleRangeTimeline, streamlined);
+                await _sheetStreamlined.SaveAsync(streamlined.Instances, _config.GoogleRangeTimeline);
 
-                int? moveFrom = FindIndexToMoveFrom(streamlined);
+                int? moveFrom = FindIndexToMoveFrom(streamlined.Instances);
                 if (moveFrom.HasValue)
                 {
-                    List<RecordStreamlined> toMove = streamlined.Skip(moveFrom.Value).ToList();
-                    IList<int> newIds = await RepostMessages(streamlined, toMove);
+                    List<RecordStreamlined> toMove = streamlined.Instances.Skip(moveFrom.Value).ToList();
+                    IList<int> newIds = await RepostMessages(streamlined.Instances, toMove);
                     await SendAlmostUpdatedMessageAsync(chat, texts, moveFrom.Value, GetIdsList(toMove), newIds);
                 }
             }
@@ -135,12 +135,13 @@ internal sealed class Manager : IDisposable
 
     public async Task TryToDeleteOldTimelinePart(Chat chat, User sender, int deleteFrom, int deleteAmount)
     {
-        List<RecordStreamlined> streamlined =
+        SheetLoadedData<RecordStreamlined> streamlined =
             await _sheetStreamlined.LoadAsync<RecordStreamlined>(_config.GoogleRangeTimeline);
 
         DateTimeFull deletionLimit = DateTimeFull.CreateUtcNow() - _deletionWindow;
 
-        Dictionary<bool, IList<int>> grouped = streamlined.Skip(deleteFrom)
+        Dictionary<bool, IList<int>> grouped = streamlined.Instances
+                                                          .Skip(deleteFrom)
                                                           .Take(deleteAmount)
                                                           .GroupBy(r => r.Added >= deletionLimit)
                                                           .ToDictionary(g => g.Key, GetIdsList);
@@ -151,8 +152,8 @@ internal sealed class Manager : IDisposable
             await _bot.Core.UpdateSender.DeleteMessagesAsync(Channel, deleteAutomaticly);
         }
 
-        streamlined.RemoveRange(deleteFrom, deleteAmount);
-        await _sheetStreamlined.SaveAsync(_config.GoogleRangeTimeline, streamlined);
+        streamlined.Instances.RemoveRange(deleteFrom, deleteAmount);
+        await _sheetStreamlined.SaveAsync(streamlined.Instances, _config.GoogleRangeTimeline);
 
         Texts texts = _textsProvider.GetTextsFor(sender.Id);
         if (grouped.ContainsKey(false))
@@ -219,7 +220,7 @@ internal sealed class Manager : IDisposable
                 newRecords.Add(newRecord);
             }
             streamlined.AddRange(newRecords);
-            await _sheetStreamlined.AddAsync(_config.GoogleRangeTimeline, newRecords);
+            await _sheetStreamlined.AddAsync(newRecords, _config.GoogleRangeTimeline );
         }
         return newIds;
     }
@@ -353,7 +354,7 @@ internal sealed class Manager : IDisposable
             _inputRecords.Clear();
         }
 
-        await _sheetInput.AddAsync(_config.GoogleRangeTimeline, updates);
+        await _sheetInput.AddAsync(updates, _config.GoogleRangeTimeline);
     }
 
     private static InlineKeyboardMarkup CreateConfirmationKeyboard(Texts texts, int deleteFrom, int deleteAmount)

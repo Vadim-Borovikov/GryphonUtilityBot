@@ -38,12 +38,12 @@ internal sealed class Manager
         await using (await StatusMessage.CreateAsync(_bot.Core.UpdateSender, chat, texts.UpdatingExpenses,
                          texts.StatusMessageStartFormat, texts.StatusMessageEndFormat))
         {
-            List<TransactionExpense> expenses =
+            SheetLoadedData<TransactionExpense> expenses =
                 await _sheetExpences.LoadAsync<TransactionExpense>(_config.GoogleRangeExpenses);
             TransactionExpense.Categories.Clear();
             TransactionExpense.Venues.Clear();
             TransactionExpense.SmsNames.Clear();
-            foreach (TransactionExpense expense in expenses)
+            foreach (TransactionExpense expense in expenses.Instances)
             {
                 expense.RegisterData();
             }
@@ -58,7 +58,7 @@ internal sealed class Manager
             t.Note = note;
         }
 
-        await _sheetDebts.AddAsync(_config.GoogleRangeDebts, transactions);
+        await _sheetDebts.AddAsync(transactions, _config.GoogleRangeDebts);
 
         Texts texts = _textsProvider.GetDefaultTexts();
 
@@ -79,7 +79,7 @@ internal sealed class Manager
 
     public async Task AddExpenseAsync(TransactionExpense transaction, Chat chat, int replyToMessageId)
     {
-        await _sheetExpences.AddAsync(_config.GoogleRangeDebts, transaction.WrapWithList());
+        await _sheetExpences.AddAsync(transaction.WrapWithList(), _config.GoogleRangeDebts);
 
         string dateString = transaction.Date.ToString(_config.Texts.DateOnlyFormat);
 
@@ -111,7 +111,7 @@ internal sealed class Manager
 
     public async Task AddDebtAsync(TransactionDebt transaction, Chat chat, int replyToMessageId)
     {
-        await _sheetDebts.AddAsync(_config.GoogleRangeDebts, transaction.WrapWithList());
+        await _sheetDebts.AddAsync(transaction.WrapWithList(), _config.GoogleRangeDebts);
 
         string dateString = transaction.Date.ToString(_config.Texts.DateOnlyFormat);
         MessageTemplateText core = GetCore(transaction);
