@@ -62,6 +62,11 @@ public sealed class Config : Configs.Config
     [MinLength(1)]
     public List<string> RelevantProperties { get; init; } = null!;
 
+    [Required]
+    public double CleanupIntervalHours { get; init; }
+    [Required]
+    public double ProcessedWebhookTtlHours { get; init; }
+
     public static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,

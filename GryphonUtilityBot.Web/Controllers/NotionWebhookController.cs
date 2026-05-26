@@ -1,15 +1,23 @@
-﻿using GryphonUtilityBot.Web.Models;
-using Microsoft.AspNetCore.Mvc;
-using System.IO;
-using System.Linq;
-using System.Text.Json;
-using System.Security.Cryptography;
-using System.Text;
-using System;
-using System.Threading.Tasks;
+﻿using GryphonUtilities;
 using GryphonUtilities.Logging;
+using GryphonUtilities.Time;
+using GryphonUtilityBot.Web.Models;
 using GryphonUtilityBot.Web.Models.Calendar;
 using GryphonUtilityBot.Web.Models.Calendar.Notion;
+using GryphonUtilityBot.Web.Models.Calendar.Notion.Updates;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Channels;
+using System.Threading.Tasks;
 
 namespace GryphonUtilityBot.Web.Controllers;
 
@@ -21,7 +29,21 @@ public sealed class NotionWebhookController : Controller
         _logger = logger;
         _subscriber = subscriber;
         _secret = config.NotionWebhookSecret;
-        _relevatnParent = config.NotionDatabaseId;
+        _relevantParent = config.NotionDatabaseId;
+
+        TimeSpan cleanupInterval = TimeSpan.FromHours(config.CleanupIntervalHours);
+        _processedWebhookTtl = TimeSpan.FromHours(config.ProcessedWebhookTtlHours);
+
+        UnboundedChannelOptions options = new()
+        {
+            SingleReader = true,
+            SingleWriter = false,
+            AllowSynchronousContinuations = false
+        };
+        _updates = Channel.CreateUnbounded<Update>(options);
+
+        Invoker.FireAndForget(_ => ProcessQueueAsync(), _logger);
+        Invoker.DoPeriodically(_ => CleanupQueueAsync(), cleanupInterval, false, _logger, CancellationToken.None);
     }
 
     public async Task<IActionResult> Post()
@@ -30,10 +52,20 @@ public sealed class NotionWebhookController : Controller
         {
             string rawBody = await reader.ReadToEndAsync();
 
-            JsonElement json = JsonSerializer.Deserialize<JsonElement>(rawBody);
+            JsonElement json;
+            try
+            {
+                json = JsonSerializer.Deserialize<JsonElement>(rawBody);
+            }
+            catch (JsonException ex)
+            {
+                _logger.Errors.Log(ex);
+                return BadRequest();
+            }
+
             return json.TryGetProperty(VerificationTokenProperty, out JsonElement tokenJson)
                 ? HandleVerificationUpdate(tokenJson)
-                : await HandleContentUpdate(rawBody);
+                : HandleContentUpdate(rawBody);
         }
     }
 
@@ -44,7 +76,7 @@ public sealed class NotionWebhookController : Controller
         return Ok();
     }
 
-    private async Task<IActionResult> HandleContentUpdate(string rawBody)
+    private IActionResult HandleContentUpdate(string rawBody)
     {
         if (!VerifySignature(rawBody))
         {
@@ -61,20 +93,16 @@ public sealed class NotionWebhookController : Controller
 
         _logger.Messages.Log($"Succesfully parsed webhook payload.{Environment.NewLine}{rawBody}", false);
 
-        if (!webhookEvent.Data.Parent.Id.Equals(_relevatnParent, StringComparison.OrdinalIgnoreCase))
+        if (!webhookEvent.Data.Parent.Id.Equals(_relevantParent, StringComparison.OrdinalIgnoreCase))
         {
-            return Ok();
+            return NoContent();
         }
 
-        if (webhookEvent.AttemptNumber > 1)
-        {
-            _logger.Errors.Log($"Webhook event came again! Attempt number: {webhookEvent.AttemptNumber}.{Environment.NewLine}{rawBody}", true);
-        }
-
+        Update update;
         switch (webhookEvent.Type)
         {
             case WebhookEvent.EventType.Created:
-                await _subscriber.OnCreatedAsync(webhookEvent.Entity.Id);
+                update = new SimpleUpdate(webhookEvent.Id, webhookEvent.Entity.Id, SimpleUpdate.Type.Created);
                 break;
             case WebhookEvent.EventType.PropertiesUpdated:
                 if (webhookEvent.Data.UpdatedProperties is null)
@@ -82,21 +110,41 @@ public sealed class NotionWebhookController : Controller
                     _logger.Errors.Log("Updated properties are null.", true);
                     return BadRequest();
                 }
-                await _subscriber.OnPropertiesUpdatedAsync(webhookEvent.Entity.Id, webhookEvent.Data.UpdatedProperties);
+                update = new PropertiesUpdatedUpdate(webhookEvent.Id, webhookEvent.Entity.Id,
+                    webhookEvent.Data.UpdatedProperties);
                 break;
             case WebhookEvent.EventType.Moved:
-                await _subscriber.OnMovedAsync(webhookEvent.Entity.Id, webhookEvent.Data.Parent.Id);
+                update = new MovedUpdate(webhookEvent.Id, webhookEvent.Entity.Id, webhookEvent.Data.Parent.Id);
                 break;
             case WebhookEvent.EventType.Deleted:
-                await _subscriber.OnDeletedAsync(webhookEvent.Entity.Id);
+                update = new SimpleUpdate(webhookEvent.Id, webhookEvent.Entity.Id, SimpleUpdate.Type.Deleted);
                 break;
             case WebhookEvent.EventType.Undeleted:
-                await _subscriber.OnUndeletedAsync(webhookEvent.Entity.Id);
+                update = new SimpleUpdate(webhookEvent.Id, webhookEvent.Entity.Id, SimpleUpdate.Type.Undeleted);
                 break;
-            default: throw new ArgumentOutOfRangeException();
+            default:
+                _logger.Messages.Log($"Unsupported Notion webhook event type: {webhookEvent.Type}.", false);
+                return NoContent();
         }
 
-        return Ok();
+        WebhookState state = new(WebhookState.WebhookStatus.Queued, DateTimeFull.CreateUtcNow());
+        if (_webhookStates.TryAdd(webhookEvent.Id, state))
+        {
+            if (_updates.Writer.TryWrite(update))
+            {
+                return NoContent();
+            }
+
+            _webhookStates.Remove(webhookEvent.Id, out _);
+            _logger.Errors.Log("Failed to write webhook event to channel.", true);
+            return StatusCode(StatusCodes.Status503ServiceUnavailable);
+        }
+
+        if (webhookEvent.AttemptNumber > 1)
+        {
+            _logger.Errors.Log($"Webhook event came again! Attempt number: {webhookEvent.AttemptNumber}.{Environment.NewLine}{rawBody}", true);
+        }
+        return NoContent();
     }
 
     private bool VerifySignature(string rawBody)
@@ -139,10 +187,48 @@ public sealed class NotionWebhookController : Controller
         }
     }
 
+    private async Task ProcessQueueAsync()
+    {
+        await foreach (Update update in _updates.Reader.ReadAllAsync())
+        {
+            _webhookStates[update.WebhookId] =
+                new WebhookState(WebhookState.WebhookStatus.Processing, DateTimeFull.CreateUtcNow());
+
+            try
+            {
+                await _subscriber.ProcessAsync(update);
+                _webhookStates[update.WebhookId] =
+                    new WebhookState(WebhookState.WebhookStatus.Processed, DateTimeFull.CreateUtcNow());
+            }
+            catch (Exception ex)
+            {
+                _logger.Errors.Log(ex);
+                _webhookStates.Remove(update.WebhookId, out _);
+            }
+        }
+    }
+
+    private Task CleanupQueueAsync()
+    {
+        DateTimeFull threshold = DateTimeFull.CreateUtcNow() - _processedWebhookTtl;
+        List<string> toDelete = _webhookStates.Where(p => (p.Value.Status == WebhookState.WebhookStatus.Processed)
+                                                          && (p.Value.UpdatedAt <= threshold))
+                                              .Select(p => p.Key)
+                                              .ToList();
+        foreach (string id in toDelete)
+        {
+            _webhookStates.Remove(id, out _);
+        }
+        return Task.CompletedTask;
+    }
+
     private readonly string? _secret;
-    private readonly string _relevatnParent;
+    private readonly string _relevantParent;
     private readonly Logger _logger;
     private readonly IUpdatesSubscriber _subscriber;
+    private readonly Channel<Update> _updates;
+    private readonly ConcurrentDictionary<string, WebhookState> _webhookStates = new();
+    private readonly TimeSpan _processedWebhookTtl;
 
     private const string VerificationTokenProperty = "verification_token";
     private const string SignatureHeader = "X-Notion-Signature";

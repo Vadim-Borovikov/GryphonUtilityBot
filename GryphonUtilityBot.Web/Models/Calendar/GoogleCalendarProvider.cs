@@ -48,7 +48,7 @@ internal sealed class GoogleCalendarProvider : IDisposable
             Event result = await request.ExecuteAsync();
             return IsDeleted(result) ? null : result;
         }
-        catch (GoogleApiException e) when (e.HttpStatusCode is HttpStatusCode.NotFound)
+        catch (GoogleApiException e) when (e.HttpStatusCode is HttpStatusCode.NotFound or HttpStatusCode.Gone)
         {
             return null;
         }
@@ -68,8 +68,15 @@ internal sealed class GoogleCalendarProvider : IDisposable
 
     public Task DeleteEventAsync(string id)
     {
-        EventsResource.DeleteRequest request = _service.Events.Delete(_calendarId, id);
-        return request.ExecuteAsync();
+        try
+        {
+            EventsResource.DeleteRequest request = _service.Events.Delete(_calendarId, id);
+            return request.ExecuteAsync();
+        }
+        catch (GoogleApiException e) when (e.HttpStatusCode is HttpStatusCode.NotFound or HttpStatusCode.Gone)
+        {
+            return Task.CompletedTask;
+        }
     }
 
     private static bool IsDeleted(Event calendarEvent) => calendarEvent.Status == "cancelled";

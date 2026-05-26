@@ -1,13 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using GryphonUtilityBot.Web.Models.Calendar.Notion.Updates;
 
 namespace GryphonUtilityBot.Web.Models.Calendar;
 
 public interface IUpdatesSubscriber
 {
-    Task OnCreatedAsync(string id);
-    Task OnPropertiesUpdatedAsync(string id, IEnumerable<string> properties);
-    Task OnMovedAsync(string id, string parentId);
-    Task OnDeletedAsync(string id);
-    Task OnUndeletedAsync(string id);
+    Task ProcessAsync(Update update);
 }

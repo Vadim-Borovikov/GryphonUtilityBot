@@ -1,13 +1,14 @@
 ﻿using Google.Apis.Calendar.v3.Data;
+using GryphonUtilities.Logging;
 using GryphonUtilities.Time;
 using GryphonUtilityBot.Web.Models.Calendar.Notion;
+using GryphonUtilityBot.Web.Models.Calendar.Notion.Updates;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using GryphonUtilities.Logging;
 
 namespace GryphonUtilityBot.Web.Models.Calendar;
 
@@ -21,8 +22,8 @@ internal sealed class Synchronizer : BackgroundService, IUpdatesSubscriber
     private Synchronizer(IEnumerable<string> relevantProperties, string releventParentId, Provider notionProvider,
         GoogleCalendarProvider googleCalendarProvider, Logger logger)
     {
-        _relevantPropertiyNames = new HashSet<string>(relevantProperties);
-        _releventParentId = releventParentId;
+        _relevantPropertyNames = new HashSet<string>(relevantProperties);
+        _relevantParentId = releventParentId;
         _notionProvider = notionProvider;
         _googleCalendarProvider = googleCalendarProvider;
         _logger = logger;
@@ -31,9 +32,9 @@ internal sealed class Synchronizer : BackgroundService, IUpdatesSubscriber
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         Dictionary<string, string> allIds =
-            await _notionProvider.TryGetDatabasePropertyIdsAsync(_releventParentId)
-            ?? throw new Exception($"Failed to acquire property ids from database \"{_releventParentId}\".");
-        foreach (string name in _relevantPropertiyNames)
+            await _notionProvider.TryGetDatabasePropertyIdsAsync(_relevantParentId)
+            ?? throw new Exception($"Failed to acquire property ids from database \"{_relevantParentId}\".");
+        foreach (string name in _relevantPropertyNames)
         {
             if (allIds.ContainsKey(name))
             {
@@ -42,75 +43,82 @@ internal sealed class Synchronizer : BackgroundService, IUpdatesSubscriber
             }
             else
             {
-                _logger.Errors.Log($"Property \"{name}\" not found in database \"{_releventParentId}\".", true);
+                _logger.Errors.Log($"Property \"{name}\" not found in database \"{_relevantParentId}\".", true);
             }
         }
     }
 
-    public Task OnCreatedAsync(string id) => OnCreatedAsync(id, WebhookEvent.EventType.Created);
-
-    public async Task OnPropertiesUpdatedAsync(string id, IEnumerable<string> properties)
+    public Task ProcessAsync(Update update)
     {
-        List<string> names = properties.Where(_relevantProperties.ContainsKey)
-                                       .Select(i => _relevantProperties[i])
-                                       .ToList();
-
-        if (names.Count == 0)
+        switch (update)
         {
-            return;
+            case SimpleUpdate simple:
+                return simple.UpdateType switch
+                {
+                    SimpleUpdate.Type.Created => SyncPageAsync(simple.EntityId, WebhookEvent.EventType.Created, true),
+                    SimpleUpdate.Type.Deleted => SyncPageAsync(simple.EntityId, WebhookEvent.EventType.Deleted, false),
+                    SimpleUpdate.Type.Undeleted => SyncPageAsync(simple.EntityId, WebhookEvent.EventType.Undeleted, true),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+
+            case PropertiesUpdatedUpdate properties:
+                List<string> names = properties.Properties
+                                               .Where(_relevantProperties.ContainsKey)
+                                               .Select(i => _relevantProperties[i])
+                                               .ToList();
+                return names.Count == 0
+                    ? Task.CompletedTask
+                    : SyncPageAsync(properties.EntityId, WebhookEvent.EventType.PropertiesUpdated, true, names);
+
+            case MovedUpdate moved:
+                bool active = moved.NewParentId.Equals(_relevantParentId, StringComparison.OrdinalIgnoreCase);
+                return SyncPageAsync(moved.EntityId, WebhookEvent.EventType.Moved, active);
+
+            default: throw new ArgumentOutOfRangeException(nameof(update));
         }
+    }
 
+    private async Task SyncPageAsync(string id, WebhookEvent.EventType eventType, bool active,
+        IEnumerable<string>? propertyNames = null)
+    {
         PageInfo page = await GetPageInfoAsync(id);
+        LogPageInfo(page, eventType, propertyNames);
 
-        LogPageInfo(page, WebhookEvent.EventType.PropertiesUpdated, names);
-
-        if (page.IsRelevantMeeting())
+        if (active && page.IsRelevantMeeting())
         {
-            (DateTimeFull Start, DateTimeFull End) dates = page.Dates!.Value;
+            await UpsertEventAsync(page);
+        }
+        else if (!string.IsNullOrWhiteSpace(page.GoogleEventId))
+        {
+            bool clearPage = eventType is not WebhookEvent.EventType.Deleted;
+            await RemoveEventAsync(page, clearPage);
+        }
+    }
 
-            Event? calendarEvent = null;
-            if (!string.IsNullOrWhiteSpace(page.GoogleEventId))
-            {
-                calendarEvent = await _googleCalendarProvider.GetEventAsync(page.GoogleEventId);
-            }
+    private async Task UpsertEventAsync(PageInfo page)
+    {
+        (DateTimeFull Start, DateTimeFull End) dates = page.Dates!.Value;
 
-            if (calendarEvent is null)
-            {
-                await CreateEventAndUpdatePageAsync(page, dates);
-            }
-            else
-            {
-                await UpdateEventAsync(calendarEvent, page, dates);
-            }
+        Event? calendarEvent = string.IsNullOrWhiteSpace(page.GoogleEventId)
+            ? null
+            : await _googleCalendarProvider.GetEventAsync(page.GoogleEventId);
+
+        if (calendarEvent is null)
+        {
+            await CreateEventAndUpdatePageAsync(page, dates);
         }
         else
         {
-            if (!string.IsNullOrWhiteSpace(page.GoogleEventId))
-            {
-                await _googleCalendarProvider.DeleteEventAsync(page.GoogleEventId);
-                await ClearPageAsync(page);
-            }
+            await UpdateEventAsync(calendarEvent, page, dates);
         }
     }
 
-    public Task OnMovedAsync(string id, string newParentId)
+    private async Task RemoveEventAsync(PageInfo page, bool clearPage)
     {
-        return newParentId.Equals(_releventParentId, StringComparison.OrdinalIgnoreCase)
-            ? OnCreatedAsync(id, WebhookEvent.EventType.Moved)
-            : OnDeletedAsync(id, WebhookEvent.EventType.Moved);
-    }
-
-    public Task OnDeletedAsync(string id) => OnDeletedAsync(id, WebhookEvent.EventType.Deleted);
-
-    public Task OnUndeletedAsync(string id) => OnCreatedAsync(id, WebhookEvent.EventType.Undeleted);
-
-    private async Task OnDeletedAsync(string id, WebhookEvent.EventType eventType)
-    {
-        PageInfo page = await GetPageInfoAsync(id);
-        LogPageInfo(page, eventType);
-        if (!string.IsNullOrWhiteSpace(page.GoogleEventId))
+        await _googleCalendarProvider.DeleteEventAsync(page.GoogleEventId);
+        if (clearPage)
         {
-            await _googleCalendarProvider.DeleteEventAsync(page.GoogleEventId);
+            await ClearPageAsync(page);
         }
     }
 
@@ -123,16 +131,6 @@ internal sealed class Synchronizer : BackgroundService, IUpdatesSubscriber
             message += $" Properties: {string.Join(", ", propertyNames)}.";
         }
         _logger.Messages.Log(message, true);
-    }
-
-    private async Task OnCreatedAsync(string id, WebhookEvent.EventType eventType)
-    {
-        PageInfo page = await GetPageInfoAsync(id);
-        LogPageInfo(page, eventType);
-        if (page.IsRelevantMeeting())
-        {
-            await CreateEventAndUpdatePageAsync(page, page.Dates!.Value);
-        }
     }
 
     private async Task CreateEventAndUpdatePageAsync(PageInfo page, (DateTimeFull Start, DateTimeFull End) dates)
@@ -175,8 +173,8 @@ internal sealed class Synchronizer : BackgroundService, IUpdatesSubscriber
     }
 
     private readonly Dictionary<string, string> _relevantProperties = new();
-    private readonly HashSet<string> _relevantPropertiyNames;
-    private readonly string _releventParentId;
+    private readonly HashSet<string> _relevantPropertyNames;
+    private readonly string _relevantParentId;
     private readonly Provider _notionProvider;
     private readonly GoogleCalendarProvider _googleCalendarProvider;
     private readonly Logger _logger;

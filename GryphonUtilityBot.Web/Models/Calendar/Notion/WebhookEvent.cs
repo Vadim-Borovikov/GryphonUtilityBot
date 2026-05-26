@@ -44,6 +44,9 @@ public sealed class WebhookEvent
     }
 
     [Required]
+    public string Id { get; set; } = null!;
+
+    [Required]
     public EventType Type { get; set; }
 
     [Required]
