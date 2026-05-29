@@ -10,7 +10,7 @@ namespace GryphonUtilityBot.Operations.Commands;
 
 internal sealed class UpdateTimelineCommand : Command
 {
-    public override Enum AccessRequired => Bot.AccessType.Admin;
+    public override Enum AccessRequired => Bot.AccessType.Mistress;
 
     public UpdateTimelineCommand(Bot bot, ITextsProvider<Texts> textsProvider, Manager manager)
         : base(bot.Core.Accesses, bot.Core.UpdateSender, "timeline", textsProvider, bot.Core.SelfUsername)

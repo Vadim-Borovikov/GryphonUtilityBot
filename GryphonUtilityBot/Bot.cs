@@ -27,7 +27,8 @@ internal sealed class Bot : AbstractBot.Bot, IDisposable
     {
         [UsedImplicitly]
         Default = 1,
-        Admin = 3
+        Mistress = 3,
+        Admin = 7
     }
 
     public static async Task<Bot?> TryCreateAsync(Config config, CancellationToken cancellationToken)
